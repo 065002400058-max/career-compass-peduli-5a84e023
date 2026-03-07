@@ -19,8 +19,14 @@ const Auth = () => {
     e.preventDefault();
     setLoading(true);
 
+    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedPassword = password.trim();
+
     if (isLogin) {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { error } = await supabase.auth.signInWithPassword({
+        email: normalizedEmail,
+        password: normalizedPassword,
+      });
       if (error) {
         toast({ title: "Login Gagal", description: error.message, variant: "destructive" });
       } else {
@@ -29,8 +35,8 @@ const Auth = () => {
       }
     } else {
       const { error } = await supabase.auth.signUp({
-        email,
-        password,
+        email: normalizedEmail,
+        password: normalizedPassword,
         options: {
           data: { full_name: fullName },
           emailRedirectTo: window.location.origin,
