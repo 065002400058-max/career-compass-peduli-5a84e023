@@ -1,7 +1,8 @@
-import { Link, useLocation } from "react-router-dom";
-import { Menu, X } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Menu, X, LogOut } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
 
 const navItems = [
   { label: "Beranda", path: "/" },
@@ -16,6 +17,13 @@ const navItems = [
 const Navbar = () => {
   const [open, setOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, signOut, loading } = useAuth();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/");
+  };
 
   return (
     <nav className="nav-glass sticky top-0 z-50">
@@ -45,8 +53,18 @@ const Navbar = () => {
         </div>
 
         <div className="hidden lg:flex items-center gap-2">
-          <Button variant="outline" size="sm">Masuk</Button>
-          <Button size="sm">Daftar</Button>
+          {!loading && (
+            user ? (
+              <Button variant="outline" size="sm" onClick={handleSignOut}>
+                <LogOut className="h-4 w-4 mr-1" />Keluar
+              </Button>
+            ) : (
+              <>
+                <Button variant="outline" size="sm" onClick={() => navigate("/auth")}>Masuk</Button>
+                <Button size="sm" onClick={() => navigate("/auth")}>Daftar</Button>
+              </>
+            )
+          )}
         </div>
 
         {/* Mobile toggle */}
@@ -74,8 +92,16 @@ const Navbar = () => {
               </Link>
             ))}
             <div className="flex gap-2 mt-3 pt-3 border-t border-border">
-              <Button variant="outline" size="sm" className="flex-1">Masuk</Button>
-              <Button size="sm" className="flex-1">Daftar</Button>
+              {user ? (
+                <Button variant="outline" size="sm" className="flex-1" onClick={() => { handleSignOut(); setOpen(false); }}>
+                  <LogOut className="h-4 w-4 mr-1" />Keluar
+                </Button>
+              ) : (
+                <>
+                  <Button variant="outline" size="sm" className="flex-1" onClick={() => { navigate("/auth"); setOpen(false); }}>Masuk</Button>
+                  <Button size="sm" className="flex-1" onClick={() => { navigate("/auth"); setOpen(false); }}>Daftar</Button>
+                </>
+              )}
             </div>
           </div>
         </div>
