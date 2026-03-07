@@ -24,7 +24,6 @@ Deno.serve(async (req) => {
   const results = [];
 
   for (const u of demoUsers) {
-    // Check if user already exists
     const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
     const existing = existingUsers?.users?.find((eu) => eu.email === u.email);
 
@@ -32,7 +31,16 @@ Deno.serve(async (req) => {
 
     if (existing) {
       userId = existing.id;
-      results.push({ email: u.email, status: "already exists", role: u.role });
+      // Reset password for existing user
+      const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(userId, {
+        password: u.password,
+        email_confirm: true,
+      });
+      if (updateError) {
+        results.push({ email: u.email, status: "update_error", error: updateError.message });
+        continue;
+      }
+      results.push({ email: u.email, status: "password_reset", role: u.role });
     } else {
       const { data, error } = await supabaseAdmin.auth.admin.createUser({
         email: u.email,
