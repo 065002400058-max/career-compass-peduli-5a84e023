@@ -1,29 +1,44 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Menu, X, LogOut } from "lucide-react";
+import { Menu, X, LogOut, User } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
-
-const navItems = [
-  { label: "Beranda", path: "/" },
-  { label: "Dashboard", path: "/dashboard" },
-  { label: "Lowongan", path: "/jobs" },
-  { label: "Alumni", path: "/alumni" },
-  { label: "Mitra", path: "/partners" },
-  { label: "Event", path: "/events" },
-  { label: "Admin", path: "/admin" },
-];
+import { Badge } from "@/components/ui/badge";
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, signOut, loading } = useAuth();
+  const { user, signOut, loading, hasRole, roles } = useAuth();
 
   const handleSignOut = async () => {
     await signOut();
     navigate("/");
   };
+
+  const navItems = [
+    { label: "Beranda", path: "/", show: true },
+    { label: "Dashboard", path: "/dashboard", show: !!user },
+    { label: "Lowongan", path: "/jobs", show: true },
+    { label: "Alumni", path: "/alumni", show: true },
+    { label: "Mitra", path: "/partners", show: true },
+    { label: "Event", path: "/events", show: true },
+    { label: "Admin", path: "/admin", show: hasRole("admin") },
+  ].filter((item) => item.show);
+
+  const roleLabel = roles.includes("admin")
+    ? "Admin"
+    : roles.includes("alumni")
+    ? "Alumni"
+    : roles.includes("mitra")
+    ? "Mitra"
+    : "User";
+
+  const roleVariant = roles.includes("admin")
+    ? "destructive"
+    : roles.includes("mitra")
+    ? "secondary"
+    : "default";
 
   return (
     <nav className="nav-glass sticky top-0 z-50">
@@ -32,7 +47,9 @@ const Navbar = () => {
           <div className="h-9 w-9 rounded-lg gradient-bg flex items-center justify-center">
             <span className="text-primary-foreground font-heading font-bold text-sm">SC</span>
           </div>
-          <span className="font-heading font-bold text-foreground hidden sm:block">Career Center <span className="text-primary">PEDULI</span></span>
+          <span className="font-heading font-bold text-foreground hidden sm:block">
+            Career Center <span className="text-primary">PEDULI</span>
+          </span>
         </Link>
 
         {/* Desktop */}
@@ -53,18 +70,33 @@ const Navbar = () => {
         </div>
 
         <div className="hidden lg:flex items-center gap-2">
-          {!loading && (
-            user ? (
-              <Button variant="outline" size="sm" onClick={handleSignOut}>
-                <LogOut className="h-4 w-4 mr-1" />Keluar
-              </Button>
+          {!loading &&
+            (user ? (
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-muted">
+                  <User className="h-3.5 w-3.5 text-muted-foreground" />
+                  <span className="text-xs text-muted-foreground max-w-[120px] truncate">
+                    {user.user_metadata?.full_name || user.email}
+                  </span>
+                  <Badge variant={roleVariant as any} className="text-[10px] px-1.5 py-0">
+                    {roleLabel}
+                  </Badge>
+                </div>
+                <Button variant="outline" size="sm" onClick={handleSignOut}>
+                  <LogOut className="h-4 w-4 mr-1" />
+                  Keluar
+                </Button>
+              </div>
             ) : (
               <>
-                <Button variant="outline" size="sm" onClick={() => navigate("/auth")}>Masuk</Button>
-                <Button size="sm" onClick={() => navigate("/auth")}>Daftar</Button>
+                <Button variant="outline" size="sm" onClick={() => navigate("/auth")}>
+                  Masuk
+                </Button>
+                <Button size="sm" onClick={() => navigate("/auth")}>
+                  Daftar
+                </Button>
               </>
-            )
-          )}
+            ))}
         </div>
 
         {/* Mobile toggle */}
@@ -91,16 +123,55 @@ const Navbar = () => {
                 {item.label}
               </Link>
             ))}
-            <div className="flex gap-2 mt-3 pt-3 border-t border-border">
+            <div className="flex flex-col gap-2 mt-3 pt-3 border-t border-border">
               {user ? (
-                <Button variant="outline" size="sm" className="flex-1" onClick={() => { handleSignOut(); setOpen(false); }}>
-                  <LogOut className="h-4 w-4 mr-1" />Keluar
-                </Button>
-              ) : (
                 <>
-                  <Button variant="outline" size="sm" className="flex-1" onClick={() => { navigate("/auth"); setOpen(false); }}>Masuk</Button>
-                  <Button size="sm" className="flex-1" onClick={() => { navigate("/auth"); setOpen(false); }}>Daftar</Button>
+                  <div className="flex items-center gap-1.5 px-3 py-2">
+                    <User className="h-3.5 w-3.5 text-muted-foreground" />
+                    <span className="text-xs text-muted-foreground truncate">
+                      {user.user_metadata?.full_name || user.email}
+                    </span>
+                    <Badge variant={roleVariant as any} className="text-[10px] px-1.5 py-0">
+                      {roleLabel}
+                    </Badge>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                    onClick={() => {
+                      handleSignOut();
+                      setOpen(false);
+                    }}
+                  >
+                    <LogOut className="h-4 w-4 mr-1" />
+                    Keluar
+                  </Button>
                 </>
+              ) : (
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => {
+                      navigate("/auth");
+                      setOpen(false);
+                    }}
+                  >
+                    Masuk
+                  </Button>
+                  <Button
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => {
+                      navigate("/auth");
+                      setOpen(false);
+                    }}
+                  >
+                    Daftar
+                  </Button>
+                </div>
               )}
             </div>
           </div>
