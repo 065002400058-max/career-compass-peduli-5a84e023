@@ -2,26 +2,30 @@ import { Search, GraduationCap, Building2, MapPin } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
-
-const alumni = [
-  { id: 1, name: "Ahmad Fauzi", year: 2022, company: "PT Digital Nusantara", position: "Software Engineer", location: "Jakarta", status: "Bekerja" },
-  { id: 2, name: "Siti Aisyah", year: 2021, company: "Bank Syariah Indonesia", position: "Financial Analyst", location: "Bandung", status: "Bekerja" },
-  { id: 3, name: "Muhammad Rizki", year: 2023, company: "Tokopedia", position: "Product Manager", location: "Jakarta", status: "Bekerja" },
-  { id: 4, name: "Fatimah Zahra", year: 2022, company: "RS Islam Jakarta", position: "Apoteker", location: "Jakarta", status: "Bekerja" },
-  { id: 5, name: "Umar Abdullah", year: 2020, company: "Universitas Gadjah Mada", position: "Dosen", location: "Yogyakarta", status: "Bekerja" },
-  { id: 6, name: "Khadijah Putri", year: 2023, company: "-", position: "-", location: "Surabaya", status: "Mencari Kerja" },
-  { id: 7, name: "Bilal Hakim", year: 2021, company: "Telkom Indonesia", position: "Network Engineer", location: "Bandung", status: "Bekerja" },
-  { id: 8, name: "Nurul Hidayah", year: 2022, company: "Kemendikbud", position: "Guru", location: "Semarang", status: "Bekerja" },
-];
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 const Alumni = () => {
   const [search, setSearch] = useState("");
   const [yearFilter, setYearFilter] = useState("Semua");
-  const years = ["Semua", "2023", "2022", "2021", "2020"];
+
+  const { data: alumni = [], isLoading } = useQuery({
+    queryKey: ["alumni"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("alumni")
+        .select("*")
+        .order("graduation_year", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const years = ["Semua", ...Array.from(new Set(alumni.map((a) => a.graduation_year.toString()))).sort().reverse()];
 
   const filtered = alumni.filter((a) => {
-    const matchSearch = a.name.toLowerCase().includes(search.toLowerCase()) || a.company.toLowerCase().includes(search.toLowerCase());
-    const matchYear = yearFilter === "Semua" || a.year.toString() === yearFilter;
+    const matchSearch = a.name.toLowerCase().includes(search.toLowerCase()) || (a.company ?? "").toLowerCase().includes(search.toLowerCase());
+    const matchYear = yearFilter === "Semua" || a.graduation_year.toString() === yearFilter;
     return matchSearch && matchYear;
   });
 
@@ -45,27 +49,36 @@ const Alumni = () => {
           </div>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {filtered.map((a) => (
-            <div key={a.id} className="glass-card-hover rounded-xl p-5">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="h-12 w-12 rounded-full gradient-bg flex items-center justify-center text-primary-foreground font-heading font-bold">
-                  {a.name.split(" ").map(n => n[0]).join("").slice(0, 2)}
+        {isLoading ? (
+          <div className="text-center py-16 text-muted-foreground">Memuat data...</div>
+        ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {filtered.map((a) => (
+              <div key={a.id} className="glass-card-hover rounded-xl p-5">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="h-12 w-12 rounded-full gradient-bg flex items-center justify-center text-primary-foreground font-heading font-bold">
+                    {a.name.split(" ").map(n => n[0]).join("").slice(0, 2)}
+                  </div>
+                  <div>
+                    <h3 className="font-heading font-semibold text-foreground text-sm">{a.name}</h3>
+                    <Badge variant={a.status === "Bekerja" ? "default" : "secondary"} className="text-xs mt-1">{a.status}</Badge>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-heading font-semibold text-foreground text-sm">{a.name}</h3>
-                  <Badge variant={a.status === "Bekerja" ? "default" : "secondary"} className="text-xs mt-1">{a.status}</Badge>
+                <div className="space-y-2 text-sm text-muted-foreground">
+                  <p className="flex items-center gap-2"><GraduationCap className="h-3.5 w-3.5" />Lulus {a.graduation_year}</p>
+                  <p className="flex items-center gap-2"><Building2 className="h-3.5 w-3.5" />{a.company}</p>
+                  <p className="flex items-center gap-2"><MapPin className="h-3.5 w-3.5" />{a.location}</p>
                 </div>
+                <p className="text-xs text-foreground font-medium mt-3">{a.position}</p>
               </div>
-              <div className="space-y-2 text-sm text-muted-foreground">
-                <p className="flex items-center gap-2"><GraduationCap className="h-3.5 w-3.5" />Lulus {a.year}</p>
-                <p className="flex items-center gap-2"><Building2 className="h-3.5 w-3.5" />{a.company}</p>
-                <p className="flex items-center gap-2"><MapPin className="h-3.5 w-3.5" />{a.location}</p>
+            ))}
+            {filtered.length === 0 && !isLoading && (
+              <div className="col-span-full text-center py-16 text-muted-foreground">
+                <p>Tidak ada data alumni ditemukan.</p>
               </div>
-              <p className="text-xs text-foreground font-medium mt-3">{a.position}</p>
-            </div>
-          ))}
-        </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
