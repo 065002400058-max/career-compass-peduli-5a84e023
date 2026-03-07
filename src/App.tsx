@@ -14,6 +14,7 @@ import Partners from "./pages/Partners";
 import Events from "./pages/Events";
 import Admin from "./pages/Admin";
 import Auth from "./pages/Auth";
+import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
