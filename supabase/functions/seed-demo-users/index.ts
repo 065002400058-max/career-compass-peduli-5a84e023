@@ -16,9 +16,9 @@ Deno.serve(async (req) => {
   );
 
   const demoUsers = [
-    { email: "admin@demo.com", password: "demo123456", full_name: "Admin Demo", role: "admin" },
-    { email: "alumni@demo.com", password: "demo123456", full_name: "Alumni Demo", role: "alumni" },
-    { email: "mitra@demo.com", password: "demo123456", full_name: "Mitra Demo", role: "mitra" },
+    { email: "admin@demo.com", password: "admin123456", full_name: "Admin Demo", role: "admin" },
+    { email: "alumni@demo.com", password: "alumni123456", full_name: "Alumni Demo", role: "alumni" },
+    { email: "mitra@demo.com", password: "mitra123456", full_name: "Mitra Demo", role: "mitra" },
   ];
 
   const results = [];
