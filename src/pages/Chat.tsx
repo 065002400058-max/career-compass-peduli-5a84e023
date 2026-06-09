@@ -4,8 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
@@ -31,18 +29,12 @@ const newThread = (mode = "umum"): Thread => ({
 });
 
 const Chat = () => {
-  const { user, loading } = useAuth();
-  const navigate = useNavigate();
   const [threads, setThreads] = useState<Thread[]>([newThread()]);
   const [activeId, setActiveId] = useState<string>(threads[0].id);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
-
-  useEffect(() => {
-    if (!loading && !user) navigate("/auth");
-  }, [loading, user, navigate]);
 
   const active = threads.find((t) => t.id === activeId) ?? threads[0];
 
@@ -108,8 +100,6 @@ const Chat = () => {
       setTimeout(() => inputRef.current?.focus(), 50);
     }
   };
-
-  if (loading || !user) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Memuat...</div>;
 
   return (
     <div className="min-h-[calc(100vh-4rem)] gradient-bg-subtle">
