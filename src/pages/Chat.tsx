@@ -101,8 +101,6 @@ const Chat = () => {
     }
   };
 
-  if (loading || !user) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Memuat...</div>;
-
   return (
     <div className="min-h-[calc(100vh-4rem)] gradient-bg-subtle">
       <div className="container mx-auto px-4 py-6">
