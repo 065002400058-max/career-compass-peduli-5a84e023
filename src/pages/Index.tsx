@@ -182,6 +182,34 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Layanan Karier - CBT, Psikotes, Universities */}
+      <section className="section-padding relative">
+        <div className="container mx-auto">
+          <div className="text-center max-w-2xl mx-auto mb-10">
+            <h2 className="font-heading text-3xl md:text-4xl font-bold text-foreground">Layanan Karier</h2>
+            <p className="text-muted-foreground mt-3">Asah potensi, kenali diri, dan temukan kampus impian.</p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-6">
+            {[
+              { icon: Brain, title: "Tes CBT", desc: "Tes Potensi Akademik & Minat Bakat berbasis komputer.", to: "/cbt", cta: "Mulai Tes CBT" },
+              { icon: HeartPulse, title: "Psikotes & Konseling", desc: "Cek kondisi mental & dapatkan saran konseling.", to: "/psikotes", cta: "Mulai Psikotes" },
+              { icon: School, title: "Jelajahi Kampus", desc: "Eksplorasi pilihan kampus & program studi.", to: "/universities", cta: "Lihat Kampus" },
+            ].map((s) => (
+              <Link key={s.title} to={s.to} className="glass-card-hover rounded-xl p-6 border-primary/10 group block">
+                <div className="h-12 w-12 rounded-xl gradient-bg flex items-center justify-center mb-4">
+                  <s.icon className="h-6 w-6 text-primary-foreground" />
+                </div>
+                <h3 className="font-heading font-semibold text-foreground text-lg">{s.title}</h3>
+                <p className="text-sm text-muted-foreground mt-2">{s.desc}</p>
+                <span className="inline-flex items-center gap-1 text-sm text-primary mt-4 group-hover:gap-2 transition-all">
+                  {s.cta} <ArrowRight className="h-4 w-4" />
+                </span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* CTA */}
       {!user ? (
         <section className="section-padding">
