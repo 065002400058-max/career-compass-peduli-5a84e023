@@ -23,8 +23,8 @@ const Navbar = () => {
     { label: "Alumni", path: "/alumni", show: true },
     { label: "Mitra", path: "/partners", show: true },
     { label: "Event", path: "/events", show: true },
-    { label: "Tes CBT", path: "/cbt", show: !!user },
-    { label: "Psikotes", path: "/psikotes", show: !!user },
+    { label: "Tes CBT", path: "/cbt", show: true },
+    { label: "Psikotes", path: "/psikotes", show: true },
     { label: "Jelajahi Kampus", path: "/universities", show: true },
     { label: "Admin", path: "/admin", show: hasRole("admin") },
   ].filter((item) => item.show);
