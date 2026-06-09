@@ -663,6 +663,45 @@ export type Database = {
           },
         ]
       }
+      universities: {
+        Row: {
+          city: string | null
+          country: string
+          created_at: string
+          description: string | null
+          id: string
+          logo_url: string | null
+          name: string
+          type: Database["public"]["Enums"]["university_type"]
+          updated_at: string
+          website_url: string
+        }
+        Insert: {
+          city?: string | null
+          country?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          logo_url?: string | null
+          name: string
+          type?: Database["public"]["Enums"]["university_type"]
+          updated_at?: string
+          website_url: string
+        }
+        Update: {
+          city?: string | null
+          country?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          logo_url?: string | null
+          name?: string
+          type?: Database["public"]["Enums"]["university_type"]
+          updated_at?: string
+          website_url?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
@@ -703,6 +742,7 @@ export type Database = {
         | "numerik"
         | "logika"
         | "kepribadian"
+      university_type: "dalam_negeri" | "luar_negeri" | "kedinasan"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -839,6 +879,7 @@ export const Constants = {
         "logika",
         "kepribadian",
       ],
+      university_type: ["dalam_negeri", "luar_negeri", "kedinasan"],
     },
   },
 } as const
