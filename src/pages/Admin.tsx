@@ -1,10 +1,12 @@
-import { Users, Briefcase, Building2, FileText, CheckCircle, XCircle, Settings } from "lucide-react";
+import { Users, Briefcase, Building2, FileText, CheckCircle, XCircle, Settings, Brain, HeartPulse } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import StatsCard from "@/components/StatsCard";
 import AlumniCsvImport from "@/components/AlumniCsvImport";
 import AlumniAddDialog from "@/components/AlumniAddDialog";
+import CbtManager from "@/components/admin/CbtManager";
+import PsikotesManager from "@/components/admin/PsikotesManager";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
@@ -90,10 +92,12 @@ const Admin = () => {
         </div>
 
         <Tabs defaultValue="jobs" className="w-full">
-          <TabsList className="glass-card mb-6">
+          <TabsList className="glass-card mb-6 flex-wrap h-auto">
             <TabsTrigger value="jobs">Validasi Lowongan</TabsTrigger>
             <TabsTrigger value="alumni">Data Alumni</TabsTrigger>
             <TabsTrigger value="partners">Mitra</TabsTrigger>
+            <TabsTrigger value="cbt"><Brain className="h-4 w-4 mr-1" />Tes CBT</TabsTrigger>
+            <TabsTrigger value="psikotes"><HeartPulse className="h-4 w-4 mr-1" />Psikotes</TabsTrigger>
           </TabsList>
 
           <TabsContent value="jobs">
@@ -160,6 +164,9 @@ const Admin = () => {
               <p>Manajemen mitra perusahaan akan ditampilkan di sini.</p>
             </div>
           </TabsContent>
+
+          <TabsContent value="cbt"><CbtManager /></TabsContent>
+          <TabsContent value="psikotes"><PsikotesManager /></TabsContent>
         </Tabs>
       </div>
     </div>
