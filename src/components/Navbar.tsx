@@ -23,6 +23,7 @@ const Navbar = () => {
     { label: "Alumni", path: "/alumni", show: true },
     { label: "Mitra", path: "/partners", show: true },
     { label: "Event", path: "/events", show: true },
+    { label: "Chat AI", path: "/chat", show: !!user },
     { label: "Admin", path: "/admin", show: hasRole("admin") },
   ].filter((item) => item.show);
 
