@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import StatsCard from "@/components/StatsCard";
 import AlumniCsvImport from "@/components/AlumniCsvImport";
+import AlumniAddDialog from "@/components/AlumniAddDialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
@@ -75,7 +76,10 @@ const Admin = () => {
               <p className="text-muted-foreground text-sm">Kelola data dan konten Career Center</p>
             </div>
           </div>
-          <AlumniCsvImport />
+          <div className="flex gap-2 flex-wrap">
+            <AlumniAddDialog />
+            <AlumniCsvImport />
+          </div>
         </div>
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
