@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import AiAssistantButton from "@/components/AiAssistantButton";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import Jobs from "./pages/Jobs";
@@ -20,6 +21,7 @@ import CbtList from "./pages/CbtList";
 import CbtTake from "./pages/CbtTake";
 import PsikotesList from "./pages/PsikotesList";
 import PsikotesTake from "./pages/PsikotesTake";
+import Universities from "./pages/Universities";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -47,9 +49,11 @@ const App = () => (
             <Route path="/cbt/:id" element={<CbtTake />} />
             <Route path="/psikotes" element={<PsikotesList />} />
             <Route path="/psikotes/:id" element={<PsikotesTake />} />
+            <Route path="/universities" element={<Universities />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           <Footer />
+          <AiAssistantButton />
         </BrowserRouter>
       </TooltipProvider>
     </AuthProvider>
