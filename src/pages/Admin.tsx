@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import StatsCard from "@/components/StatsCard";
+import AlumniCsvImport from "@/components/AlumniCsvImport";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
@@ -117,6 +118,9 @@ const Admin = () => {
           </TabsContent>
 
           <TabsContent value="alumni">
+            <div className="flex justify-end mb-3">
+              <AlumniCsvImport />
+            </div>
             <div className="glass-card rounded-xl divide-y divide-border">
               {(recentAlumni?.length ?? 0) === 0 ? (
                 <div className="p-8 text-center text-muted-foreground">
