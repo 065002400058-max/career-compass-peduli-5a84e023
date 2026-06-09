@@ -5,7 +5,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { GraduationCap, ExternalLink, Search, MapPin, Globe2 } from "lucide-react";
+import { GraduationCap, ExternalLink, Search, MapPin, Globe2, Settings } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import UniversitiesManager from "@/components/admin/UniversitiesManager";
 
 const TYPE_LABELS: Record<string, string> = {
   dalam_negeri: "Dalam Negeri",
