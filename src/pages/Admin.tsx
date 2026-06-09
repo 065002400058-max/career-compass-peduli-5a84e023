@@ -125,7 +125,8 @@ const Admin = () => {
           </TabsContent>
 
           <TabsContent value="alumni">
-            <div className="flex justify-end mb-3">
+            <div className="flex justify-end gap-2 mb-3">
+              <AlumniAddDialog />
               <AlumniCsvImport />
             </div>
             <div className="glass-card rounded-xl divide-y divide-border">
