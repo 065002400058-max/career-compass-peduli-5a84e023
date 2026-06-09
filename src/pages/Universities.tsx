@@ -92,11 +92,13 @@ const Universities = () => {
             <TabsTrigger value="dalam_negeri">Dalam Negeri</TabsTrigger>
             <TabsTrigger value="luar_negeri">Luar Negeri</TabsTrigger>
             <TabsTrigger value="kedinasan">Kedinasan</TabsTrigger>
+            {isAdmin && <TabsTrigger value="manage"><Settings className="h-4 w-4 mr-2" />Kelola (Admin)</TabsTrigger>}
           </TabsList>
           <TabsContent value="all">{isLoading ? <p className="text-sm text-muted-foreground">Memuat...</p> : renderGrid(filter())}</TabsContent>
           <TabsContent value="dalam_negeri">{renderGrid(filter("dalam_negeri"))}</TabsContent>
           <TabsContent value="luar_negeri">{renderGrid(filter("luar_negeri"))}</TabsContent>
           <TabsContent value="kedinasan">{renderGrid(filter("kedinasan"))}</TabsContent>
+          {isAdmin && <TabsContent value="manage"><UniversitiesManager /></TabsContent>}
         </Tabs>
       </div>
     </div>
