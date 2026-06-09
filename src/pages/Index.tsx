@@ -94,11 +94,11 @@ const Index = () => {
     <div className="min-h-screen islamic-pattern-bg">
       {/* Islamic Ornament Border */}
       <div className="w-full overflow-hidden">
-        <img src={ornamentImg} alt="" className="w-full h-auto opacity-80" aria-hidden="true" />
+        <img src={ornamentImg} alt="" className="w-full h-14 md:h-20 object-cover object-center opacity-80" aria-hidden="true" />
       </div>
 
       {/* Hero */}
-      <section className="gradient-bg-subtle section-padding overflow-hidden relative">
+      <section className="gradient-bg-subtle py-10 md:py-14 px-4 md:px-8 overflow-hidden relative">
         <div className="container mx-auto">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
@@ -128,6 +128,36 @@ const Index = () => {
             <div className="flex justify-center animate-float">
               <img src={mosqueImg} alt="Islamic mosque illustration" className="w-full max-w-sm drop-shadow-2xl" />
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Layanan Karier - CBT, Psikotes, Universities */}
+      <section className="py-8 md:py-12 px-4 md:px-8 relative">
+        <div className="container mx-auto">
+          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-3 mb-5 md:mb-7">
+            <div>
+              <h2 className="font-heading text-2xl md:text-4xl font-bold text-foreground">Layanan Karier</h2>
+              <p className="text-muted-foreground mt-1 text-sm md:text-base">Tes CBT, Psikotes, dan kampus tersedia di halaman biasa.</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-5">
+            {[
+              { icon: Brain, title: "Tes CBT", desc: "Tes Potensi Akademik & Minat Bakat.", to: "/cbt", cta: "Buka CBT" },
+              { icon: HeartPulse, title: "Psikotes & Konseling", desc: "Cek mental dan saran konseling.", to: "/psikotes", cta: "Buka Psikotes" },
+              { icon: School, title: "Jelajahi Kampus", desc: "Eksplorasi kampus dan program studi.", to: "/universities", cta: "Lihat Kampus" },
+            ].map((s) => (
+              <Link key={s.title} to={s.to} className="glass-card-hover rounded-xl p-4 md:p-5 border-primary/10 group block">
+                <div className="h-10 w-10 md:h-11 md:w-11 rounded-xl gradient-bg flex items-center justify-center mb-3">
+                  <s.icon className="h-5 w-5 text-primary-foreground" />
+                </div>
+                <h3 className="font-heading font-semibold text-foreground text-base md:text-lg leading-tight">{s.title}</h3>
+                <p className="text-xs md:text-sm text-muted-foreground mt-1.5 min-h-[34px]">{s.desc}</p>
+                <span className="inline-flex items-center gap-1 text-xs md:text-sm text-primary mt-3 group-hover:gap-2 transition-all">
+                  {s.cta} <ArrowRight className="h-4 w-4" />
+                </span>
+              </Link>
+            ))}
           </div>
         </div>
       </section>
@@ -177,34 +207,6 @@ const Index = () => {
                 <h3 className="font-heading font-semibold text-foreground text-lg">{f.title}</h3>
                 <p className="text-sm text-muted-foreground mt-2">{f.desc}</p>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Layanan Karier - CBT, Psikotes, Universities */}
-      <section className="section-padding relative">
-        <div className="container mx-auto">
-          <div className="text-center max-w-2xl mx-auto mb-10">
-            <h2 className="font-heading text-3xl md:text-4xl font-bold text-foreground">Layanan Karier</h2>
-            <p className="text-muted-foreground mt-3">Asah potensi, kenali diri, dan temukan kampus impian.</p>
-          </div>
-          <div className="grid md:grid-cols-3 gap-6">
-            {[
-              { icon: Brain, title: "Tes CBT", desc: "Tes Potensi Akademik & Minat Bakat berbasis komputer.", to: "/cbt", cta: "Mulai Tes CBT" },
-              { icon: HeartPulse, title: "Psikotes & Konseling", desc: "Cek kondisi mental & dapatkan saran konseling.", to: "/psikotes", cta: "Mulai Psikotes" },
-              { icon: School, title: "Jelajahi Kampus", desc: "Eksplorasi pilihan kampus & program studi.", to: "/universities", cta: "Lihat Kampus" },
-            ].map((s) => (
-              <Link key={s.title} to={s.to} className="glass-card-hover rounded-xl p-6 border-primary/10 group block">
-                <div className="h-12 w-12 rounded-xl gradient-bg flex items-center justify-center mb-4">
-                  <s.icon className="h-6 w-6 text-primary-foreground" />
-                </div>
-                <h3 className="font-heading font-semibold text-foreground text-lg">{s.title}</h3>
-                <p className="text-sm text-muted-foreground mt-2">{s.desc}</p>
-                <span className="inline-flex items-center gap-1 text-sm text-primary mt-4 group-hover:gap-2 transition-all">
-                  {s.cta} <ArrowRight className="h-4 w-4" />
-                </span>
-              </Link>
             ))}
           </div>
         </div>
