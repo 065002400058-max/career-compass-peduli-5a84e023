@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Users, Briefcase, Building2, GraduationCap, ArrowRight, Search, Calendar, BarChart3, Shield, Star } from "lucide-react";
+import { Users, Briefcase, Building2, GraduationCap, ArrowRight, Search, Calendar, BarChart3, Shield, Star, Brain, HeartPulse, School } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import mosqueImg from "@/assets/mosque-silhouette.png";
