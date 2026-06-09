@@ -6,8 +6,9 @@ import { useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Brain, Clock, ListChecks, Trophy, History } from "lucide-react";
+import { Brain, Clock, ListChecks, Trophy, History, Settings } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import CbtManager from "@/components/admin/CbtManager";
 
 const CBT_LABEL: Record<string, string> = {
   tpa: "TPA", minat_bakat: "Minat Bakat", verbal: "Verbal",
@@ -15,8 +16,9 @@ const CBT_LABEL: Record<string, string> = {
 };
 
 const CbtList = () => {
-  const { user, loading } = useAuth();
+  const { user, loading, hasRole } = useAuth();
   const navigate = useNavigate();
+  const isAdmin = hasRole("admin");
 
   useEffect(() => {
     if (!loading && !user) navigate("/auth");
@@ -63,11 +65,16 @@ const CbtList = () => {
           </div>
         </div>
 
-        <Tabs defaultValue="list">
-          <TabsList className="glass-card mb-6">
+        <Tabs defaultValue={isAdmin ? "manage" : "list"}>
+          <TabsList className="glass-card mb-6 flex-wrap h-auto">
             <TabsTrigger value="list"><ListChecks className="h-4 w-4 mr-2" />Daftar Tes</TabsTrigger>
             <TabsTrigger value="history"><History className="h-4 w-4 mr-2" />Riwayat Saya</TabsTrigger>
+            {isAdmin && <TabsTrigger value="manage"><Settings className="h-4 w-4 mr-2" />Kelola (Admin)</TabsTrigger>}
           </TabsList>
+
+          {isAdmin && (
+            <TabsContent value="manage"><CbtManager /></TabsContent>
+          )}
 
           <TabsContent value="list">
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
