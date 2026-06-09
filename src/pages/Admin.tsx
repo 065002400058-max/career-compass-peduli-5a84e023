@@ -65,14 +65,17 @@ const Admin = () => {
   return (
     <div className="min-h-screen gradient-bg-subtle">
       <div className="container mx-auto section-padding">
-        <div className="flex items-center gap-3 mb-8">
-          <div className="h-10 w-10 rounded-xl gradient-bg flex items-center justify-center">
-            <Settings className="h-5 w-5 text-primary-foreground" />
+        <div className="flex items-center justify-between gap-3 mb-8 flex-wrap">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl gradient-bg flex items-center justify-center">
+              <Settings className="h-5 w-5 text-primary-foreground" />
+            </div>
+            <div>
+              <h1 className="font-heading text-3xl font-bold text-foreground">Admin Panel</h1>
+              <p className="text-muted-foreground text-sm">Kelola data dan konten Career Center</p>
+            </div>
           </div>
-          <div>
-            <h1 className="font-heading text-3xl font-bold text-foreground">Admin Panel</h1>
-            <p className="text-muted-foreground text-sm">Kelola data dan konten Career Center</p>
-          </div>
+          <AlumniCsvImport />
         </div>
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
