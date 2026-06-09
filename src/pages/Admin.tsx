@@ -1,4 +1,4 @@
-import { Users, Briefcase, Building2, FileText, CheckCircle, XCircle, Settings, Brain, HeartPulse } from "lucide-react";
+import { Users, Briefcase, Building2, FileText, CheckCircle, XCircle, Settings, Brain, HeartPulse, GraduationCap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -7,6 +7,7 @@ import AlumniCsvImport from "@/components/AlumniCsvImport";
 import AlumniAddDialog from "@/components/AlumniAddDialog";
 import CbtManager from "@/components/admin/CbtManager";
 import PsikotesManager from "@/components/admin/PsikotesManager";
+import UniversitiesManager from "@/components/admin/UniversitiesManager";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
@@ -98,6 +99,7 @@ const Admin = () => {
             <TabsTrigger value="partners">Mitra</TabsTrigger>
             <TabsTrigger value="cbt"><Brain className="h-4 w-4 mr-1" />Tes CBT</TabsTrigger>
             <TabsTrigger value="psikotes"><HeartPulse className="h-4 w-4 mr-1" />Psikotes</TabsTrigger>
+            <TabsTrigger value="universities"><GraduationCap className="h-4 w-4 mr-1" />Kampus</TabsTrigger>
           </TabsList>
 
           <TabsContent value="jobs">
@@ -167,6 +169,7 @@ const Admin = () => {
 
           <TabsContent value="cbt"><CbtManager /></TabsContent>
           <TabsContent value="psikotes"><PsikotesManager /></TabsContent>
+          <TabsContent value="universities"><UniversitiesManager /></TabsContent>
         </Tabs>
       </div>
     </div>

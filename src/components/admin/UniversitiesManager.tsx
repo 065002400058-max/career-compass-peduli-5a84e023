@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -120,19 +120,16 @@ function UnivDialog({ open, onOpenChange, editing, onSaved }: { open: boolean; o
   const [type, setType] = useState<Univ["type"]>("dalam_negeri");
   const [website, setWebsite] = useState(""); const [desc, setDesc] = useState(""); const [city, setCity] = useState("");
 
-  // Reset fields when dialog opens with new data
-  useState(() => {
-    if (editing) {
-      setName(editing.name); setCountry(editing.country); setType(editing.type);
-      setWebsite(editing.website_url); setDesc(editing.description ?? ""); setCity(editing.city ?? "");
+  useEffect(() => {
+    if (open) {
+      if (editing) {
+        setName(editing.name); setCountry(editing.country); setType(editing.type);
+        setWebsite(editing.website_url); setDesc(editing.description ?? ""); setCity(editing.city ?? "");
+      } else {
+        setName(""); setCountry("Indonesia"); setType("dalam_negeri"); setWebsite(""); setDesc(""); setCity("");
+      }
     }
-  });
-
-  // Sync on editing change
-  if (open && editing && name !== editing.name && country === "Indonesia" && !website) {
-    setName(editing.name); setCountry(editing.country); setType(editing.type);
-    setWebsite(editing.website_url); setDesc(editing.description ?? ""); setCity(editing.city ?? "");
-  }
+  }, [open, editing]);
 
   const save = async () => {
     if (!name.trim() || !website.trim()) { toast.error("Nama & website wajib diisi"); return; }
