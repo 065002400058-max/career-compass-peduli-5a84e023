@@ -16,6 +16,10 @@ import Admin from "./pages/Admin";
 import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
 import Chat from "./pages/Chat";
+import CbtList from "./pages/CbtList";
+import CbtTake from "./pages/CbtTake";
+import PsikotesList from "./pages/PsikotesList";
+import PsikotesTake from "./pages/PsikotesTake";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -39,6 +43,10 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/chat" element={<Chat />} />
+            <Route path="/cbt" element={<CbtList />} />
+            <Route path="/cbt/:id" element={<CbtTake />} />
+            <Route path="/psikotes" element={<PsikotesList />} />
+            <Route path="/psikotes/:id" element={<PsikotesTake />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           <Footer />
