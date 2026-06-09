@@ -57,9 +57,32 @@ export default function UniversitiesManager() {
             <p className="text-xs text-muted-foreground">Kelola daftar kampus dalam/luar negeri & sekolah kedinasan</p>
           </div>
         </div>
-        <Button onClick={() => { setEditing(null); setOpen(true); }}>
-          <Plus className="h-4 w-4 mr-1" /> Tambah Kampus
-        </Button>
+        <div className="flex gap-2 flex-wrap">
+          <Button onClick={() => { setEditing(null); setOpen(true); }}>
+            <Plus className="h-4 w-4 mr-1" /> Tambah Kampus
+          </Button>
+          <Button
+            variant="outline"
+            className="text-destructive border-destructive/40 hover:bg-destructive/10"
+            disabled={!items || items.length === 0}
+            onClick={async () => {
+              if (!items?.length) return;
+              const confirm1 = confirm(`Hapus SEMUA ${items.length} kampus? Tindakan ini tidak dapat dibatalkan.`);
+              if (!confirm1) return;
+              const typed = prompt('Ketik "HAPUS SEMUA" untuk konfirmasi:');
+              if (typed !== "HAPUS SEMUA") { toast.info("Dibatalkan"); return; }
+              const { error } = await supabase.from("universities").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+              if (error) toast.error(error.message);
+              else {
+                toast.success("Semua kampus dihapus");
+                qc.invalidateQueries({ queryKey: ["admin-universities"] });
+                qc.invalidateQueries({ queryKey: ["universities-public"] });
+              }
+            }}
+          >
+            <Trash2 className="h-4 w-4 mr-1" /> Hapus Semua
+          </Button>
+        </div>
       </div>
 
       {["dalam_negeri", "luar_negeri", "kedinasan"].map((tp) => (
