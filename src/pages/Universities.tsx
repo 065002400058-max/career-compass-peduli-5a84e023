@@ -5,7 +5,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { GraduationCap, ExternalLink, Search, MapPin, Globe2 } from "lucide-react";
+import { GraduationCap, ExternalLink, Search, MapPin, Globe2, Settings } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import UniversitiesManager from "@/components/admin/UniversitiesManager";
 
 const TYPE_LABELS: Record<string, string> = {
   dalam_negeri: "Dalam Negeri",
@@ -15,6 +17,8 @@ const TYPE_LABELS: Record<string, string> = {
 
 const Universities = () => {
   const [q, setQ] = useState("");
+  const { hasRole } = useAuth();
+  const isAdmin = hasRole("admin");
 
   const { data: items, isLoading } = useQuery({
     queryKey: ["universities-public"],
@@ -88,11 +92,13 @@ const Universities = () => {
             <TabsTrigger value="dalam_negeri">Dalam Negeri</TabsTrigger>
             <TabsTrigger value="luar_negeri">Luar Negeri</TabsTrigger>
             <TabsTrigger value="kedinasan">Kedinasan</TabsTrigger>
+            {isAdmin && <TabsTrigger value="manage"><Settings className="h-4 w-4 mr-2" />Kelola (Admin)</TabsTrigger>}
           </TabsList>
           <TabsContent value="all">{isLoading ? <p className="text-sm text-muted-foreground">Memuat...</p> : renderGrid(filter())}</TabsContent>
           <TabsContent value="dalam_negeri">{renderGrid(filter("dalam_negeri"))}</TabsContent>
           <TabsContent value="luar_negeri">{renderGrid(filter("luar_negeri"))}</TabsContent>
           <TabsContent value="kedinasan">{renderGrid(filter("kedinasan"))}</TabsContent>
+          {isAdmin && <TabsContent value="manage"><UniversitiesManager /></TabsContent>}
         </Tabs>
       </div>
     </div>
