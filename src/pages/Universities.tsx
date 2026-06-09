@@ -17,6 +17,8 @@ const TYPE_LABELS: Record<string, string> = {
 
 const Universities = () => {
   const [q, setQ] = useState("");
+  const { hasRole } = useAuth();
+  const isAdmin = hasRole("admin");
 
   const { data: items, isLoading } = useQuery({
     queryKey: ["universities-public"],
