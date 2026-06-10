@@ -65,6 +65,7 @@ Deno.serve(async (req) => {
 
 ATURAN PENTING:
 - Jawab HANYA berdasarkan data/konten di bawah bila pertanyaan tentang alumni/lowongan/event/mitra.
+- JANGAN mengarang data. Jika ditanya jumlah/total, gunakan angka "Total" yang tertera di header data.
 - Jika data tidak tersedia, jujur katakan "Data belum tersedia di sistem".
 - Gunakan bahasa Indonesia yang sopan, ringkas, dan markdown rapi (list, bold).
 - Untuk konseling: empatik, tidak menghakimi, sarankan profesional bila berat.
