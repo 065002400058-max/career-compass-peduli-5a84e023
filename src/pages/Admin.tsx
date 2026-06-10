@@ -1,7 +1,9 @@
-import { Users, Briefcase, Building2, FileText, CheckCircle, XCircle, Settings, Brain, HeartPulse, GraduationCap } from "lucide-react";
+import { Users, Briefcase, Building2, FileText, CheckCircle, XCircle, Settings, Brain, HeartPulse, GraduationCap, Search, Trash2, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import StatsCard from "@/components/StatsCard";
 import AlumniCsvImport from "@/components/AlumniCsvImport";
 import AlumniAddDialog from "@/components/AlumniAddDialog";
@@ -10,13 +12,17 @@ import PsikotesManager from "@/components/admin/PsikotesManager";
 import UniversitiesManager from "@/components/admin/UniversitiesManager";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const Admin = () => {
   const { user, loading, hasRole } = useAuth();
   const navigate = useNavigate();
+  const qc = useQueryClient();
+  const [tab, setTab] = useState("jobs");
+  const [alumniSearch, setAlumniSearch] = useState("");
 
   useEffect(() => {
     if (!loading && (!user || !hasRole("admin"))) {
@@ -33,10 +39,10 @@ const Admin = () => {
     enabled: !!user && hasRole("admin"),
   });
 
-  const { data: recentAlumni } = useQuery({
+  const { data: allAlumni } = useQuery({
     queryKey: ["admin-recent-alumni"],
     queryFn: async () => {
-      const { data } = await supabase.from("alumni").select("*").order("created_at", { ascending: false }).limit(10);
+      const { data } = await supabase.from("alumni").select("*").order("graduation_year", { ascending: false });
       return data ?? [];
     },
     enabled: !!user && hasRole("admin"),
@@ -60,11 +66,45 @@ const Admin = () => {
 
   const handleApproveJob = async (jobId: string) => {
     await supabase.from("jobs").update({ status: "approved" }).eq("id", jobId);
+    qc.invalidateQueries({ queryKey: ["admin-pending-jobs"] });
+    qc.invalidateQueries({ queryKey: ["admin-counts"] });
   };
 
   const handleRejectJob = async (jobId: string) => {
     await supabase.from("jobs").update({ status: "rejected" }).eq("id", jobId);
+    qc.invalidateQueries({ queryKey: ["admin-pending-jobs"] });
   };
+
+  const deleteAlumni = async (id: string) => {
+    const { error } = await supabase.from("alumni").delete().eq("id", id);
+    if (error) return toast.error(error.message);
+    toast.success("Alumni dihapus");
+    qc.invalidateQueries({ queryKey: ["admin-recent-alumni"] });
+    qc.invalidateQueries({ queryKey: ["admin-counts"] });
+    qc.invalidateQueries({ queryKey: ["alumni"] });
+  };
+
+  const deleteAllAlumni = async () => {
+    const { error } = await supabase.from("alumni").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+    if (error) return toast.error(error.message);
+    toast.success("Semua data alumni dihapus");
+    qc.invalidateQueries({ queryKey: ["admin-recent-alumni"] });
+    qc.invalidateQueries({ queryKey: ["admin-counts"] });
+    qc.invalidateQueries({ queryKey: ["alumni"] });
+  };
+
+  const filteredAlumni = (allAlumni ?? []).filter((a: any) => {
+    if (!alumniSearch) return true;
+    const q = alumniSearch.toLowerCase();
+    return (
+      a.name?.toLowerCase().includes(q) ||
+      a.university?.toLowerCase().includes(q) ||
+      a.major?.toLowerCase().includes(q) ||
+      a.position?.toLowerCase().includes(q) ||
+      a.origin?.toLowerCase().includes(q) ||
+      a.graduation_year?.toString().includes(q)
+    );
+  });
 
   return (
     <div className="min-h-screen gradient-bg-subtle">
@@ -86,13 +126,13 @@ const Admin = () => {
         </div>
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <StatsCard icon={Users} value={counts?.alumni.toLocaleString() ?? "0"} label="Data Alumni" />
-          <StatsCard icon={Briefcase} value={counts?.pendingJobs.toLocaleString() ?? "0"} label="Lowongan Pending" />
-          <StatsCard icon={Building2} value={counts?.partners.toLocaleString() ?? "0"} label="Perusahaan Mitra" />
-          <StatsCard icon={FileText} value="0" label="Konten Karier" />
+          <StatsCard icon={Users} value={counts?.alumni.toLocaleString() ?? "0"} label="Data Alumni" onClick={() => setTab("alumni")} />
+          <StatsCard icon={Briefcase} value={counts?.pendingJobs.toLocaleString() ?? "0"} label="Lowongan Pending" onClick={() => setTab("jobs")} />
+          <StatsCard icon={Building2} value={counts?.partners.toLocaleString() ?? "0"} label="Perusahaan Mitra" onClick={() => setTab("partners")} />
+          <StatsCard icon={FileText} value="0" label="Konten Karier" onClick={() => setTab("cbt")} />
         </div>
 
-        <Tabs defaultValue="jobs" className="w-full">
+        <Tabs value={tab} onValueChange={setTab} className="w-full">
           <TabsList className="glass-card mb-6 flex-wrap h-auto">
             <TabsTrigger value="jobs">Validasi Lowongan</TabsTrigger>
             <TabsTrigger value="alumni">Data Alumni</TabsTrigger>
@@ -131,29 +171,71 @@ const Admin = () => {
           </TabsContent>
 
           <TabsContent value="alumni">
-            <div className="flex justify-end gap-2 mb-3">
-              <AlumniAddDialog />
-              <AlumniCsvImport />
+            <div className="flex flex-col md:flex-row gap-2 mb-3">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Cari nama, universitas, jurusan, pekerjaan, asal, angkatan..."
+                  className="pl-10"
+                  value={alumniSearch}
+                  onChange={(e) => setAlumniSearch(e.target.value)}
+                />
+              </div>
+              <div className="flex gap-2">
+                <AlumniAddDialog />
+                <AlumniCsvImport />
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button size="sm" variant="destructive" disabled={(allAlumni?.length ?? 0) === 0}>
+                      <Trash2 className="h-4 w-4 mr-1.5" /> Hapus Semua
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle className="flex items-center gap-2"><AlertTriangle className="h-5 w-5 text-destructive" /> Hapus semua alumni?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Tindakan ini akan menghapus {allAlumni?.length ?? 0} data alumni secara permanen dan tidak dapat dibatalkan.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Batal</AlertDialogCancel>
+                      <AlertDialogAction onClick={deleteAllAlumni} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Hapus Semua</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
             </div>
-            <div className="glass-card rounded-xl divide-y divide-border">
-              {(recentAlumni?.length ?? 0) === 0 ? (
+            <div className="text-xs text-muted-foreground mb-2">
+              Menampilkan {filteredAlumni.length} dari {allAlumni?.length ?? 0} alumni
+            </div>
+            <div className="glass-card rounded-xl divide-y divide-border max-h-[600px] overflow-y-auto">
+              {filteredAlumni.length === 0 ? (
                 <div className="p-8 text-center text-muted-foreground">
                   <Users className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                  <p>Belum ada data alumni.</p>
+                  <p>Tidak ada data alumni.</p>
                 </div>
               ) : (
-                recentAlumni?.map((a) => (
-                  <div key={a.id} className="p-4 md:p-5 flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-full bg-accent flex items-center justify-center font-heading font-bold text-accent-foreground text-sm">
+                filteredAlumni.map((a: any) => (
+                  <div key={a.id} className="p-4 flex items-center justify-between gap-4 hover:bg-accent/30 cursor-pointer" onClick={() => navigate("/alumni")}>
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="h-10 w-10 rounded-full bg-accent flex items-center justify-center font-heading font-bold text-accent-foreground text-sm shrink-0">
                         {a.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2)}
                       </div>
-                      <div>
-                        <h4 className="font-heading font-semibold text-foreground text-sm">{a.name}</h4>
-                        <p className="text-xs text-muted-foreground">Angkatan {a.graduation_year} · {a.company ?? "-"}</p>
+                      <div className="min-w-0">
+                        <h4 className="font-heading font-semibold text-foreground text-sm truncate">{a.name}</h4>
+                        <p className="text-xs text-muted-foreground truncate">
+                          Angkatan {a.graduation_year} · {a.major ?? "-"} · {a.university ?? "-"} · {a.position ?? "-"}
+                        </p>
                       </div>
                     </div>
-                    <Badge variant={a.status === "Bekerja" ? "default" : "secondary"}>{a.status}</Badge>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="text-destructive hover:bg-destructive/10 shrink-0"
+                      onClick={(e) => { e.stopPropagation(); deleteAlumni(a.id); }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
                 ))
               )}
