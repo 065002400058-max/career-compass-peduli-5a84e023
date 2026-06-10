@@ -18,36 +18,51 @@ export type Database = {
         Row: {
           company: string | null
           created_at: string
+          education_level: string | null
+          gender: string | null
           graduation_year: number
           id: string
           location: string | null
+          major: string | null
           name: string
+          origin: string | null
           position: string | null
           status: string
+          university: string | null
           updated_at: string
           user_id: string | null
         }
         Insert: {
           company?: string | null
           created_at?: string
+          education_level?: string | null
+          gender?: string | null
           graduation_year: number
           id?: string
           location?: string | null
+          major?: string | null
           name: string
+          origin?: string | null
           position?: string | null
           status?: string
+          university?: string | null
           updated_at?: string
           user_id?: string | null
         }
         Update: {
           company?: string | null
           created_at?: string
+          education_level?: string | null
+          gender?: string | null
           graduation_year?: number
           id?: string
           location?: string | null
+          major?: string | null
           name?: string
+          origin?: string | null
           position?: string | null
           status?: string
+          university?: string | null
           updated_at?: string
           user_id?: string | null
         }
