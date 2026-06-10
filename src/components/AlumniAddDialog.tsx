@@ -14,11 +14,13 @@ const AlumniAddDialog = () => {
   const qc = useQueryClient();
   const [form, setForm] = useState({
     name: "",
+    gender: "Laki-laki",
     graduation_year: new Date().getFullYear().toString(),
-    company: "",
+    origin: "",
+    education_level: "S1",
+    major: "",
+    university: "",
     position: "",
-    location: "",
-    status: "Bekerja",
   });
 
   const set = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }));
@@ -26,17 +28,20 @@ const AlumniAddDialog = () => {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name || !form.graduation_year) {
-      toast.error("Nama dan tahun lulus wajib diisi");
+      toast.error("Nama dan angkatan wajib diisi");
       return;
     }
     setLoading(true);
     const { error } = await supabase.from("alumni").insert({
       name: form.name,
+      gender: form.gender || null,
       graduation_year: parseInt(form.graduation_year, 10),
-      company: form.company || null,
+      origin: form.origin || null,
+      education_level: form.education_level || null,
+      major: form.major || null,
+      university: form.university || null,
       position: form.position || null,
-      location: form.location || null,
-      status: form.status || "Bekerja",
+      status: "Bekerja",
     });
     setLoading(false);
     if (error) {
@@ -47,7 +52,7 @@ const AlumniAddDialog = () => {
     qc.invalidateQueries({ queryKey: ["alumni"] });
     qc.invalidateQueries({ queryKey: ["admin-recent-alumni"] });
     qc.invalidateQueries({ queryKey: ["admin-counts"] });
-    setForm({ name: "", graduation_year: new Date().getFullYear().toString(), company: "", position: "", location: "", status: "Bekerja" });
+    setForm({ name: "", gender: "Laki-laki", graduation_year: new Date().getFullYear().toString(), origin: "", education_level: "S1", major: "", university: "", position: "" });
     setOpen(false);
   };
 
@@ -58,7 +63,7 @@ const AlumniAddDialog = () => {
           <Plus className="h-4 w-4 mr-1.5" /> Tambah Alumni
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Tambah Data Alumni</DialogTitle>
         </DialogHeader>
@@ -69,35 +74,55 @@ const AlumniAddDialog = () => {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label htmlFor="year">Tahun Lulus *</Label>
-              <Input id="year" type="number" value={form.graduation_year} onChange={(e) => set("graduation_year", e.target.value)} required />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="status">Status</Label>
+              <Label htmlFor="gender">Jenis Kelamin</Label>
               <select
-                id="status"
+                id="gender"
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                value={form.status}
-                onChange={(e) => set("status", e.target.value)}
+                value={form.gender}
+                onChange={(e) => set("gender", e.target.value)}
               >
-                <option>Bekerja</option>
-                <option>Kuliah</option>
-                <option>Wirausaha</option>
-                <option>Lainnya</option>
+                <option>Laki-laki</option>
+                <option>Perempuan</option>
               </select>
             </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="year">Angkatan *</Label>
+              <Input id="year" type="number" value={form.graduation_year} onChange={(e) => set("graduation_year", e.target.value)} required />
+            </div>
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="company">Perusahaan / Kampus</Label>
-            <Input id="company" value={form.company} onChange={(e) => set("company", e.target.value)} />
+            <Label htmlFor="origin">Asal</Label>
+            <Input id="origin" placeholder="Kota/Daerah asal" value={form.origin} onChange={(e) => set("origin", e.target.value)} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="edu">Jenjang Pendidikan</Label>
+              <select
+                id="edu"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                value={form.education_level}
+                onChange={(e) => set("education_level", e.target.value)}
+              >
+                <option>SMA/MA</option>
+                <option>D3</option>
+                <option>D4</option>
+                <option>S1</option>
+                <option>S2</option>
+                <option>S3</option>
+              </select>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="major">Jurusan</Label>
+              <Input id="major" value={form.major} onChange={(e) => set("major", e.target.value)} />
+            </div>
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="position">Posisi / Jurusan</Label>
+            <Label htmlFor="university">Universitas</Label>
+            <Input id="university" value={form.university} onChange={(e) => set("university", e.target.value)} />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="position">Pekerjaan</Label>
             <Input id="position" value={form.position} onChange={(e) => set("position", e.target.value)} />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="location">Lokasi</Label>
-            <Input id="location" value={form.location} onChange={(e) => set("location", e.target.value)} />
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>Batal</Button>
