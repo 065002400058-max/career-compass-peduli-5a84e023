@@ -37,9 +37,16 @@ Deno.serve(async (req) => {
     let context = "";
     const lastUserMsg = [...messages].reverse().find((m: any) => m.role === "user")?.content ?? "";
 
-    if (["alumni", "umum", "kerja"].includes(mode) || /alumni|lulus|angkatan/i.test(lastUserMsg)) {
-      const { data } = await supabase.from("alumni").select("name,graduation_year,company,position,location,status").limit(200);
-      if (data?.length) context += `\n[DATA ALUMNI]\n${JSON.stringify(data)}\n`;
+    if (["alumni", "umum", "kerja"].includes(mode) || /alumni|lulus|angkatan|jurusan|universitas|kampus|asal/i.test(lastUserMsg)) {
+      const { count } = await supabase.from("alumni").select("id", { count: "exact", head: true });
+      const { data } = await supabase
+        .from("alumni")
+        .select("name,gender,graduation_year,origin,education_level,major,university,position")
+        .order("graduation_year", { ascending: false })
+        .limit(2000);
+      if (data?.length) {
+        context += `\n[DATA ALUMNI - Total: ${count ?? data.length} alumni, ditampilkan ${data.length}]\n${JSON.stringify(data)}\n`;
+      }
     }
     if (["kerja", "umum"].includes(mode) || /kerja|lowongan|job/i.test(lastUserMsg)) {
       const { data } = await supabase.from("jobs").select("title,company,location,type,salary,description,status").eq("status", "approved").limit(50);
