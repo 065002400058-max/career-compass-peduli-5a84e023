@@ -140,6 +140,23 @@ KONTEKS DATA REAL-TIME:${context || "\n(Tidak ada data spesifik dimuat)"}`;
     const data = await resp.json();
     const reply = data.choices?.[0]?.message?.content ?? "Maaf, tidak ada jawaban.";
 
+    // Auto-create counseling referral if psikotes mode + high distress keywords
+    if (mode === "psikotes" && authHeader) {
+      const token = authHeader.replace("Bearer ", "");
+      const { data: { user } } = await supabase.auth.getUser(token);
+      if (user && /(bunuh diri|ingin mati|tidak ada harapan|sangat tertekan|depresi berat|self.?harm|menyakiti diri)/i.test(lastUserMsg)) {
+        const { data: prof } = await supabase.from("profiles").select("full_name").eq("user_id", user.id).maybeSingle();
+        await supabase.from("counseling_referrals").insert({
+          user_id: user.id,
+          user_name: prof?.full_name || user.email || "User",
+          reason: lastUserMsg.slice(0, 500),
+          level: "Tinggi",
+          source: "chat-ai",
+          status: "pending",
+        });
+      }
+    }
+
     return new Response(JSON.stringify({ reply }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
