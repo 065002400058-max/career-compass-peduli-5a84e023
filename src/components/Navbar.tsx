@@ -25,7 +25,11 @@ const Navbar = () => {
     { label: "Event", path: "/events", show: true },
     { label: "Tes CBT", path: "/cbt", show: true },
     { label: "Psikotes", path: "/psikotes", show: true },
-    { label: "Jelajahi Kampus", path: "/universities", show: true },
+    { label: "Kampus", path: "/universities", show: true },
+    { label: "Beasiswa", path: "/beasiswa", show: true },
+    { label: "Rekomendasi AI", path: "/rekomendasi", show: true },
+    { label: "Cerita Alumni", path: "/stories", show: true },
+    { label: "Tracer Study", path: "/tracer", show: !!user },
     { label: "Admin", path: "/admin", show: hasRole("admin") },
   ].filter((item) => item.show);
 
