@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { Badge } from "@/components/ui/badge";
+import logo from "@/assets/dulido-logo.png.asset.json";
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
@@ -49,9 +50,7 @@ const Navbar = () => {
     <nav className="nav-glass sticky top-0 z-50">
       <div className="container mx-auto flex items-center justify-between h-16 px-4">
         <Link to="/" className="flex items-center gap-2">
-          <div className="h-9 w-9 rounded-lg gradient-bg flex items-center justify-center">
-            <span className="text-primary-foreground font-heading font-bold text-sm">SC</span>
-          </div>
+          <img src={logo.url} alt="Dulido Kampus 3" className="h-10 w-10 object-contain" />
           <span className="font-heading font-bold text-foreground hidden sm:block">
             Career Center <span className="text-primary">PEDULI</span>
           </span>

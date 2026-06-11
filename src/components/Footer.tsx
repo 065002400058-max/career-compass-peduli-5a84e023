@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import logo from "@/assets/dulido-logo.png.asset.json";
 
 const Footer = () => (
   <footer className="bg-foreground text-background/80 section-padding">
@@ -6,9 +7,7 @@ const Footer = () => (
       <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
         <div>
           <div className="flex items-center gap-2 mb-4">
-            <div className="h-9 w-9 rounded-lg gradient-bg flex items-center justify-center">
-              <span className="text-primary-foreground font-heading font-bold text-sm">SC</span>
-            </div>
+            <img src={logo.url} alt="Dulido Kampus 3" className="h-10 w-10 object-contain bg-white rounded-lg p-1" />
             <span className="font-heading font-bold text-background">Career Center PEDULI</span>
           </div>
           <p className="text-sm text-background/60">Platform karier terpadu untuk santri, alumni, dan perusahaan mitra.</p>
