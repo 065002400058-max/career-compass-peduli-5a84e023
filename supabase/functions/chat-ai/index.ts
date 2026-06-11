@@ -33,6 +33,41 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
+    // Identify user from Authorization header
+    let userContext = "";
+    const authHeader = req.headers.get("Authorization");
+    if (authHeader) {
+      const token = authHeader.replace("Bearer ", "");
+      const { data: { user } } = await supabase.auth.getUser(token);
+      if (user) {
+        const [profileRes, psikotesRes, cbtRes, rolesRes] = await Promise.all([
+          supabase.from("profiles").select("full_name,phone,bio").eq("user_id", user.id).maybeSingle(),
+          supabase.from("psikotes_attempts")
+            .select("total_score,level,conclusion,recommendation,completed_at,test_id,psikotes_tests(title)")
+            .eq("user_id", user.id).order("completed_at", { ascending: false }).limit(10),
+          supabase.from("cbt_attempts")
+            .select("total_score,max_score,percentage,passed,recommendation,completed_at,test_id,cbt_tests(title)")
+            .eq("user_id", user.id).order("completed_at", { ascending: false }).limit(10),
+          supabase.from("user_roles").select("role").eq("user_id", user.id),
+        ]);
+
+        const profile = profileRes.data;
+        const roles = rolesRes.data?.map((r: any) => r.role).join(", ") || "santri";
+        userContext = `\n[PROFIL USER LOGIN]\nNama: ${profile?.full_name || "Belum diisi"}\nEmail: ${user.email}\nRole: ${roles}\n${profile?.bio ? `Bio: ${profile.bio}\n` : ""}`;
+
+        if (psikotesRes.data?.length) {
+          userContext += `\n[RIWAYAT PSIKOTES USER (${psikotesRes.data.length} tes terakhir)]\n${JSON.stringify(psikotesRes.data)}\n`;
+        } else {
+          userContext += `\n[PSIKOTES] User belum pernah mengerjakan psikotes.\n`;
+        }
+        if (cbtRes.data?.length) {
+          userContext += `\n[RIWAYAT CBT/TES USER (${cbtRes.data.length} tes terakhir)]\n${JSON.stringify(cbtRes.data)}\n`;
+        } else {
+          userContext += `\n[CBT] User belum pernah mengerjakan tes CBT.\n`;
+        }
+      }
+    }
+
     // Fetch relevant context from DB
     let context = "";
     const lastUserMsg = [...messages].reverse().find((m: any) => m.role === "user")?.content ?? "";
@@ -60,16 +95,27 @@ Deno.serve(async (req) => {
       const { data } = await supabase.from("partners").select("name,industry,location,description,website").limit(50);
       if (data?.length) context += `\n[MITRA]\n${JSON.stringify(data)}\n`;
     }
+    // Always include available psikotes & cbt tests so AI knows what's available
+    if (mode === "psikotes" || mode === "minat_bakat" || /psikotes|tes|cbt|minat|bakat|mental/i.test(lastUserMsg)) {
+      const [psiTests, cbtTests] = await Promise.all([
+        supabase.from("psikotes_tests").select("title,description,is_active").eq("is_active", true).limit(30),
+        supabase.from("cbt_tests").select("title,description").limit(30),
+      ]);
+      if (psiTests.data?.length) context += `\n[PSIKOTES TERSEDIA]\n${JSON.stringify(psiTests.data)}\n`;
+      if (cbtTests.data?.length) context += `\n[CBT TERSEDIA]\n${JSON.stringify(cbtTests.data)}\n`;
+    }
 
-    const systemPrompt = `Kamu adalah asisten AI Career Center PEDULI dengan nuansa Islami yang hangat. Awali sapaan dengan "Assalamu'alaikum" bila relevan. ${MODE_PROMPTS[mode] ?? MODE_PROMPTS.umum}
+    const systemPrompt = `Kamu adalah asisten AI Career Center PEDULI dengan nuansa Islami yang hangat. Sapa user dengan namanya bila tersedia. Awali dengan "Assalamu'alaikum" bila relevan. ${MODE_PROMPTS[mode] ?? MODE_PROMPTS.umum}
 
 ATURAN PENTING:
-- Jawab HANYA berdasarkan data/konten di bawah bila pertanyaan tentang alumni/lowongan/event/mitra.
-- JANGAN mengarang data. Jika ditanya jumlah/total, gunakan angka "Total" yang tertera di header data.
-- Jika data tidak tersedia, jujur katakan "Data belum tersedia di sistem".
-- Gunakan bahasa Indonesia yang sopan, ringkas, dan markdown rapi (list, bold).
-- Untuk konseling: empatik, tidak menghakimi, sarankan profesional bila berat.
-
+- Kamu MENGENAL user yang sedang chat — gunakan nama & riwayat psikotes/CBT mereka untuk respons personal.
+- Jika user tanya "psikotes saya gimana?" / "hasil tes saya?" → jawab berdasarkan [RIWAYAT PSIKOTES USER] / [RIWAYAT CBT/TES USER].
+- Jika user belum pernah tes, sarankan psikotes/CBT yang tersedia di sistem.
+- Jawab HANYA berdasarkan data di bawah untuk pertanyaan alumni/lowongan/event/mitra/psikotes/cbt.
+- JANGAN mengarang. Jika data tidak ada, jujur katakan "Data belum tersedia".
+- Bahasa Indonesia sopan, ringkas, markdown rapi.
+- Konseling: empatik, tidak menghakimi, sarankan profesional bila berat.
+${userContext}
 KONTEKS DATA REAL-TIME:${context || "\n(Tidak ada data spesifik dimuat)"}`;
 
     const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
