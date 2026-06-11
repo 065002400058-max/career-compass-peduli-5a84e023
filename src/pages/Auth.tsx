@@ -12,6 +12,7 @@ const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
+  const [role, setRole] = useState<"santri" | "alumni">("santri");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -39,7 +40,7 @@ const Auth = () => {
         email: normalizedEmail,
         password: normalizedPassword,
         options: {
-          data: { full_name: fullName },
+          data: { full_name: fullName, role },
           emailRedirectTo: window.location.origin,
         },
       });
@@ -134,16 +135,37 @@ const Auth = () => {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {!isLogin && (
-            <div className="relative">
-              <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Nama Lengkap"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                className="pl-10"
-                required
-              />
-            </div>
+            <>
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Nama Lengkap"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  className="pl-10"
+                  required
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground mb-2 block">Daftar sebagai</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {(["santri", "alumni"] as const).map((r) => (
+                    <button
+                      key={r}
+                      type="button"
+                      onClick={() => setRole(r)}
+                      className={`px-4 py-2.5 rounded-lg border text-sm font-medium capitalize transition-all ${
+                        role === r
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border bg-background hover:bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      {r}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </>
           )}
           <div className="relative">
             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
