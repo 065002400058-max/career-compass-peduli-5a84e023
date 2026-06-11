@@ -68,6 +68,42 @@ export type Database = {
         }
         Relationships: []
       }
+      alumni_stories: {
+        Row: {
+          author_name: string
+          category: string | null
+          content: string
+          created_at: string
+          id: string
+          is_published: boolean
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          author_name: string
+          category?: string | null
+          content: string
+          created_at?: string
+          id?: string
+          is_published?: boolean
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          author_name?: string
+          category?: string | null
+          content?: string
+          created_at?: string
+          id?: string
+          is_published?: boolean
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       cbt_answers: {
         Row: {
           answer_text: string
@@ -310,6 +346,107 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      chat_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          role: string
+          thread_id: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          role: string
+          thread_id: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          role?: string
+          thread_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "chat_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_threads: {
+        Row: {
+          created_at: string
+          id: string
+          mode: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          mode?: string
+          title?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          mode?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      counseling_referrals: {
+        Row: {
+          created_at: string
+          id: string
+          level: string
+          notes: string | null
+          reason: string
+          source: string | null
+          status: string
+          updated_at: string
+          user_id: string
+          user_name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          level?: string
+          notes?: string | null
+          reason: string
+          source?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+          user_name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          level?: string
+          notes?: string | null
+          reason?: string
+          source?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+          user_name?: string
+        }
+        Relationships: []
       }
       events: {
         Row: {
@@ -727,6 +864,54 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      scholarships: {
+        Row: {
+          amount: string | null
+          country: string | null
+          created_at: string
+          deadline: string | null
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          provider: string
+          requirements: string | null
+          type: string
+          updated_at: string
+          url: string | null
+        }
+        Insert: {
+          amount?: string | null
+          country?: string | null
+          created_at?: string
+          deadline?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          provider: string
+          requirements?: string | null
+          type?: string
+          updated_at?: string
+          url?: string | null
+        }
+        Update: {
+          amount?: string | null
+          country?: string | null
+          created_at?: string
+          deadline?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          provider?: string
+          requirements?: string | null
+          type?: string
+          updated_at?: string
+          url?: string | null
+        }
+        Relationships: []
       }
       universities: {
         Row: {

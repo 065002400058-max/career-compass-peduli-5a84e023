@@ -22,6 +22,10 @@ import CbtTake from "./pages/CbtTake";
 import PsikotesList from "./pages/PsikotesList";
 import PsikotesTake from "./pages/PsikotesTake";
 import Universities from "./pages/Universities";
+import TracerStudy from "./pages/TracerStudy";
+import Recommendation from "./pages/Recommendation";
+import Scholarships from "./pages/Scholarships";
+import Stories from "./pages/Stories";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -50,6 +54,10 @@ const App = () => (
             <Route path="/psikotes" element={<PsikotesList />} />
             <Route path="/psikotes/:id" element={<PsikotesTake />} />
             <Route path="/universities" element={<Universities />} />
+            <Route path="/tracer" element={<TracerStudy />} />
+            <Route path="/rekomendasi" element={<Recommendation />} />
+            <Route path="/beasiswa" element={<Scholarships />} />
+            <Route path="/stories" element={<Stories />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           <Footer />

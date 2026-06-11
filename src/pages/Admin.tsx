@@ -1,4 +1,4 @@
-import { Users, Briefcase, Building2, FileText, CheckCircle, XCircle, Settings, Brain, HeartPulse, GraduationCap, Search, Trash2, AlertTriangle } from "lucide-react";
+import { Users, Briefcase, Building2, FileText, CheckCircle, XCircle, Settings, Brain, HeartPulse, GraduationCap, Search, Trash2, AlertTriangle, FileSpreadsheet, FileDown, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -10,12 +10,15 @@ import AlumniAddDialog from "@/components/AlumniAddDialog";
 import CbtManager from "@/components/admin/CbtManager";
 import PsikotesManager from "@/components/admin/PsikotesManager";
 import UniversitiesManager from "@/components/admin/UniversitiesManager";
+import ScholarshipManager from "@/components/admin/ScholarshipManager";
+import ReferralManager from "@/components/admin/ReferralManager";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { exportToExcel, exportToPDF } from "@/lib/exportUtils";
 
 const Admin = () => {
   const { user, loading, hasRole } = useAuth();
@@ -25,38 +28,31 @@ const Admin = () => {
   const [alumniSearch, setAlumniSearch] = useState("");
 
   useEffect(() => {
-    if (!loading && (!user || !hasRole("admin"))) {
-      navigate("/");
-    }
+    if (!loading && (!user || !hasRole("admin"))) navigate("/");
   }, [loading, user, hasRole, navigate]);
 
   const { data: pendingJobs } = useQuery({
     queryKey: ["admin-pending-jobs"],
-    queryFn: async () => {
-      const { data } = await supabase.from("jobs").select("*").eq("status", "pending").order("created_at", { ascending: false });
-      return data ?? [];
-    },
+    queryFn: async () => (await supabase.from("jobs").select("*").eq("status", "pending").order("created_at", { ascending: false })).data ?? [],
     enabled: !!user && hasRole("admin"),
   });
 
   const { data: allAlumni } = useQuery({
     queryKey: ["admin-recent-alumni"],
-    queryFn: async () => {
-      const { data } = await supabase.from("alumni").select("*").order("graduation_year", { ascending: false });
-      return data ?? [];
-    },
+    queryFn: async () => (await supabase.from("alumni").select("*").order("graduation_year", { ascending: false })).data ?? [],
     enabled: !!user && hasRole("admin"),
   });
 
   const { data: counts } = useQuery({
     queryKey: ["admin-counts"],
     queryFn: async () => {
-      const [alumni, jobs, partners] = await Promise.all([
+      const [alumni, jobs, partners, referrals] = await Promise.all([
         supabase.from("alumni").select("id", { count: "exact", head: true }),
         supabase.from("jobs").select("id", { count: "exact", head: true }).eq("status", "pending"),
         supabase.from("partners").select("id", { count: "exact", head: true }),
+        supabase.from("counseling_referrals").select("id", { count: "exact", head: true }).eq("status", "pending"),
       ]);
-      return { alumni: alumni.count ?? 0, pendingJobs: jobs.count ?? 0, partners: partners.count ?? 0 };
+      return { alumni: alumni.count ?? 0, pendingJobs: jobs.count ?? 0, partners: partners.count ?? 0, referrals: referrals.count ?? 0 };
     },
     enabled: !!user && hasRole("admin"),
   });
@@ -69,28 +65,23 @@ const Admin = () => {
     qc.invalidateQueries({ queryKey: ["admin-pending-jobs"] });
     qc.invalidateQueries({ queryKey: ["admin-counts"] });
   };
-
   const handleRejectJob = async (jobId: string) => {
     await supabase.from("jobs").update({ status: "rejected" }).eq("id", jobId);
     qc.invalidateQueries({ queryKey: ["admin-pending-jobs"] });
   };
-
   const deleteAlumni = async (id: string) => {
     const { error } = await supabase.from("alumni").delete().eq("id", id);
     if (error) return toast.error(error.message);
     toast.success("Alumni dihapus");
     qc.invalidateQueries({ queryKey: ["admin-recent-alumni"] });
     qc.invalidateQueries({ queryKey: ["admin-counts"] });
-    qc.invalidateQueries({ queryKey: ["alumni"] });
   };
-
   const deleteAllAlumni = async () => {
     const { error } = await supabase.from("alumni").delete().neq("id", "00000000-0000-0000-0000-000000000000");
     if (error) return toast.error(error.message);
     toast.success("Semua data alumni dihapus");
     qc.invalidateQueries({ queryKey: ["admin-recent-alumni"] });
     qc.invalidateQueries({ queryKey: ["admin-counts"] });
-    qc.invalidateQueries({ queryKey: ["alumni"] });
   };
 
   const filteredAlumni = (allAlumni ?? []).filter((a: any) => {
@@ -129,7 +120,7 @@ const Admin = () => {
           <StatsCard icon={Users} value={counts?.alumni.toLocaleString() ?? "0"} label="Data Alumni" onClick={() => setTab("alumni")} />
           <StatsCard icon={Briefcase} value={counts?.pendingJobs.toLocaleString() ?? "0"} label="Lowongan Pending" onClick={() => setTab("jobs")} />
           <StatsCard icon={Building2} value={counts?.partners.toLocaleString() ?? "0"} label="Perusahaan Mitra" onClick={() => setTab("partners")} />
-          <StatsCard icon={FileText} value="0" label="Konten Karier" onClick={() => setTab("cbt")} />
+          <StatsCard icon={HeartPulse} value={counts?.referrals.toLocaleString() ?? "0"} label="Rujukan Konseling" onClick={() => setTab("referrals")} />
         </div>
 
         <Tabs value={tab} onValueChange={setTab} className="w-full">
@@ -140,6 +131,8 @@ const Admin = () => {
             <TabsTrigger value="cbt"><Brain className="h-4 w-4 mr-1" />Tes CBT</TabsTrigger>
             <TabsTrigger value="psikotes"><HeartPulse className="h-4 w-4 mr-1" />Psikotes</TabsTrigger>
             <TabsTrigger value="universities"><GraduationCap className="h-4 w-4 mr-1" />Kampus</TabsTrigger>
+            <TabsTrigger value="scholarships"><Award className="h-4 w-4 mr-1" />Beasiswa</TabsTrigger>
+            <TabsTrigger value="referrals"><HeartPulse className="h-4 w-4 mr-1" />Rujukan</TabsTrigger>
           </TabsList>
 
           <TabsContent value="jobs">
@@ -150,7 +143,7 @@ const Admin = () => {
                   <p>Tidak ada lowongan yang menunggu validasi.</p>
                 </div>
               ) : (
-                pendingJobs?.map((job) => (
+                pendingJobs?.map((job: any) => (
                   <div key={job.id} className="p-4 md:p-5 flex items-center justify-between gap-4">
                     <div>
                       <h4 className="font-heading font-semibold text-foreground">{job.title}</h4>
@@ -174,16 +167,15 @@ const Admin = () => {
             <div className="flex flex-col md:flex-row gap-2 mb-3">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Cari nama, universitas, jurusan, pekerjaan, asal, angkatan..."
-                  className="pl-10"
-                  value={alumniSearch}
-                  onChange={(e) => setAlumniSearch(e.target.value)}
-                />
+                <Input placeholder="Cari nama, universitas, jurusan, pekerjaan, asal, angkatan..." className="pl-10" value={alumniSearch} onChange={(e) => setAlumniSearch(e.target.value)} />
               </div>
-              <div className="flex gap-2">
-                <AlumniAddDialog />
-                <AlumniCsvImport />
+              <div className="flex gap-2 flex-wrap">
+                <Button size="sm" variant="outline" onClick={() => exportToExcel(filteredAlumni, "alumni-peduli")} disabled={filteredAlumni.length === 0}>
+                  <FileSpreadsheet className="h-4 w-4 mr-1.5" /> Excel
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => exportToPDF(filteredAlumni, "alumni-peduli", "Data Alumni PEDULI")} disabled={filteredAlumni.length === 0}>
+                  <FileDown className="h-4 w-4 mr-1.5" /> PDF
+                </Button>
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button size="sm" variant="destructive" disabled={(allAlumni?.length ?? 0) === 0}>
@@ -194,7 +186,7 @@ const Admin = () => {
                     <AlertDialogHeader>
                       <AlertDialogTitle className="flex items-center gap-2"><AlertTriangle className="h-5 w-5 text-destructive" /> Hapus semua alumni?</AlertDialogTitle>
                       <AlertDialogDescription>
-                        Tindakan ini akan menghapus {allAlumni?.length ?? 0} data alumni secara permanen dan tidak dapat dibatalkan.
+                        Tindakan ini akan menghapus {allAlumni?.length ?? 0} data alumni secara permanen.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -205,9 +197,7 @@ const Admin = () => {
                 </AlertDialog>
               </div>
             </div>
-            <div className="text-xs text-muted-foreground mb-2">
-              Menampilkan {filteredAlumni.length} dari {allAlumni?.length ?? 0} alumni
-            </div>
+            <div className="text-xs text-muted-foreground mb-2">Menampilkan {filteredAlumni.length} dari {allAlumni?.length ?? 0} alumni</div>
             <div className="glass-card rounded-xl divide-y divide-border max-h-[600px] overflow-y-auto">
               {filteredAlumni.length === 0 ? (
                 <div className="p-8 text-center text-muted-foreground">
@@ -216,7 +206,7 @@ const Admin = () => {
                 </div>
               ) : (
                 filteredAlumni.map((a: any) => (
-                  <div key={a.id} className="p-4 flex items-center justify-between gap-4 hover:bg-accent/30 cursor-pointer" onClick={() => navigate("/alumni")}>
+                  <div key={a.id} className="p-4 flex items-center justify-between gap-4 hover:bg-accent/30">
                     <div className="flex items-center gap-3 min-w-0">
                       <div className="h-10 w-10 rounded-full bg-accent flex items-center justify-center font-heading font-bold text-accent-foreground text-sm shrink-0">
                         {a.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2)}
@@ -228,12 +218,7 @@ const Admin = () => {
                         </p>
                       </div>
                     </div>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="text-destructive hover:bg-destructive/10 shrink-0"
-                      onClick={(e) => { e.stopPropagation(); deleteAlumni(a.id); }}
-                    >
+                    <Button size="sm" variant="ghost" className="text-destructive hover:bg-destructive/10 shrink-0" onClick={() => deleteAlumni(a.id)}>
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
@@ -252,6 +237,8 @@ const Admin = () => {
           <TabsContent value="cbt"><CbtManager /></TabsContent>
           <TabsContent value="psikotes"><PsikotesManager /></TabsContent>
           <TabsContent value="universities"><UniversitiesManager /></TabsContent>
+          <TabsContent value="scholarships"><ScholarshipManager /></TabsContent>
+          <TabsContent value="referrals"><ReferralManager /></TabsContent>
         </Tabs>
       </div>
     </div>
