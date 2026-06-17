@@ -12,6 +12,7 @@ import PsikotesManager from "@/components/admin/PsikotesManager";
 import UniversitiesManager from "@/components/admin/UniversitiesManager";
 import ScholarshipManager from "@/components/admin/ScholarshipManager";
 import ReferralManager from "@/components/admin/ReferralManager";
+import UsageReports from "@/components/admin/UsageReports";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
