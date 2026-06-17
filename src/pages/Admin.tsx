@@ -1,4 +1,4 @@
-import { Users, Briefcase, Building2, FileText, CheckCircle, XCircle, Settings, Brain, HeartPulse, GraduationCap, Search, Trash2, AlertTriangle, FileSpreadsheet, FileDown, Award } from "lucide-react";
+import { Users, Briefcase, Building2, FileText, CheckCircle, XCircle, Settings, Brain, HeartPulse, GraduationCap, Search, Trash2, AlertTriangle, FileSpreadsheet, FileDown, Award, Mail, Phone, MapPin, Calendar, BookOpen, Building, UserCircle, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
