@@ -182,26 +182,9 @@ const Auth = () => {
                 </div>
 
                 {role === "santri" ? (
-                  <>
-                    <div className="space-y-1.5 sm:col-span-2">
-                      <Label>Asal Sekolah</Label>
-                      <Input placeholder="Nama sekolah / pesantren sebelumnya" value={form.school_origin} onChange={(e) => set("school_origin", e.target.value)} />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label>Jenjang Saat Ini</Label>
-                      <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={form.education_level} onChange={(e) => set("education_level", e.target.value)}>
-                        <option>SMP/MTs</option>
-                        <option>SMA/MA</option>
-                        <option>D3</option>
-                        <option>S1</option>
-                      </select>
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label>Minat Jurusan</Label>
-                      <Input placeholder="Mis. Teknik Informatika" value={form.major} onChange={(e) => set("major", e.target.value)} />
-                    </div>
-                  </>
+                  <></>
                 ) : (
+
                   <>
                     <div className="space-y-1.5">
                       <Label>Tahun Lulus</Label>
