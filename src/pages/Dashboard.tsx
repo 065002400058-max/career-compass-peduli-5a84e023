@@ -137,12 +137,12 @@ const Dashboard = () => {
         </div>
 
         <div className="grid grid-cols-2 lg:grid-cols-6 gap-4 mb-8">
-          <StatsCard icon={Users} value={counts?.alumni.toLocaleString() ?? "0"} label="Total Alumni" />
-          <StatsCard icon={Briefcase} value={counts?.jobs.toLocaleString() ?? "0"} label="Lowongan" />
-          <StatsCard icon={Building2} value={counts?.partners.toLocaleString() ?? "0"} label="Mitra" />
-          <StatsCard icon={GraduationCap} value={counts?.events.toLocaleString() ?? "0"} label="Event" />
-          <StatsCard icon={HeartPulse} value={counts?.psikotes.toLocaleString() ?? "0"} label="Psikotes" />
-          <StatsCard icon={Brain} value={counts?.cbt.toLocaleString() ?? "0"} label="Tes CBT" />
+          <StatsCard icon={Users} value={counts?.alumni.toLocaleString() ?? "0"} label="Total Alumni" onClick={() => navigate("/alumni")} />
+          <StatsCard icon={Briefcase} value={counts?.jobs.toLocaleString() ?? "0"} label="Lowongan" onClick={() => navigate("/jobs")} />
+          <StatsCard icon={Building2} value={counts?.partners.toLocaleString() ?? "0"} label="Mitra" onClick={() => navigate("/partners")} />
+          <StatsCard icon={GraduationCap} value={counts?.events.toLocaleString() ?? "0"} label="Event" onClick={() => navigate("/events")} />
+          <StatsCard icon={HeartPulse} value={counts?.psikotes.toLocaleString() ?? "0"} label="Psikotes" onClick={() => navigate("/psikotes")} />
+          <StatsCard icon={Brain} value={counts?.cbt.toLocaleString() ?? "0"} label="Tes CBT" onClick={() => navigate("/cbt")} />
         </div>
 
         <div className="grid lg:grid-cols-2 gap-6 mb-6">
