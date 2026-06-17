@@ -222,21 +222,82 @@ const Admin = () => {
                 </div>
               ) : (
                 filteredAlumni.map((a: any) => (
-                  <div key={a.id} className="p-4 flex items-center justify-between gap-4 hover:bg-accent/30">
-                    <div className="flex items-center gap-3 min-w-0">
+                  <div key={a.id} className="p-4 flex items-start justify-between gap-4 hover:bg-accent/30">
+                    <div className="flex items-start gap-3 min-w-0 flex-1">
                       <div className="h-10 w-10 rounded-full bg-accent flex items-center justify-center font-heading font-bold text-accent-foreground text-sm shrink-0">
                         {a.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2)}
                       </div>
-                      <div className="min-w-0">
-                        <h4 className="font-heading font-semibold text-foreground text-sm truncate">{a.name}</h4>
-                        <p className="text-xs text-muted-foreground truncate">
-                          Angkatan {a.graduation_year} · {a.major ?? "-"} · {a.university ?? "-"} · {a.position ?? "-"}
-                        </p>
+                      <div className="min-w-0 flex-1 space-y-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h4 className="font-heading font-semibold text-foreground text-sm">{a.name}</h4>
+                          {a.gender && <Badge variant="outline" className="text-[10px]">{a.gender}</Badge>}
+                          {a.status && <Badge variant="secondary" className="text-[10px]">{a.status}</Badge>}
+                        </div>
+                        <div className="grid sm:grid-cols-2 gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                          <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> Angkatan {a.graduation_year ?? "-"}</span>
+                          <span className="flex items-center gap-1"><MapPin className="h-3 w-3" /> {a.origin ?? "-"}</span>
+                          <span className="flex items-center gap-1"><GraduationCap className="h-3 w-3" /> {a.education_level ?? "-"} {a.major ? `· ${a.major}` : ""}</span>
+                          <span className="flex items-center gap-1"><BookOpen className="h-3 w-3" /> {a.university ?? "-"}</span>
+                          <span className="flex items-center gap-1"><Briefcase className="h-3 w-3" /> {a.position ?? "-"}</span>
+                          <span className="flex items-center gap-1"><Building className="h-3 w-3" /> {a.company ?? "-"}</span>
+                          {a.location && <span className="flex items-center gap-1"><MapPin className="h-3 w-3" /> {a.location}</span>}
+                        </div>
                       </div>
                     </div>
                     <Button size="sm" variant="ghost" className="text-destructive hover:bg-destructive/10 shrink-0" onClick={() => deleteAlumni(a.id)}>
                       <Trash2 className="h-4 w-4" />
                     </Button>
+                  </div>
+                ))
+              )}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="santri">
+            <div className="relative mb-3">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input placeholder="Cari nama, asal, sekolah, jurusan..." className="pl-10" value={santriSearch} onChange={(e) => setSantriSearch(e.target.value)} />
+            </div>
+            <div className="text-xs text-muted-foreground mb-2">
+              Total {allSantri?.length ?? 0} santri terdaftar
+            </div>
+            <div className="glass-card rounded-xl divide-y divide-border max-h-[600px] overflow-y-auto">
+              {(allSantri ?? []).filter((s: any) => {
+                if (!santriSearch) return true;
+                const q = santriSearch.toLowerCase();
+                return [s.full_name, s.origin, s.school_origin, s.major, s.education_level, s.phone].some((v: any) => v?.toLowerCase?.().includes(q));
+              }).length === 0 ? (
+                <div className="p-8 text-center text-muted-foreground">
+                  <UserCircle className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                  <p>Belum ada santri terdaftar.</p>
+                </div>
+              ) : (
+                (allSantri ?? []).filter((s: any) => {
+                  if (!santriSearch) return true;
+                  const q = santriSearch.toLowerCase();
+                  return [s.full_name, s.origin, s.school_origin, s.major, s.education_level, s.phone].some((v: any) => v?.toLowerCase?.().includes(q));
+                }).map((s: any) => (
+                  <div key={s.id} className="p-4 hover:bg-accent/30">
+                    <div className="flex items-start gap-3">
+                      <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center font-heading font-bold text-primary text-sm shrink-0">
+                        {(s.full_name || "S").split(" ").map((n: string) => n[0]).join("").slice(0, 2)}
+                      </div>
+                      <div className="min-w-0 flex-1 space-y-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h4 className="font-heading font-semibold text-foreground text-sm">{s.full_name || "(Tanpa Nama)"}</h4>
+                          {s.gender && <Badge variant="outline" className="text-[10px]">{s.gender}</Badge>}
+                          <Badge className="text-[10px]">Santri</Badge>
+                        </div>
+                        <div className="grid sm:grid-cols-2 gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                          {s.phone && <span className="flex items-center gap-1"><Phone className="h-3 w-3" /> {s.phone}</span>}
+                          {s.birth_date && <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> {s.birth_date}</span>}
+                          {s.origin && <span className="flex items-center gap-1"><MapPin className="h-3 w-3" /> {s.origin}</span>}
+                          {s.school_origin && <span className="flex items-center gap-1"><BookOpen className="h-3 w-3" /> {s.school_origin}</span>}
+                          {s.education_level && <span className="flex items-center gap-1"><GraduationCap className="h-3 w-3" /> {s.education_level} {s.major ? `· ${s.major}` : ""}</span>}
+                          {s.address && <span className="flex items-center gap-1 sm:col-span-2"><MapPin className="h-3 w-3" /> {s.address}</span>}
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 ))
               )}
