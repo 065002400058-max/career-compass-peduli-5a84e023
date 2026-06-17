@@ -256,29 +256,51 @@ const Admin = () => {
           </TabsContent>
 
           <TabsContent value="santri">
-            <div className="relative mb-3">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input placeholder="Cari nama, asal, sekolah, jurusan..." className="pl-10" value={santriSearch} onChange={(e) => setSantriSearch(e.target.value)} />
-            </div>
-            <div className="text-xs text-muted-foreground mb-2">
-              Total {allSantri?.length ?? 0} santri terdaftar
-            </div>
-            <div className="glass-card rounded-xl divide-y divide-border max-h-[600px] overflow-y-auto">
-              {(allSantri ?? []).filter((s: any) => {
+            {(() => {
+              const filteredSantri = (allSantri ?? []).filter((s: any) => {
                 if (!santriSearch) return true;
                 const q = santriSearch.toLowerCase();
                 return [s.full_name, s.origin, s.school_origin, s.major, s.education_level, s.phone].some((v: any) => v?.toLowerCase?.().includes(q));
-              }).length === 0 ? (
+              });
+              const santriExportRows = filteredSantri.map((s: any) => ({
+                Nama: s.full_name ?? "",
+                Gender: s.gender ?? "",
+                "Tgl Lahir": s.birth_date ?? "",
+                Telepon: s.phone ?? "",
+                Asal: s.origin ?? "",
+                Sekolah: s.school_origin ?? "",
+                Jenjang: s.education_level ?? "",
+                Jurusan: s.major ?? "",
+                Alamat: s.address ?? "",
+                "Terdaftar Sejak": s.created_at ? new Date(s.created_at).toLocaleDateString("id-ID") : "",
+              }));
+              return (
+            <>
+            <div className="flex flex-col md:flex-row gap-2 mb-3">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input placeholder="Cari nama, asal, sekolah, jurusan..." className="pl-10" value={santriSearch} onChange={(e) => setSantriSearch(e.target.value)} />
+              </div>
+              <div className="flex gap-2 flex-wrap">
+                <Button size="sm" variant="outline" onClick={() => exportToExcel(santriExportRows, "santri-peduli")} disabled={santriExportRows.length === 0}>
+                  <FileSpreadsheet className="h-4 w-4 mr-1.5" /> Excel
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => exportToPDF(santriExportRows, "santri-peduli", "Data Santri Terdaftar PEDULI")} disabled={santriExportRows.length === 0}>
+                  <FileDown className="h-4 w-4 mr-1.5" /> PDF
+                </Button>
+              </div>
+            </div>
+            <div className="text-xs text-muted-foreground mb-2">
+              Menampilkan {filteredSantri.length} dari {allSantri?.length ?? 0} santri terdaftar
+            </div>
+            <div className="glass-card rounded-xl divide-y divide-border max-h-[600px] overflow-y-auto">
+              {filteredSantri.length === 0 ? (
                 <div className="p-8 text-center text-muted-foreground">
                   <UserCircle className="h-12 w-12 mx-auto mb-3 opacity-50" />
                   <p>Belum ada santri terdaftar.</p>
                 </div>
               ) : (
-                (allSantri ?? []).filter((s: any) => {
-                  if (!santriSearch) return true;
-                  const q = santriSearch.toLowerCase();
-                  return [s.full_name, s.origin, s.school_origin, s.major, s.education_level, s.phone].some((v: any) => v?.toLowerCase?.().includes(q));
-                }).map((s: any) => (
+                filteredSantri.map((s: any) => (
                   <div key={s.id} className="p-4 hover:bg-accent/30">
                     <div className="flex items-start gap-3">
                       <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center font-heading font-bold text-primary text-sm shrink-0">
@@ -289,6 +311,7 @@ const Admin = () => {
                           <h4 className="font-heading font-semibold text-foreground text-sm">{s.full_name || "(Tanpa Nama)"}</h4>
                           {s.gender && <Badge variant="outline" className="text-[10px]">{s.gender}</Badge>}
                           <Badge className="text-[10px]">Santri</Badge>
+                          {s.created_at && <Badge variant="outline" className="text-[10px]">Daftar: {new Date(s.created_at).toLocaleDateString("id-ID")}</Badge>}
                         </div>
                         <div className="grid sm:grid-cols-2 gap-x-4 gap-y-1 text-xs text-muted-foreground">
                           {s.phone && <span className="flex items-center gap-1"><Phone className="h-3 w-3" /> {s.phone}</span>}
@@ -304,6 +327,9 @@ const Admin = () => {
                 ))
               )}
             </div>
+            </>
+              );
+            })()}
           </TabsContent>
 
           <TabsContent value="partners">
