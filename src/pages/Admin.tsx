@@ -130,7 +130,8 @@ const Admin = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+          <StatsCard icon={UserCircle} value={counts?.santri.toLocaleString() ?? "0"} label="Data Santri" onClick={() => setTab("santri")} />
           <StatsCard icon={Users} value={counts?.alumni.toLocaleString() ?? "0"} label="Data Alumni" onClick={() => setTab("alumni")} />
           <StatsCard icon={Briefcase} value={counts?.pendingJobs.toLocaleString() ?? "0"} label="Lowongan Pending" onClick={() => setTab("jobs")} />
           <StatsCard icon={Building2} value={counts?.partners.toLocaleString() ?? "0"} label="Perusahaan Mitra" onClick={() => setTab("partners")} />
@@ -139,8 +140,9 @@ const Admin = () => {
 
         <Tabs value={tab} onValueChange={setTab} className="w-full">
           <TabsList className="glass-card mb-6 flex-wrap h-auto">
-            <TabsTrigger value="jobs">Validasi Lowongan</TabsTrigger>
+            <TabsTrigger value="santri"><UserCircle className="h-4 w-4 mr-1" />Data Santri</TabsTrigger>
             <TabsTrigger value="alumni">Data Alumni</TabsTrigger>
+            <TabsTrigger value="jobs">Validasi Lowongan</TabsTrigger>
             <TabsTrigger value="partners">Mitra</TabsTrigger>
             <TabsTrigger value="cbt"><Brain className="h-4 w-4 mr-1" />Tes CBT</TabsTrigger>
             <TabsTrigger value="psikotes"><HeartPulse className="h-4 w-4 mr-1" />Psikotes</TabsTrigger>
