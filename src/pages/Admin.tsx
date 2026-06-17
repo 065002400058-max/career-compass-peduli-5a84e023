@@ -44,16 +44,29 @@ const Admin = () => {
     enabled: !!user && hasRole("admin"),
   });
 
+  const { data: allSantri } = useQuery({
+    queryKey: ["admin-santri"],
+    queryFn: async () => {
+      const { data: roles } = await supabase.from("user_roles").select("user_id").eq("role", "santri");
+      const ids = (roles ?? []).map((r: any) => r.user_id);
+      if (ids.length === 0) return [];
+      const { data: profs } = await supabase.from("profiles").select("*").in("user_id", ids).order("created_at", { ascending: false });
+      return profs ?? [];
+    },
+    enabled: !!user && hasRole("admin"),
+  });
+
   const { data: counts } = useQuery({
     queryKey: ["admin-counts"],
     queryFn: async () => {
-      const [alumni, jobs, partners, referrals] = await Promise.all([
+      const [alumni, jobs, partners, referrals, santri] = await Promise.all([
         supabase.from("alumni").select("id", { count: "exact", head: true }),
         supabase.from("jobs").select("id", { count: "exact", head: true }).eq("status", "pending"),
         supabase.from("partners").select("id", { count: "exact", head: true }),
         supabase.from("counseling_referrals").select("id", { count: "exact", head: true }).eq("status", "pending"),
+        supabase.from("user_roles").select("id", { count: "exact", head: true }).eq("role", "santri"),
       ]);
-      return { alumni: alumni.count ?? 0, pendingJobs: jobs.count ?? 0, partners: partners.count ?? 0, referrals: referrals.count ?? 0 };
+      return { alumni: alumni.count ?? 0, pendingJobs: jobs.count ?? 0, partners: partners.count ?? 0, referrals: referrals.count ?? 0, santri: santri.count ?? 0 };
     },
     enabled: !!user && hasRole("admin"),
   });
