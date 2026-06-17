@@ -150,6 +150,7 @@ const Admin = () => {
             <TabsTrigger value="universities"><GraduationCap className="h-4 w-4 mr-1" />Kampus</TabsTrigger>
             <TabsTrigger value="scholarships"><Award className="h-4 w-4 mr-1" />Beasiswa</TabsTrigger>
             <TabsTrigger value="referrals"><HeartPulse className="h-4 w-4 mr-1" />Rujukan</TabsTrigger>
+            <TabsTrigger value="reports"><FileDown className="h-4 w-4 mr-1" />Laporan Pengguna</TabsTrigger>
           </TabsList>
 
           <TabsContent value="jobs">
