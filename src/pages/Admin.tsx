@@ -12,6 +12,7 @@ import PsikotesManager from "@/components/admin/PsikotesManager";
 import UniversitiesManager from "@/components/admin/UniversitiesManager";
 import ScholarshipManager from "@/components/admin/ScholarshipManager";
 import ReferralManager from "@/components/admin/ReferralManager";
+import UsageReports from "@/components/admin/UsageReports";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -149,6 +150,7 @@ const Admin = () => {
             <TabsTrigger value="universities"><GraduationCap className="h-4 w-4 mr-1" />Kampus</TabsTrigger>
             <TabsTrigger value="scholarships"><Award className="h-4 w-4 mr-1" />Beasiswa</TabsTrigger>
             <TabsTrigger value="referrals"><HeartPulse className="h-4 w-4 mr-1" />Rujukan</TabsTrigger>
+            <TabsTrigger value="reports"><FileDown className="h-4 w-4 mr-1" />Laporan Pengguna</TabsTrigger>
           </TabsList>
 
           <TabsContent value="jobs">
@@ -316,6 +318,7 @@ const Admin = () => {
           <TabsContent value="universities"><UniversitiesManager /></TabsContent>
           <TabsContent value="scholarships"><ScholarshipManager /></TabsContent>
           <TabsContent value="referrals"><ReferralManager /></TabsContent>
+          <TabsContent value="reports"><UsageReports /></TabsContent>
         </Tabs>
       </div>
     </div>
