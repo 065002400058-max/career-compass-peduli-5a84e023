@@ -24,8 +24,9 @@ const Admin = () => {
   const { user, loading, hasRole } = useAuth();
   const navigate = useNavigate();
   const qc = useQueryClient();
-  const [tab, setTab] = useState("jobs");
+  const [tab, setTab] = useState("santri");
   const [alumniSearch, setAlumniSearch] = useState("");
+  const [santriSearch, setSantriSearch] = useState("");
 
   useEffect(() => {
     if (!loading && (!user || !hasRole("admin"))) navigate("/");
