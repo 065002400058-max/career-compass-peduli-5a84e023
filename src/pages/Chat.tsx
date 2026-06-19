@@ -81,14 +81,40 @@ const Chat = () => {
   };
 
   const setMode = async (mode: string) => {
+    if (!user) { setGuestMode(mode); return; }
     if (!activeId) return;
     await supabase.from("chat_threads").update({ mode }).eq("id", activeId);
     qc.invalidateQueries({ queryKey: ["chat-threads"] });
   };
 
+  const displayMessages: any[] = user ? messages : guestMessages.map((m, i) => ({ id: `g-${i}`, ...m }));
+  const displayMode = user ? (active?.mode ?? "umum") : guestMode;
+
   const handleSend = async () => {
     const text = input.trim();
-    if (!text || sending || !user) return;
+    if (!text || sending) return;
+
+    // Guest mode: no DB, just call edge function
+    if (!user) {
+      const newMsgs: Msg[] = [...guestMessages, { role: "user", content: text }];
+      setGuestMessages(newMsgs);
+      setInput("");
+      setSending(true);
+      try {
+        const { data, error } = await supabase.functions.invoke("chat-ai", {
+          body: { messages: newMsgs, mode: guestMode },
+        });
+        if (error) throw error;
+        if (data?.error) throw new Error(data.error);
+        setGuestMessages([...newMsgs, { role: "assistant", content: data.reply }]);
+      } catch (e: any) {
+        toast.error(e.message || "Gagal mengirim pesan");
+      } finally {
+        setSending(false);
+        setTimeout(() => inputRef.current?.focus(), 50);
+      }
+      return;
+    }
 
     let threadId = activeId;
     let threadMode = active?.mode ?? "umum";
@@ -128,7 +154,7 @@ const Chat = () => {
     }
   };
 
-  if (loading || !user) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Memuat...</div>;
+  if (loading) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Memuat...</div>;
 
   return (
     <div className="min-h-[calc(100vh-4rem)] gradient-bg-subtle">
