@@ -30,10 +30,10 @@ const Chat = () => {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
+  const [guestMode, setGuestMode] = useState<string>("umum");
+  const [guestMessages, setGuestMessages] = useState<Msg[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
-
-  useEffect(() => { if (!loading && !user) navigate("/auth"); }, [loading, user, navigate]);
 
   const { data: threads = [] } = useQuery({
     queryKey: ["chat-threads", user?.id],
