@@ -118,32 +118,33 @@ ATURAN PENTING:
 ${userContext}
 KONTEKS DATA REAL-TIME:${context || "\n(Tidak ada data spesifik dimuat)"}`;
 
-    // Convert messages to Gemini format
-    const geminiContents = messages.map((m: any) => ({
-      role: m.role === "assistant" ? "model" : "user",
-      parts: [{ text: m.content }],
-    }));
+    // Call Lovable AI Gateway (OpenAI-compatible)
+    const aiMessages = [
+      { role: "system", content: systemPrompt },
+      ...messages.map((m: any) => ({ role: m.role === "assistant" ? "assistant" : "user", content: m.content })),
+    ];
 
-    const resp = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          systemInstruction: { parts: [{ text: systemPrompt }] },
-          contents: geminiContents,
-        }),
+    const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${LOVABLE_API_KEY}`,
       },
-    );
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash",
+        messages: aiMessages,
+      }),
+    });
 
     if (!resp.ok) {
       const errText = await resp.text();
-      if (resp.status === 429) return new Response(JSON.stringify({ error: "Rate limit Gemini. Coba lagi sebentar." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-      throw new Error(`Gemini error: ${errText}`);
+      if (resp.status === 429) return new Response(JSON.stringify({ error: "Terlalu banyak permintaan. Coba lagi sebentar." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      if (resp.status === 402) return new Response(JSON.stringify({ error: "Kredit AI habis. Silakan top up di Settings." }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      throw new Error(`AI Gateway error ${resp.status}: ${errText}`);
     }
 
     const data = await resp.json();
-    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text ?? "Maaf, tidak ada jawaban.";
+    const reply = data.choices?.[0]?.message?.content ?? "Maaf, tidak ada jawaban.";
 
     // Auto-create counseling referral if psikotes mode + high distress keywords
     if (mode === "psikotes" && authHeader) {
