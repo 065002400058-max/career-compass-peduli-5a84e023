@@ -20,6 +20,12 @@ const MODE_PROMPTS: Record<string, string> = {
   umum: "Bantu user secara umum di lingkup Career Center PEDULI.",
 };
 
+const AI_MODELS = [
+  "google/gemini-3-flash-preview",
+  "google/gemini-3.1-flash-lite",
+  "openai/gpt-5-nano",
+];
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -118,32 +124,43 @@ ATURAN PENTING:
 ${userContext}
 KONTEKS DATA REAL-TIME:${context || "\n(Tidak ada data spesifik dimuat)"}`;
 
-    // Call Lovable AI Gateway (OpenAI-compatible)
+    // Call Lovable AI Gateway (OpenAI-compatible) with fallback models.
     const aiMessages = [
       { role: "system", content: systemPrompt },
       ...messages.map((m: any) => ({ role: m.role === "assistant" ? "assistant" : "user", content: m.content })),
     ];
 
-    const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${LOVABLE_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: aiMessages,
-      }),
-    });
+    let data: any = null;
+    let lastAiError = "";
+    for (const model of AI_MODELS) {
+      const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Lovable-API-Key": LOVABLE_API_KEY,
+          "X-Lovable-AIG-SDK": "classic-edge-function",
+        },
+        body: JSON.stringify({ model, messages: aiMessages }),
+      });
 
-    if (!resp.ok) {
+      if (resp.ok) {
+        data = await resp.json();
+        break;
+      }
+
       const errText = await resp.text();
-      if (resp.status === 429) return new Response(JSON.stringify({ error: "Terlalu banyak permintaan. Coba lagi sebentar." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-      if (resp.status === 402) return new Response(JSON.stringify({ error: "Kredit AI habis. Silakan top up di Settings." }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-      throw new Error(`AI Gateway error ${resp.status}: ${errText}`);
+      lastAiError = `AI Gateway error ${resp.status}: ${errText}`;
+      if (resp.status === 402) {
+        return new Response(JSON.stringify({ error: "Kredit AI habis. Silakan top up di Settings." }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+      if (resp.status !== 429 && resp.status !== 503) throw new Error(lastAiError);
     }
 
-    const data = await resp.json();
+    if (!data) {
+      console.error("chat-ai all models failed:", lastAiError);
+      return new Response(JSON.stringify({ error: "Layanan AI sedang ramai. Coba lagi sebentar." }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
     const reply = data.choices?.[0]?.message?.content ?? "Maaf, tidak ada jawaban.";
 
     // Auto-create counseling referral if psikotes mode + high distress keywords
