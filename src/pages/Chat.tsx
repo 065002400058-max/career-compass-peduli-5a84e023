@@ -159,41 +159,49 @@ const Chat = () => {
   return (
     <div className="min-h-[calc(100vh-4rem)] gradient-bg-subtle">
       <div className="container mx-auto px-4 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-4 h-[calc(100vh-7rem)]">
-          <aside className="glass-card rounded-xl p-3 flex flex-col">
-            <Button onClick={handleNew} className="w-full mb-3">
-              <Plus className="h-4 w-4 mr-2" /> Percakapan Baru
-            </Button>
-            <ScrollArea className="flex-1 -mx-1 px-1">
-              <div className="space-y-1">
-                {threads.map((t: any) => (
-                  <div
-                    key={t.id}
-                    className={`group flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition-colors ${
-                      t.id === activeId ? "bg-accent text-accent-foreground" : "hover:bg-muted"
-                    }`}
-                    onClick={() => setActiveId(t.id)}
-                  >
-                    <Bot className="h-4 w-4 shrink-0 opacity-60" />
-                    <span className="text-sm truncate flex-1">{t.title}</span>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); handleDelete(t.id); }}
-                      className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-opacity"
+        <div className={`grid grid-cols-1 ${user ? "lg:grid-cols-[280px_1fr]" : ""} gap-4 h-[calc(100vh-7rem)]`}>
+          {user && (
+            <aside className="glass-card rounded-xl p-3 flex flex-col">
+              <Button onClick={handleNew} className="w-full mb-3">
+                <Plus className="h-4 w-4 mr-2" /> Percakapan Baru
+              </Button>
+              <ScrollArea className="flex-1 -mx-1 px-1">
+                <div className="space-y-1">
+                  {threads.map((t: any) => (
+                    <div
+                      key={t.id}
+                      className={`group flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition-colors ${
+                        t.id === activeId ? "bg-accent text-accent-foreground" : "hover:bg-muted"
+                      }`}
+                      onClick={() => setActiveId(t.id)}
                     >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
-                ))}
-                {threads.length === 0 && <p className="text-xs text-muted-foreground p-3">Belum ada percakapan. Mulai chat untuk membuat.</p>}
-              </div>
-            </ScrollArea>
-          </aside>
+                      <Bot className="h-4 w-4 shrink-0 opacity-60" />
+                      <span className="text-sm truncate flex-1">{t.title}</span>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleDelete(t.id); }}
+                        className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-opacity"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                  {threads.length === 0 && <p className="text-xs text-muted-foreground p-3">Belum ada percakapan. Mulai chat untuk membuat.</p>}
+                </div>
+              </ScrollArea>
+            </aside>
+          )}
 
           <main className="glass-card rounded-xl flex flex-col overflow-hidden">
+            {!user && (
+              <div className="px-4 py-2 bg-muted/50 border-b border-border flex items-center justify-between gap-2 text-xs">
+                <span className="text-muted-foreground">Mode tamu — riwayat tidak disimpan.</span>
+                <Button size="sm" variant="link" className="h-auto p-0 text-xs" onClick={() => navigate("/auth")}>Login untuk menyimpan</Button>
+              </div>
+            )}
             <div className="p-3 border-b border-border flex flex-wrap gap-2">
               {MODES.map((m) => {
                 const Icon = m.icon;
-                const isActive = (active?.mode ?? "umum") === m.id;
+                const isActive = displayMode === m.id;
                 return (
                   <button
                     key={m.id}
@@ -210,7 +218,7 @@ const Chat = () => {
             </div>
 
             <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4">
-              {messages.length === 0 && (
+              {displayMessages.length === 0 && (
                 <div className="h-full flex flex-col items-center justify-center text-center max-w-md mx-auto py-12">
                   <div className="h-16 w-16 rounded-2xl gradient-bg flex items-center justify-center mb-4">
                     <Bot className="h-8 w-8 text-primary-foreground" />
@@ -219,10 +227,10 @@ const Chat = () => {
                   <p className="text-muted-foreground text-sm mb-4">
                     Saya asisten AI Career Center PEDULI. Pilih kategori di atas lalu ajukan pertanyaan.
                   </p>
-                  <Badge variant="secondary">Mode: {MODES.find((m) => m.id === (active?.mode ?? "umum"))?.label}</Badge>
+                  <Badge variant="secondary">Mode: {MODES.find((m) => m.id === displayMode)?.label}</Badge>
                 </div>
               )}
-              {messages.map((m: any) => (
+              {displayMessages.map((m: any) => (
                 <div key={m.id} className={`flex gap-3 ${m.role === "user" ? "justify-end" : ""}`}>
                   {m.role === "assistant" && (
                     <div className="h-8 w-8 rounded-full gradient-bg flex items-center justify-center shrink-0">
