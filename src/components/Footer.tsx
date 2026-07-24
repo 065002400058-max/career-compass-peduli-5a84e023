@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
-import logo from "@/assets/dulido-logo.png.asset.json";
+import duLogo from "@/assets/daarul-uluum-logo.png.asset.json";
+import yayasanLogo from "@/assets/yayasan-salsabila-logo.png.asset.json";
 
 const Footer = () => (
   <footer className="bg-foreground text-background/80 section-padding">
