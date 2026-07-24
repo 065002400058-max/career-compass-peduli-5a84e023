@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { Badge } from "@/components/ui/badge";
 import logo from "@/assets/dulido-logo.png.asset.json";
+import duLogo from "@/assets/daarul-uluum-logo.png.asset.json";
+import yayasanLogo from "@/assets/yayasan-salsabila-logo.png.asset.json";
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
