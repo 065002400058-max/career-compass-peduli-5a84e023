@@ -1,16 +1,19 @@
 import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { Users, Briefcase, Building2, GraduationCap, ArrowRight, Search, Calendar, BarChart3, Shield, Star, Brain, HeartPulse, School } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import mosqueImg from "@/assets/mosque-silhouette.png";
 import ornamentImg from "@/assets/islamic-ornament-top.png";
 
-const stats = [
-  { icon: Users, value: "12,500+", label: "Total Alumni" },
-  { icon: Briefcase, value: "3,200+", label: "Lowongan Kerja" },
-  { icon: Building2, value: "850+", label: "Perusahaan Mitra" },
-  { icon: GraduationCap, value: "150+", label: "Program Beasiswa" },
+const statMeta = [
+  { icon: Users, label: "Total Alumni", key: "alumni" as const },
+  { icon: Briefcase, label: "Lowongan Kerja", key: "jobs" as const },
+  { icon: Building2, label: "Perusahaan Mitra", key: "partners" as const },
+  { icon: GraduationCap, label: "Program Beasiswa", key: "scholarships" as const },
 ];
+
 
 const features = [
   { icon: Search, title: "Portal Lowongan", desc: "Cari dan lamar pekerjaan dari perusahaan mitra terpercaya." },
