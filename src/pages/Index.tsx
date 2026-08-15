@@ -216,7 +216,7 @@ const Index = () => {
       {!user ? (
         <section className="section-padding">
           <div className="container mx-auto">
-            <div className="gradient-bg rounded-2xl p-8 md:p-16 text-center relative overflow-hidden">
+            <div className="gradient-bg rounded-2xl p-6 md:p-16 text-center relative overflow-hidden">
               <div className="absolute inset-0 opacity-10" style={{
                 backgroundImage: "url(\"data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.3' fill-rule='evenodd'%3E%3Cpath d='M20 18v-2h-2v2h-2v2h2v2h2v-2h2v-2h-2z'/%3E%3C/g%3E%3C/svg%3E\")"
               }} />
@@ -232,7 +232,7 @@ const Index = () => {
                   <Button size="lg" variant="secondary" asChild>
                     <Link to="/auth">Daftar Sekarang</Link>
                   </Button>
-                  <Button size="lg" variant="outline" className="border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10" asChild>
+                  <Button size="lg" variant="outline" className="bg-transparent border-primary-foreground/40 text-primary-foreground hover:bg-primary-foreground/15 hover:text-primary-foreground" asChild>
                     <Link to="/jobs">Lihat Lowongan</Link>
                   </Button>
                 </div>
@@ -243,7 +243,7 @@ const Index = () => {
       ) : (
         <section className="section-padding">
           <div className="container mx-auto">
-            <div className="gradient-bg rounded-2xl p-8 md:p-16 text-center relative overflow-hidden">
+            <div className="gradient-bg rounded-2xl p-6 md:p-16 text-center relative overflow-hidden">
               <div className="relative z-10">
                 <h2 className="font-heading text-3xl md:text-4xl font-bold text-primary-foreground">
                   {hasRole("mitra") ? "Temukan Talenta Terbaik" : "Jelajahi Lebih Banyak"}
@@ -259,7 +259,7 @@ const Index = () => {
                       {hasRole("mitra") ? "Posting Lowongan" : "Lihat Event"}
                     </Link>
                   </Button>
-                  <Button size="lg" variant="outline" className="border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10" asChild>
+                  <Button size="lg" variant="outline" className="bg-transparent border-primary-foreground/40 text-primary-foreground hover:bg-primary-foreground/15 hover:text-primary-foreground" asChild>
                     <Link to={hasRole("admin") ? "/admin" : "/dashboard"}>
                       {hasRole("admin") ? "Admin Panel" : "Dashboard"}
                     </Link>
