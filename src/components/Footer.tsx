@@ -5,7 +5,7 @@ import trisaktiLogo from "@/assets/trisakti-logo-t.png.asset.json";
 import diktiLogo from "@/assets/dikti-logo-t.png.asset.json";
 
 const Footer = () => (
-  <footer className="bg-foreground text-background/80 py-5 md:py-10">
+  <footer className="bg-foreground text-background/80 pt-5 pb-20 md:pt-10 md:pb-14">
     <div className="container mx-auto px-4">
       <div className="flex items-center gap-2 mb-3">
         <img src={duLogo.url} alt="Daarul Uluum Lido" className="h-9 w-9 object-contain" />
