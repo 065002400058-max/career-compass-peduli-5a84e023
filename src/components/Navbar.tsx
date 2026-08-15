@@ -30,7 +30,7 @@ import duLogo from "@/assets/du-logo-t.png.asset.json";
 import yayasanLogo from "@/assets/yayasan-logo-t.png.asset.json";
 import trisaktiLogo from "@/assets/trisakti-logo-t.png.asset.json";
 import diktiLogo from "@/assets/dikti-logo-t.png.asset.json";
-import tutwuriLogo from "@/assets/tutwuri-logo.png.asset.json";
+import tutwuriLogo from "@/assets/tutwuri-logo-t.png.asset.json";
 import bimaAsset from "@/assets/bima-logo-full.png.asset.json";
 
 const logos = [
