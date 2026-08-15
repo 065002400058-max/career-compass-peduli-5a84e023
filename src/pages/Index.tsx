@@ -25,6 +25,26 @@ const features = [
 const Index = () => {
   const { user, hasRole, loading } = useAuth();
 
+  const { data: counts } = useQuery({
+    queryKey: ["home-stats"],
+    queryFn: async () => {
+      const [alumni, jobs, partners, scholarships] = await Promise.all([
+        supabase.from("alumni").select("id", { count: "exact", head: true }),
+        supabase.from("jobs").select("id", { count: "exact", head: true }).eq("status", "approved"),
+        supabase.from("partners").select("id", { count: "exact", head: true }),
+        supabase.from("scholarships").select("id", { count: "exact", head: true }).eq("is_active", true),
+      ]);
+      return {
+        alumni: alumni.count ?? 0,
+        jobs: jobs.count ?? 0,
+        partners: partners.count ?? 0,
+        scholarships: scholarships.count ?? 0,
+      };
+    },
+  });
+
+
+
   const getHeroContent = () => {
     if (!user) {
       return {
