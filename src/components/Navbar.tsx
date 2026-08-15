@@ -73,14 +73,7 @@ const BrandText = ({ compact = false }: { compact?: boolean }) => (
         compact ? "text-base" : "text-lg lg:text-xl"
       }`}
     >
-      e Career Center <span className="text-primary">PEI</span>
-    </p>
-    <p
-      className={`text-muted-foreground leading-tight ${
-        compact ? "text-[11px]" : "text-xs lg:text-sm"
-      }`}
-    >
-      Pusat Ekosistem Inovasi
+      Career Center <span className="text-primary">PEDULI</span>
     </p>
   </div>
 );
