@@ -1,12 +1,12 @@
-import { Users, Briefcase, Building2, FileText, CheckCircle, XCircle, Settings, Brain, HeartPulse, GraduationCap, Search, Trash2, AlertTriangle, FileSpreadsheet, FileDown, Award, Mail, Phone, MapPin, Calendar, BookOpen, Building, UserCircle, Sparkles } from "lucide-react";
+import { Users, Briefcase, Building2, CheckCircle, XCircle, Brain, HeartPulse, GraduationCap, Search, Trash2, AlertTriangle, FileSpreadsheet, FileDown, Award, Phone, MapPin, Calendar, BookOpen, Building, UserCircle, ChevronRight, MoreHorizontal, TrendingUp, SlidersHorizontal, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import StatsCard from "@/components/StatsCard";
 import AlumniCsvImport from "@/components/AlumniCsvImport";
 import AlumniAddDialog from "@/components/AlumniAddDialog";
+import AdminBottomNav from "@/components/admin/AdminBottomNav";
 import CbtManager from "@/components/admin/CbtManager";
 import PsikotesManager from "@/components/admin/PsikotesManager";
 import UniversitiesManager from "@/components/admin/UniversitiesManager";
@@ -20,6 +20,17 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { exportToExcel, exportToPDF } from "@/lib/exportUtils";
+
+const SERVICE_TABS = [
+  { value: "jobs", label: "Validasi Lowongan", icon: Briefcase },
+  { value: "partners", label: "Mitra", icon: Building2 },
+  { value: "cbt", label: "Tes CBT", icon: Brain },
+  { value: "psikotes", label: "Psikotes", icon: HeartPulse },
+  { value: "universities", label: "Kampus", icon: GraduationCap },
+  { value: "scholarships", label: "Beasiswa", icon: Award },
+  { value: "referrals", label: "Rujukan", icon: Users },
+  { value: "reports", label: "Laporan Pengguna", icon: FileDown },
+];
 
 const Admin = () => {
   const { user, loading, hasRole } = useAuth();
@@ -45,7 +56,7 @@ const Admin = () => {
     enabled: !!user && hasRole("admin"),
   });
 
-  const { data: allSantri } = useQuery({
+  const { data: allSantri, isLoading: santriLoading } = useQuery({
     queryKey: ["admin-santri"],
     queryFn: async () => {
       const { data: roles } = await supabase.from("user_roles").select("user_id").eq("role", "santri");
@@ -112,60 +123,127 @@ const Admin = () => {
     );
   });
 
+  const segment = tab === "santri" ? "santri" : tab === "alumni" ? "alumni" : "lainnya";
+  const activeService = SERVICE_TABS.find((s) => s.value === tab);
+
+  const segments = [
+    { key: "santri", label: "Data Santri", icon: UserCircle, onClick: () => setTab("santri") },
+    { key: "alumni", label: "Data Alumni", icon: Users, onClick: () => setTab("alumni") },
+    { key: "lainnya", label: "Lainnya", icon: MoreHorizontal, onClick: () => setTab("jobs") },
+  ];
+
   return (
-    <div className="min-h-screen gradient-bg-subtle">
-      <div className="container mx-auto section-padding">
-        <div className="flex items-center justify-between gap-3 mb-8 flex-wrap">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl gradient-bg flex items-center justify-center">
-              <Settings className="h-5 w-5 text-primary-foreground" />
-            </div>
-            <div>
-              <h1 className="font-heading text-3xl font-bold text-foreground">Admin Panel</h1>
-              <p className="text-muted-foreground text-sm">Kelola data dan konten Career Center</p>
-            </div>
+    <div className="min-h-screen bg-background pb-24 md:pb-10">
+      <div className="container mx-auto max-w-6xl px-4 md:px-8 pt-6 md:pt-10">
+        {/* Welcome */}
+        <div className="flex items-start justify-between gap-4 mb-6">
+          <div>
+            <p className="text-sm text-muted-foreground">Selamat datang,</p>
+            <h1 className="font-heading text-2xl md:text-4xl font-bold text-foreground leading-tight">
+              Career Center <span className="text-primary">PEDULI</span>
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1.5 max-w-md">
+              Kelola layanan konseling dan data santri dengan mudah.
+            </p>
           </div>
-          <div className="flex gap-2 flex-wrap">
-            <AlumniAddDialog />
-            <AlumniCsvImport />
+          <button
+            onClick={() => setTab("referrals")}
+            className="relative shrink-0 h-10 w-10 rounded-full border border-border bg-card flex items-center justify-center text-muted-foreground hover:text-primary transition-colors"
+            aria-label="Notifikasi rujukan"
+          >
+            <Bell className="h-5 w-5" />
+            {(counts?.referrals ?? 0) > 0 && <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-primary" />}
+          </button>
+        </div>
+
+        {/* Summary */}
+        <div className="grid md:grid-cols-3 gap-3 mb-5">
+          <button
+            onClick={() => setTab("referrals")}
+            className="rounded-2xl bg-primary text-primary-foreground p-5 text-left flex items-center gap-4 shadow-sm transition-transform duration-200 active:scale-[0.98] hover:-translate-y-0.5"
+          >
+            <span className="h-11 w-11 rounded-xl bg-primary-foreground/15 flex items-center justify-center shrink-0">
+              <HeartPulse className="h-6 w-6" />
+            </span>
+            <span>
+              <span className="block text-2xl font-heading font-bold leading-none">{counts?.referrals ?? 0}</span>
+              <span className="block text-sm opacity-90 mt-1">Rujukan Konseling</span>
+            </span>
+          </button>
+          <button
+            onClick={() => navigate("/dashboard")}
+            className="md:col-span-2 rounded-2xl bg-card border border-border p-5 text-left flex items-center gap-4 shadow-sm transition-colors hover:bg-accent/40"
+          >
+            <span className="h-11 w-11 rounded-xl bg-accent flex items-center justify-center shrink-0">
+              <TrendingUp className="h-6 w-6 text-primary" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block font-heading font-semibold text-foreground">Ringkasan Bulan Ini</span>
+              <span className="block text-sm text-muted-foreground">Pantau aktivitas dan layanan secara real-time.</span>
+            </span>
+            <ChevronRight className="h-5 w-5 text-muted-foreground shrink-0" />
+          </button>
+        </div>
+
+        {/* Segments + shortcuts */}
+        <div className="rounded-2xl bg-card border border-border p-3 md:p-4 mb-5 shadow-sm">
+          <div className="grid grid-cols-3 gap-1 pb-3 border-b border-border">
+            {segments.map((s) => {
+              const isActive = segment === s.key;
+              return (
+                <button
+                  key={s.key}
+                  onClick={s.onClick}
+                  className={`flex items-center justify-center gap-1.5 rounded-xl py-2 text-xs md:text-sm font-medium transition-colors duration-200 ${
+                    isActive ? "bg-accent text-primary" : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <s.icon className="h-4 w-4" />
+                  <span className="truncate">{s.label}</span>
+                </button>
+              );
+            })}
+          </div>
+          <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-2 pt-3">
+            {SERVICE_TABS.map((s) => {
+              const isActive = tab === s.value;
+              return (
+                <button
+                  key={s.value}
+                  onClick={() => setTab(s.value)}
+                  className={`rounded-2xl px-2 py-3 flex flex-col items-center gap-1.5 text-center transition-all duration-200 active:scale-95 ${
+                    isActive ? "bg-accent border border-primary/30" : "bg-muted/40 border border-transparent hover:bg-accent/50"
+                  }`}
+                >
+                  <s.icon className={`h-5 w-5 ${isActive ? "text-primary" : "text-primary/70"}`} strokeWidth={1.8} />
+                  <span className="text-[11px] md:text-xs font-medium text-foreground leading-tight">{s.label}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
-          <StatsCard icon={UserCircle} value={counts?.santri.toLocaleString() ?? "0"} label="Data Santri" onClick={() => setTab("santri")} />
-          <StatsCard icon={Users} value={counts?.alumni.toLocaleString() ?? "0"} label="Data Alumni" onClick={() => setTab("alumni")} />
-          <StatsCard icon={Briefcase} value={counts?.pendingJobs.toLocaleString() ?? "0"} label="Lowongan Pending" onClick={() => setTab("jobs")} />
-          <StatsCard icon={Building2} value={counts?.partners.toLocaleString() ?? "0"} label="Perusahaan Mitra" onClick={() => setTab("partners")} />
-          <StatsCard icon={HeartPulse} value={counts?.referrals.toLocaleString() ?? "0"} label="Rujukan Konseling" onClick={() => setTab("referrals")} />
-        </div>
+        {activeService && (
+          <div className="flex items-center gap-2 mb-3">
+            <activeService.icon className="h-4 w-4 text-primary" />
+            <h2 className="font-heading font-semibold text-foreground">{activeService.label}</h2>
+          </div>
+        )}
 
         <Tabs value={tab} onValueChange={setTab} className="w-full">
-          <TabsList className="glass-card mb-6 flex-wrap h-auto">
-            <TabsTrigger value="santri"><UserCircle className="h-4 w-4 mr-1" />Data Santri</TabsTrigger>
-            <TabsTrigger value="alumni">Data Alumni</TabsTrigger>
-            <TabsTrigger value="jobs">Validasi Lowongan</TabsTrigger>
-            <TabsTrigger value="partners">Mitra</TabsTrigger>
-            <TabsTrigger value="cbt"><Brain className="h-4 w-4 mr-1" />Tes CBT</TabsTrigger>
-            <TabsTrigger value="psikotes"><HeartPulse className="h-4 w-4 mr-1" />Psikotes</TabsTrigger>
-            <TabsTrigger value="universities"><GraduationCap className="h-4 w-4 mr-1" />Kampus</TabsTrigger>
-            <TabsTrigger value="scholarships"><Award className="h-4 w-4 mr-1" />Beasiswa</TabsTrigger>
-            <TabsTrigger value="referrals"><HeartPulse className="h-4 w-4 mr-1" />Rujukan</TabsTrigger>
-            <TabsTrigger value="reports"><FileDown className="h-4 w-4 mr-1" />Laporan Pengguna</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="jobs">
-            <div className="glass-card rounded-xl divide-y divide-border">
+          <TabsContent value="jobs" className="mt-0">
+            <div className="rounded-2xl bg-card border border-border divide-y divide-border shadow-sm overflow-hidden">
               {(pendingJobs?.length ?? 0) === 0 ? (
                 <div className="p-8 text-center text-muted-foreground">
-                  <CheckCircle className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                  <p>Tidak ada lowongan yang menunggu validasi.</p>
+                  <CheckCircle className="h-12 w-12 mx-auto mb-3 opacity-40" />
+                  <p className="text-sm">Tidak ada lowongan yang menunggu validasi.</p>
                 </div>
               ) : (
                 pendingJobs?.map((job: any) => (
                   <div key={job.id} className="p-4 md:p-5 flex items-center justify-between gap-4">
-                    <div>
-                      <h4 className="font-heading font-semibold text-foreground">{job.title}</h4>
-                      <p className="text-sm text-muted-foreground">{job.company} · {job.location}</p>
+                    <div className="min-w-0">
+                      <h4 className="font-heading font-semibold text-foreground truncate">{job.title}</h4>
+                      <p className="text-sm text-muted-foreground truncate">{job.company} · {job.location}</p>
                     </div>
                     <div className="flex gap-2 shrink-0">
                       <Button size="sm" variant="outline" className="text-destructive border-destructive/30 hover:bg-destructive/10" onClick={() => handleRejectJob(job.id)}>
@@ -181,22 +259,24 @@ const Admin = () => {
             </div>
           </TabsContent>
 
-          <TabsContent value="alumni">
+          <TabsContent value="alumni" className="mt-0">
             <div className="flex flex-col md:flex-row gap-2 mb-3">
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input placeholder="Cari nama, universitas, jurusan, pekerjaan, asal, angkatan..." className="pl-10" value={alumniSearch} onChange={(e) => setAlumniSearch(e.target.value)} />
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input placeholder="Cari nama, universitas, jurusan, pekerjaan..." className="pl-10 h-11 rounded-2xl bg-card" value={alumniSearch} onChange={(e) => setAlumniSearch(e.target.value)} />
               </div>
               <div className="flex gap-2 flex-wrap">
-                <Button size="sm" variant="outline" onClick={() => exportToExcel(filteredAlumni, "alumni-peduli")} disabled={filteredAlumni.length === 0}>
+                <Button size="sm" variant="outline" className="h-11 rounded-xl" onClick={() => exportToExcel(filteredAlumni, "alumni-peduli")} disabled={filteredAlumni.length === 0}>
                   <FileSpreadsheet className="h-4 w-4 mr-1.5" /> Excel
                 </Button>
-                <Button size="sm" variant="outline" onClick={() => exportToPDF(filteredAlumni, "alumni-peduli", "Data Alumni PEDULI")} disabled={filteredAlumni.length === 0}>
+                <Button size="sm" variant="outline" className="h-11 rounded-xl" onClick={() => exportToPDF(filteredAlumni, "alumni-peduli", "Data Alumni PEDULI")} disabled={filteredAlumni.length === 0}>
                   <FileDown className="h-4 w-4 mr-1.5" /> PDF
                 </Button>
+                <AlumniAddDialog />
+                <AlumniCsvImport />
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button size="sm" variant="destructive" disabled={(allAlumni?.length ?? 0) === 0}>
+                    <Button size="sm" variant="destructive" className="h-11 rounded-xl" disabled={(allAlumni?.length ?? 0) === 0}>
                       <Trash2 className="h-4 w-4 mr-1.5" /> Hapus Semua
                     </Button>
                   </AlertDialogTrigger>
@@ -216,33 +296,33 @@ const Admin = () => {
               </div>
             </div>
             <div className="text-xs text-muted-foreground mb-2">Menampilkan {filteredAlumni.length} dari {allAlumni?.length ?? 0} alumni</div>
-            <div className="glass-card rounded-xl divide-y divide-border max-h-[600px] overflow-y-auto">
+            <div className="space-y-2 max-h-[70vh] overflow-y-auto pr-0.5">
               {filteredAlumni.length === 0 ? (
-                <div className="p-8 text-center text-muted-foreground">
-                  <Users className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                  <p>Tidak ada data alumni.</p>
+                <div className="rounded-2xl bg-card border border-border p-8 text-center text-muted-foreground">
+                  <Users className="h-12 w-12 mx-auto mb-3 opacity-40" />
+                  <p className="text-sm">Tidak ada data alumni.</p>
                 </div>
               ) : (
                 filteredAlumni.map((a: any) => (
-                  <div key={a.id} className="p-4 flex items-start justify-between gap-4 hover:bg-accent/30">
+                  <div key={a.id} className="rounded-2xl bg-card border border-border shadow-sm p-4 flex items-start justify-between gap-3 transition-colors hover:bg-accent/30">
                     <div className="flex items-start gap-3 min-w-0 flex-1">
                       <div className="h-10 w-10 rounded-full bg-accent flex items-center justify-center font-heading font-bold text-accent-foreground text-sm shrink-0">
                         {a.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2)}
                       </div>
-                      <div className="min-w-0 flex-1 space-y-1">
+                      <div className="min-w-0 flex-1 space-y-1.5">
                         <div className="flex items-center gap-2 flex-wrap">
                           <h4 className="font-heading font-semibold text-foreground text-sm">{a.name}</h4>
-                          {a.gender && <Badge variant="outline" className="text-[10px]">{a.gender}</Badge>}
-                          {a.status && <Badge variant="secondary" className="text-[10px]">{a.status}</Badge>}
+                          {a.gender && <Badge variant="outline" className="text-[10px] rounded-full">{a.gender}</Badge>}
+                          {a.status && <Badge variant="secondary" className="text-[10px] rounded-full">{a.status}</Badge>}
                         </div>
                         <div className="grid sm:grid-cols-2 gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                          <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> Angkatan {a.graduation_year ?? "-"}</span>
-                          <span className="flex items-center gap-1"><MapPin className="h-3 w-3" /> {a.origin ?? "-"}</span>
-                          <span className="flex items-center gap-1"><GraduationCap className="h-3 w-3" /> {a.education_level ?? "-"} {a.major ? `· ${a.major}` : ""}</span>
-                          <span className="flex items-center gap-1"><BookOpen className="h-3 w-3" /> {a.university ?? "-"}</span>
-                          <span className="flex items-center gap-1"><Briefcase className="h-3 w-3" /> {a.position ?? "-"}</span>
-                          <span className="flex items-center gap-1"><Building className="h-3 w-3" /> {a.company ?? "-"}</span>
-                          {a.location && <span className="flex items-center gap-1"><MapPin className="h-3 w-3" /> {a.location}</span>}
+                          <span className="flex items-center gap-1.5"><Calendar className="h-3.5 w-3.5" /> Angkatan {a.graduation_year ?? "-"}</span>
+                          <span className="flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5" /> {a.origin ?? "-"}</span>
+                          <span className="flex items-center gap-1.5"><GraduationCap className="h-3.5 w-3.5" /> {a.education_level ?? "-"} {a.major ? `· ${a.major}` : ""}</span>
+                          <span className="flex items-center gap-1.5"><BookOpen className="h-3.5 w-3.5" /> {a.university ?? "-"}</span>
+                          <span className="flex items-center gap-1.5"><Briefcase className="h-3.5 w-3.5" /> {a.position ?? "-"}</span>
+                          <span className="flex items-center gap-1.5"><Building className="h-3.5 w-3.5" /> {a.company ?? "-"}</span>
+                          {a.location && <span className="flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5" /> {a.location}</span>}
                         </div>
                       </div>
                     </div>
@@ -255,7 +335,7 @@ const Admin = () => {
             </div>
           </TabsContent>
 
-          <TabsContent value="santri">
+          <TabsContent value="santri" className="mt-0">
             {(() => {
               const filteredSantri = (allSantri ?? []).filter((s: any) => {
                 if (!santriSearch) return true;
@@ -275,78 +355,100 @@ const Admin = () => {
                 "Terdaftar Sejak": s.created_at ? new Date(s.created_at).toLocaleDateString("id-ID") : "",
               }));
               return (
-            <>
-            <div className="flex flex-col md:flex-row gap-2 mb-3">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input placeholder="Cari nama, asal, sekolah, jurusan..." className="pl-10" value={santriSearch} onChange={(e) => setSantriSearch(e.target.value)} />
-              </div>
-              <div className="flex gap-2 flex-wrap">
-                <Button size="sm" variant="outline" onClick={() => exportToExcel(santriExportRows, "santri-peduli")} disabled={santriExportRows.length === 0}>
-                  <FileSpreadsheet className="h-4 w-4 mr-1.5" /> Excel
-                </Button>
-                <Button size="sm" variant="outline" onClick={() => exportToPDF(santriExportRows, "santri-peduli", "Data Santri Terdaftar PEDULI")} disabled={santriExportRows.length === 0}>
-                  <FileDown className="h-4 w-4 mr-1.5" /> PDF
-                </Button>
-              </div>
-            </div>
-            <div className="text-xs text-muted-foreground mb-2">
-              Menampilkan {filteredSantri.length} dari {allSantri?.length ?? 0} santri terdaftar
-            </div>
-            <div className="glass-card rounded-xl divide-y divide-border max-h-[600px] overflow-y-auto">
-              {filteredSantri.length === 0 ? (
-                <div className="p-8 text-center text-muted-foreground">
-                  <UserCircle className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                  <p>Belum ada santri terdaftar.</p>
-                </div>
-              ) : (
-                filteredSantri.map((s: any) => (
-                  <div key={s.id} className="p-4 hover:bg-accent/30">
-                    <div className="flex items-start gap-3">
-                      <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center font-heading font-bold text-primary text-sm shrink-0">
-                        {(s.full_name || "S").split(" ").map((n: string) => n[0]).join("").slice(0, 2)}
-                      </div>
-                      <div className="min-w-0 flex-1 space-y-1">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <h4 className="font-heading font-semibold text-foreground text-sm">{s.full_name || "(Tanpa Nama)"}</h4>
-                          {s.gender && <Badge variant="outline" className="text-[10px]">{s.gender}</Badge>}
-                          <Badge className="text-[10px]">Santri</Badge>
-                          {s.created_at && <Badge variant="outline" className="text-[10px]">Daftar: {new Date(s.created_at).toLocaleDateString("id-ID")}</Badge>}
-                        </div>
-                        <div className="grid sm:grid-cols-2 gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                          {s.phone && <span className="flex items-center gap-1"><Phone className="h-3 w-3" /> {s.phone}</span>}
-                          {s.birth_date && <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> {s.birth_date}</span>}
-                          {s.origin && <span className="flex items-center gap-1"><MapPin className="h-3 w-3" /> {s.origin}</span>}
-                          {s.school_origin && <span className="flex items-center gap-1"><BookOpen className="h-3 w-3" /> {s.school_origin}</span>}
-                          {s.education_level && <span className="flex items-center gap-1"><GraduationCap className="h-3 w-3" /> {s.education_level} {s.major ? `· ${s.major}` : ""}</span>}
-                          {s.address && <span className="flex items-center gap-1 sm:col-span-2"><MapPin className="h-3 w-3" /> {s.address}</span>}
-                        </div>
-                      </div>
+                <>
+                  <div className="flex gap-2 mb-3">
+                    <div className="relative flex-1">
+                      <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input placeholder="Cari nama, asal, sekolah, jurusan..." className="pl-10 h-11 rounded-2xl bg-card" value={santriSearch} onChange={(e) => setSantriSearch(e.target.value)} />
                     </div>
+                    <Button variant="outline" size="icon" className="h-11 w-11 rounded-2xl shrink-0" aria-label="Filter" onClick={() => setSantriSearch("")}>
+                      <SlidersHorizontal className="h-4 w-4" />
+                    </Button>
                   </div>
-                ))
-              )}
-            </div>
-            </>
+                  <div className="flex gap-2 flex-wrap mb-2">
+                    <Button size="sm" variant="outline" className="rounded-xl" onClick={() => exportToExcel(santriExportRows, "santri-peduli")} disabled={santriExportRows.length === 0}>
+                      <FileSpreadsheet className="h-4 w-4 mr-1.5" /> Excel
+                    </Button>
+                    <Button size="sm" variant="outline" className="rounded-xl" onClick={() => exportToPDF(santriExportRows, "santri-peduli", "Data Santri Terdaftar PEDULI")} disabled={santriExportRows.length === 0}>
+                      <FileDown className="h-4 w-4 mr-1.5" /> PDF
+                    </Button>
+                  </div>
+                  <div className="text-xs text-muted-foreground mb-2">
+                    Menampilkan {filteredSantri.length} dari {allSantri?.length ?? 0} santri terdaftar
+                  </div>
+                  <div className="space-y-2 max-h-[70vh] overflow-y-auto pr-0.5">
+                    {santriLoading ? (
+                      [1, 2, 3].map((i) => (
+                        <div key={i} className="rounded-2xl bg-card border border-border p-4 animate-pulse">
+                          <div className="flex items-center gap-3">
+                            <div className="h-10 w-10 rounded-full bg-muted" />
+                            <div className="flex-1 space-y-2">
+                              <div className="h-3 w-1/3 rounded bg-muted" />
+                              <div className="h-3 w-2/3 rounded bg-muted" />
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    ) : filteredSantri.length === 0 ? (
+                      <div className="rounded-2xl bg-card border border-border p-8 text-center text-muted-foreground">
+                        <UserCircle className="h-12 w-12 mx-auto mb-3 opacity-40" />
+                        <p className="text-sm">Belum ada santri terdaftar.</p>
+                      </div>
+                    ) : (
+                      filteredSantri.map((s: any) => (
+                        <div key={s.id} className="rounded-2xl bg-card border border-border shadow-sm p-4 flex items-start gap-3 transition-colors hover:bg-accent/30 cursor-pointer active:scale-[0.99]">
+                          <div className="h-10 w-10 rounded-full bg-accent flex items-center justify-center font-heading font-bold text-primary text-sm shrink-0">
+                            {(s.full_name || "S").split(" ").map((n: string) => n[0]).join("").slice(0, 2)}
+                          </div>
+                          <div className="min-w-0 flex-1 space-y-1.5">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <h4 className="font-heading font-semibold text-foreground text-sm">{s.full_name || "(Tanpa Nama)"}</h4>
+                              {s.gender && <Badge variant="outline" className="text-[10px] rounded-full">{s.gender}</Badge>}
+                            </div>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <Badge className="text-[10px] rounded-full">Santri</Badge>
+                              {s.created_at && <Badge variant="outline" className="text-[10px] rounded-full">Daftar: {new Date(s.created_at).toLocaleDateString("id-ID")}</Badge>}
+                            </div>
+                            <div className="grid sm:grid-cols-2 gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                              {s.phone && <span className="flex items-center gap-1.5"><Phone className="h-3.5 w-3.5" /> {s.phone}</span>}
+                              {s.birth_date && <span className="flex items-center gap-1.5"><Calendar className="h-3.5 w-3.5" /> {s.birth_date}</span>}
+                              {s.origin && <span className="flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5" /> {s.origin}</span>}
+                              {s.school_origin && <span className="flex items-center gap-1.5"><BookOpen className="h-3.5 w-3.5" /> {s.school_origin}</span>}
+                              {s.education_level && <span className="flex items-center gap-1.5"><GraduationCap className="h-3.5 w-3.5" /> {s.education_level} {s.major ? `· ${s.major}` : ""}</span>}
+                              {s.address && <span className="flex items-center gap-1.5 sm:col-span-2"><MapPin className="h-3.5 w-3.5" /> {s.address}</span>}
+                            </div>
+                          </div>
+                          <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 mt-1" />
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </>
               );
             })()}
           </TabsContent>
 
-          <TabsContent value="partners">
-            <div className="glass-card rounded-xl p-8 text-center text-muted-foreground">
-              <Building2 className="h-12 w-12 mx-auto mb-3 opacity-50" />
-              <p>Manajemen mitra perusahaan akan ditampilkan di sini.</p>
+          <TabsContent value="partners" className="mt-0">
+            <div className="rounded-2xl bg-card border border-border p-8 text-center text-muted-foreground shadow-sm">
+              <Building2 className="h-12 w-12 mx-auto mb-3 opacity-40" />
+              <p className="text-sm">Manajemen mitra perusahaan akan ditampilkan di sini.</p>
             </div>
           </TabsContent>
 
-          <TabsContent value="cbt"><CbtManager /></TabsContent>
-          <TabsContent value="psikotes"><PsikotesManager /></TabsContent>
-          <TabsContent value="universities"><UniversitiesManager /></TabsContent>
-          <TabsContent value="scholarships"><ScholarshipManager /></TabsContent>
-          <TabsContent value="referrals"><ReferralManager /></TabsContent>
-          <TabsContent value="reports"><UsageReports /></TabsContent>
+          <TabsContent value="cbt" className="mt-0"><CbtManager /></TabsContent>
+          <TabsContent value="psikotes" className="mt-0"><PsikotesManager /></TabsContent>
+          <TabsContent value="universities" className="mt-0"><UniversitiesManager /></TabsContent>
+          <TabsContent value="scholarships" className="mt-0"><ScholarshipManager /></TabsContent>
+          <TabsContent value="referrals" className="mt-0"><ReferralManager /></TabsContent>
+          <TabsContent value="reports" className="mt-0"><UsageReports /></TabsContent>
         </Tabs>
       </div>
+
+      <AdminBottomNav
+        active={segment === "santri" ? "santri" : segment === "lainnya" ? "layanan" : "beranda"}
+        onSantri={() => setTab("santri")}
+        onLayanan={() => setTab("jobs")}
+      />
     </div>
   );
 };
