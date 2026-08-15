@@ -31,14 +31,19 @@ import yayasanLogo from "@/assets/yayasan-logo-t.png.asset.json";
 import trisaktiLogo from "@/assets/trisakti-logo-t.png.asset.json";
 import diktiLogo from "@/assets/dikti-logo-t.png.asset.json";
 import tutwuriLogo from "@/assets/tutwuri-logo.png.asset.json";
-import bimaLogo from "@/assets/bima-logo-icon.png";
+import bimaAsset from "@/assets/bima-logo-full.png.asset.json";
 
 const logos = [
   { src: duLogo.url, alt: "Pesantren Daarul 'Uluum Lido" },
   { src: yayasanLogo.url, alt: "Yayasan Salsabila Lido" },
   { src: trisaktiLogo.url, alt: "Universitas Trisakti" },
   { src: diktiLogo.url, alt: "Diktisaintek Berdampak" },
-  { src: bimaLogo, alt: "BiMA" },
+  {
+    src: bimaAsset.url,
+    alt: "BiMA",
+    className: "h-9 w-auto lg:h-11",
+    compactClassName: "h-7 w-auto sm:h-8",
+  },
   { src: tutwuriLogo.url, alt: "Tut Wuri Handayani" },
 ];
 
@@ -52,17 +57,20 @@ const LogoStrip = ({ compact = false }: { compact?: boolean }) => (
       compact ? "gap-1.5 sm:gap-2" : "gap-3 lg:gap-4"
     }`}
   >
-    {logos.map((l) => (
-      <img
-        key={l.alt}
-        src={l.src}
-        alt={l.alt}
-        loading="lazy"
-        className={`object-contain shrink-0 ${
-          compact ? "h-7 w-7 sm:h-8 sm:w-8" : "h-9 w-9 lg:h-11 lg:w-11"
-        }`}
-      />
-    ))}
+    {logos.map((l) => {
+      const sizeClass = compact
+        ? l.compactClassName || l.className || "h-7 w-7 sm:h-8 sm:w-8"
+        : l.className || "h-9 w-9 lg:h-11 lg:w-11";
+      return (
+        <img
+          key={l.alt}
+          src={l.src}
+          alt={l.alt}
+          loading="lazy"
+          className={`object-contain shrink-0 ${sizeClass}`}
+        />
+      );
+    })}
   </div>
 );
 

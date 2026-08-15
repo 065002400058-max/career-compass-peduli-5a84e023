@@ -3,7 +3,7 @@ import duLogo from "@/assets/du-logo-t.png.asset.json";
 import yayasanLogo from "@/assets/yayasan-logo-t.png.asset.json";
 import trisaktiLogo from "@/assets/trisakti-logo-white.png.asset.json";
 import diktiLogo from "@/assets/dikti-logo-t.png.asset.json";
-import bimaLogo from "@/assets/bima-logo-icon.png";
+import bimaAsset from "@/assets/bima-logo-full.png.asset.json";
 
 const Footer = () => (
   <footer className="bg-foreground text-background/80 pt-5 pb-20 md:pt-10 md:pb-14">
@@ -13,7 +13,7 @@ const Footer = () => (
         <img src={yayasanLogo.url} alt="Yayasan Salsabila Lido" className="h-9 w-9 object-contain" />
         <img src={trisaktiLogo.url} alt="Universitas Trisakti" className="h-9 w-9 object-contain" />
         <img src={diktiLogo.url} alt="Diktisaintek Berdampak" className="h-9 w-9 object-contain" />
-        <img src={bimaLogo} alt="BiMA" className="h-9 w-9 object-contain" />
+        <img src={bimaAsset.url} alt="BiMA" className="h-9 w-auto object-contain" />
         <span className="font-heading font-bold text-background text-sm">Career Center PEDULI</span>
       </div>
 
