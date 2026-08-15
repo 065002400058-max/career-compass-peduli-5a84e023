@@ -1,0 +1,1 @@
+CREATE POLICY "admin delete referral" ON public.counseling_referrals FOR DELETE TO authenticated USING (public.has_role(auth.uid(), 'admin'::public.app_role));
