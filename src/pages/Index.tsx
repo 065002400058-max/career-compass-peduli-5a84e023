@@ -144,7 +144,7 @@ const Index = () => {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-5">
             {[
               { icon: Brain, title: "Tes CBT", desc: "Tes Potensi Akademik & Minat Bakat.", to: "/cbt", cta: "Buka CBT" },
-              { icon: HeartPulse, title: "Psikotes & Konseling", desc: "Cek mental dan saran konseling.", to: "/psikotes", cta: "Buka Psikotes" },
+              { icon: HeartPulse, title: "Screening Mental & Konseling", desc: "Cek kondisi mental dan saran konseling.", to: "/psikotes", cta: "Buka Konseling" },
               { icon: School, title: "Jelajahi Kampus", desc: "Eksplorasi kampus dan program studi.", to: "/universities", cta: "Lihat Kampus" },
             ].map((s) => (
               <Link key={s.title} to={s.to} className="glass-card-hover rounded-xl p-4 md:p-5 border-primary/10 group block">
