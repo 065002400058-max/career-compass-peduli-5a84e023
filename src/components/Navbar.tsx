@@ -31,14 +31,19 @@ import yayasanLogo from "@/assets/yayasan-logo-t.png.asset.json";
 import trisaktiLogo from "@/assets/trisakti-logo-t.png.asset.json";
 import diktiLogo from "@/assets/dikti-logo-t.png.asset.json";
 import tutwuriLogo from "@/assets/tutwuri-logo.png.asset.json";
-import bimaLogo from "@/assets/bima-logo-icon.png";
+import bimaAsset from "@/assets/bima-logo-full.png.asset.json";
 
 const logos = [
   { src: duLogo.url, alt: "Pesantren Daarul 'Uluum Lido" },
   { src: yayasanLogo.url, alt: "Yayasan Salsabila Lido" },
   { src: trisaktiLogo.url, alt: "Universitas Trisakti" },
   { src: diktiLogo.url, alt: "Diktisaintek Berdampak" },
-  { src: bimaLogo, alt: "BiMA" },
+  {
+    src: bimaAsset.url,
+    alt: "BiMA",
+    className: "h-9 w-auto lg:h-11",
+    compactClassName: "h-7 w-auto sm:h-8",
+  },
   { src: tutwuriLogo.url, alt: "Tut Wuri Handayani" },
 ];
 
