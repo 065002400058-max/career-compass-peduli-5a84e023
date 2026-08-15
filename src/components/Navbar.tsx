@@ -7,6 +7,9 @@ import { Badge } from "@/components/ui/badge";
 import logo from "@/assets/dulido-logo.png.asset.json";
 import duLogo from "@/assets/daarul-uluum-logo.png.asset.json";
 import yayasanLogo from "@/assets/yayasan-salsabila-logo.png.asset.json";
+import trisaktiLogo from "@/assets/trisakti-logo.png.asset.json";
+import diktiLogo from "@/assets/diktisaintek-logo.png.asset.json";
+
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
@@ -51,13 +54,16 @@ const Navbar = () => {
   return (
     <nav className="nav-glass sticky top-0 z-50">
       <div className="container mx-auto flex items-center justify-between h-16 px-4">
-        <Link to="/" className="flex items-center gap-2">
-          <img src={duLogo.url} alt="Pesantren Daarul Uluum Lido" className="h-9 w-9 md:h-10 md:w-10 object-contain" />
-          <img src={yayasanLogo.url} alt="Yayasan Salsabila Lido" className="h-9 w-9 md:h-10 md:w-10 object-contain" />
-          <span className="font-heading font-bold text-foreground hidden md:block">
+        <Link to="/" className="flex items-center gap-1.5 min-w-0">
+          <img src={duLogo.url} alt="Pesantren Daarul Uluum Lido" className="h-8 w-8 md:h-10 md:w-10 object-contain shrink-0" />
+          <img src={yayasanLogo.url} alt="Yayasan Salsabila Lido" className="h-8 w-8 md:h-10 md:w-10 object-contain shrink-0" />
+          <img src={trisaktiLogo.url} alt="Universitas Trisakti" className="h-8 w-8 md:h-10 md:w-10 object-contain shrink-0" />
+          <img src={diktiLogo.url} alt="Diktisaintek Berdampak" className="h-8 w-8 md:h-10 md:w-10 object-contain shrink-0" />
+          <span className="font-heading font-bold text-foreground text-[11px] leading-tight sm:text-sm md:text-base truncate">
             Career Center <span className="text-primary">PEDULI</span>
           </span>
         </Link>
+
 
         {/* Desktop */}
         <div className="hidden lg:flex items-center gap-1">
