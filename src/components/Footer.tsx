@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
-import duLogo from "@/assets/daarul-uluum-logo.png.asset.json";
-import yayasanLogo from "@/assets/yayasan-salsabila-logo.png.asset.json";
+import duLogo from "@/assets/du-logo-t.png.asset.json";
+import yayasanLogo from "@/assets/yayasan-logo-t.png.asset.json";
 import trisaktiLogo from "@/assets/trisakti-logo.png.asset.json";
 import diktiLogo from "@/assets/diktisaintek-logo.png.asset.json";
 
@@ -8,10 +8,10 @@ const Footer = () => (
   <footer className="bg-foreground text-background/80 py-5 md:py-10">
     <div className="container mx-auto px-4">
       <div className="flex items-center gap-2 mb-3">
-        <img src={duLogo.url} alt="Daarul Uluum Lido" className="h-8 w-8 object-contain" />
-        <img src={yayasanLogo.url} alt="Yayasan Salsabila Lido" className="h-8 w-8 object-contain rounded" />
-        <img src={trisaktiLogo.url} alt="Universitas Trisakti" className="h-8 w-8 object-contain" />
-        <img src={diktiLogo.url} alt="Diktisaintek Berdampak" className="h-8 w-8 object-contain" />
+        <img src={duLogo.url} alt="Daarul Uluum Lido" className="h-9 w-9 object-contain" />
+        <img src={yayasanLogo.url} alt="Yayasan Salsabila Lido" className="h-9 w-9 object-contain" />
+        <img src={trisaktiLogo.url} alt="Universitas Trisakti" className="h-9 w-9 object-contain" />
+        <img src={diktiLogo.url} alt="Diktisaintek Berdampak" className="h-9 w-9 object-contain" />
         <span className="font-heading font-bold text-background text-sm">Career Center PEDULI</span>
       </div>
 
@@ -31,9 +31,9 @@ const Footer = () => (
         <div>
           <h4 className="font-heading font-semibold text-background text-sm mb-1.5">Informasi</h4>
           <div className="flex flex-col gap-1 text-xs md:text-sm">
-            <a href="#" className="hover:text-primary transition-colors">Tentang Kami</a>
-            <a href="#" className="hover:text-primary transition-colors">FAQ</a>
-            <a href="#" className="hover:text-primary transition-colors">Kontak</a>
+            <Link to="/tentang" className="hover:text-primary transition-colors">Tentang Kami</Link>
+            <Link to="/tentang#faq" className="hover:text-primary transition-colors">FAQ</Link>
+            <Link to="/tentang#kontak" className="hover:text-primary transition-colors">Kontak</Link>
           </div>
         </div>
         <div>

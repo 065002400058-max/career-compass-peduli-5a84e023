@@ -24,6 +24,7 @@ import PsikotesTake from "./pages/PsikotesTake";
 import Universities from "./pages/Universities";
 import TracerStudy from "./pages/TracerStudy";
 import Scholarships from "./pages/Scholarships";
+import Tentang from "./pages/Tentang";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -54,6 +55,7 @@ const App = () => (
             <Route path="/universities" element={<Universities />} />
             <Route path="/tracer" element={<TracerStudy />} />
             <Route path="/beasiswa" element={<Scholarships />} />
+            <Route path="/tentang" element={<Tentang />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           <Footer />
