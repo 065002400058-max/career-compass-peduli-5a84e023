@@ -376,7 +376,8 @@ const Navbar = () => {
 
       {/* ---------- Pattern strip ---------- */}
       <div
-        className="gradient-bg islamic-pattern-bg w-full h-6 md:h-9 border-b border-border/40"
+        className="islamic-pattern-bg w-full h-6 md:h-9 border-b border-border/40"
+        style={{ backgroundColor: "hsl(158 64% 32%)" }}
         aria-hidden="true"
       />
     </header>
