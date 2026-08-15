@@ -27,7 +27,7 @@ const Navbar = () => {
     { label: "Mitra", path: "/partners", show: true },
     { label: "Event", path: "/events", show: true },
     { label: "Tes CBT", path: "/cbt", show: true },
-    { label: "Psikotes", path: "/psikotes", show: true },
+    { label: "Konseling", path: "/psikotes", show: true },
     { label: "Kampus", path: "/universities", show: true },
     { label: "Beasiswa", path: "/beasiswa", show: true },
     { label: "Tracer Study", path: "/tracer", show: !!user },
@@ -52,8 +52,8 @@ const Navbar = () => {
     <nav className="nav-glass sticky top-0 z-50">
       <div className="container mx-auto flex items-center justify-between h-16 px-4">
         <Link to="/" className="flex items-center gap-2">
-          <img src={duLogo.url} alt="Pesantren Daarul Uluum Lido" className="h-10 w-10 object-contain" />
-          <img src={yayasanLogo.url} alt="Yayasan Salsabila Lido" className="h-10 w-10 object-contain hidden sm:block" />
+          <img src={duLogo.url} alt="Pesantren Daarul Uluum Lido" className="h-9 w-9 md:h-10 md:w-10 object-contain" />
+          <img src={yayasanLogo.url} alt="Yayasan Salsabila Lido" className="h-9 w-9 md:h-10 md:w-10 object-contain" />
           <span className="font-heading font-bold text-foreground hidden md:block">
             Career Center <span className="text-primary">PEDULI</span>
           </span>

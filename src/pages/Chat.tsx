@@ -158,8 +158,8 @@ const Chat = () => {
 
   return (
     <div className="min-h-[calc(100vh-4rem)] gradient-bg-subtle">
-      <div className="container mx-auto px-4 py-6">
-        <div className={`grid grid-cols-1 ${user ? "lg:grid-cols-[280px_1fr]" : ""} gap-4 h-[calc(100vh-7rem)]`}>
+      <div className="container mx-auto max-w-none px-2 sm:px-4 py-3 md:py-6">
+        <div className={`grid grid-cols-1 ${user ? "lg:grid-cols-[260px_1fr]" : ""} gap-4 h-[calc(100dvh-6rem)] md:h-[calc(100vh-7rem)]`}>
           {user && (
             <aside className="glass-card rounded-xl p-3 flex flex-col">
               <Button onClick={handleNew} className="w-full mb-3">
@@ -237,7 +237,7 @@ const Chat = () => {
                       <Bot className="h-4 w-4 text-primary-foreground" />
                     </div>
                   )}
-                  <div className={`max-w-[80%] rounded-2xl px-4 py-2.5 ${m.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"}`}>
+                  <div className={`max-w-[88%] sm:max-w-[80%] rounded-2xl px-4 py-2.5 ${m.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"}`}>
                     {m.role === "assistant" ? (
                       <div className="prose prose-sm max-w-none dark:prose-invert prose-p:my-1 prose-ul:my-1">
                         <ReactMarkdown>{m.content}</ReactMarkdown>

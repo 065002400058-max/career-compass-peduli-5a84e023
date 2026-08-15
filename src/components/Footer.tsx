@@ -3,11 +3,11 @@ import duLogo from "@/assets/daarul-uluum-logo.png.asset.json";
 import yayasanLogo from "@/assets/yayasan-salsabila-logo.png.asset.json";
 
 const Footer = () => (
-  <footer className="bg-foreground text-background/80 section-padding">
+  <footer className="bg-foreground text-background/80 py-8 md:py-12">
     <div className="container mx-auto">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 md:gap-8 mb-8">
         <div>
-          <div className="flex items-center gap-2 mb-4">
+          <div className="flex items-center gap-2 mb-3">
             <img src={duLogo.url} alt="Daarul Uluum Lido" className="h-10 w-10 object-contain" />
             <img src={yayasanLogo.url} alt="Yayasan Salsabila Lido" className="h-10 w-10 object-contain rounded" />
             <span className="font-heading font-bold text-background">Career Center PEDULI</span>
@@ -39,7 +39,7 @@ const Footer = () => (
           </div>
         </div>
       </div>
-      <div className="border-t border-background/10 pt-6 text-center text-sm text-background/40">
+      <div className="border-t border-background/10 pt-5 text-center text-sm text-background/40">
         © 2026 Smart Career Center PEDULI. All rights reserved.
       </div>
     </div>

@@ -42,7 +42,7 @@ const PsikotesList = () => {
             <HeartPulse className="h-4 w-4 md:h-5 md:w-5 text-primary-foreground" />
           </div>
           <div className="min-w-0">
-            <h1 className="font-heading text-lg md:text-3xl font-bold text-foreground leading-tight">Psikotes & Konseling</h1>
+            <h1 className="font-heading text-lg md:text-3xl font-bold text-foreground leading-tight">Screening Mental & Konseling</h1>
             <p className="text-muted-foreground text-xs md:text-sm">Cek kondisi mental Anda — dapatkan saran konseling personal.</p>
           </div>
         </div>
