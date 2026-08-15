@@ -1,11 +1,11 @@
 {
   "version": 1,
-  "asset_id": "379961f0-ca31-4769-99de-af0d4a804ff9",
+  "asset_id": "46772899-96aa-48b3-afe8-84b325a9a11f",
   "project_id": "8c4929f0-efd0-4002-88dc-2de4d33db0fc",
-  "url": "/__l5e/assets-v1/379961f0-ca31-4769-99de-af0d4a804ff9/trisakti-white-clean.png",
-  "r2_key": "a/v1/8c4929f0-efd0-4002-88dc-2de4d33db0fc/379961f0-ca31-4769-99de-af0d4a804ff9/trisakti-white-clean.png",
-  "original_filename": "trisakti-white-clean.png",
-  "size": 36768,
+  "url": "/__l5e/assets-v1/46772899-96aa-48b3-afe8-84b325a9a11f/trisakti-white.png",
+  "r2_key": "a/v1/8c4929f0-efd0-4002-88dc-2de4d33db0fc/46772899-96aa-48b3-afe8-84b325a9a11f/trisakti-white.png",
+  "original_filename": "trisakti-white.png",
+  "size": 36503,
   "content_type": "image/png",
-  "created_at": "2026-08-15T08:15:37Z"
+  "created_at": "2026-08-15T08:20:55Z"
 }
