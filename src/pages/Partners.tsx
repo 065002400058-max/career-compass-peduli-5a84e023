@@ -23,7 +23,52 @@ const Partners = () => {
       return data;
     },
   });
+  const { data: extraStats } = useQuery({
+    queryKey: ["partner-stats"],
+    queryFn: async () => {
+      const [jobs, placed] = await Promise.all([
+        supabase.from("jobs").select("id", { count: "exact", head: true }).eq("status", "approved"),
+        supabase.from("alumni").select("id", { count: "exact", head: true }).not("company", "is", null),
+      ]);
+      return { jobs: jobs.count ?? 0, placed: placed.count ?? 0 };
+    },
+  });
 
+  const grid = (
+    <>
+      {isLoading ? (
+        <div className="text-center py-16 text-muted-foreground">Memuat data...</div>
+      ) : partners.length === 0 ? (
+        <div className="text-center py-16 text-muted-foreground">
+          <Building2 className="h-12 w-12 mx-auto mb-4 opacity-50" />
+          <p>Belum ada data perusahaan mitra.</p>
+        </div>
+      ) : (
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {partners.map((p) => (
+            <div key={p.id} className="glass-card-hover rounded-xl p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="h-12 w-12 rounded-xl bg-secondary flex items-center justify-center text-secondary-foreground font-heading font-bold text-sm">
+                  {p.name.split(" ").pop()?.slice(0, 2).toUpperCase()}
+                </div>
+                <div>
+                  <h3 className="font-heading font-semibold text-foreground">{p.name}</h3>
+                  <p className="text-xs text-muted-foreground">{p.industry}</p>
+                </div>
+              </div>
+              {p.description && <p className="text-sm text-muted-foreground mb-3">{p.description}</p>}
+              {p.location && <p className="text-xs text-muted-foreground">{p.location}</p>}
+              {p.website && (
+                <a href={p.website} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline flex items-center gap-1 mt-2">
+                  <ExternalLink className="h-3 w-3" />Website
+                </a>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </>
+  );
 
   return (
     <div className="min-h-screen gradient-bg-subtle">
@@ -33,7 +78,15 @@ const Partners = () => {
             <h1 className="font-heading text-3xl font-bold text-foreground">Perusahaan Mitra</h1>
             <p className="text-muted-foreground mt-1">Jaringan mitra perusahaan Career Center PEDULI</p>
           </div>
-          <Button>Daftar Sebagai Mitra</Button>
+          {isAdmin ? (
+            <Badge variant="destructive">Mode Admin</Badge>
+          ) : (
+            <Button asChild>
+              <a href="mailto:careercenter@daarululuumlido.sch.id?subject=Pendaftaran%20Mitra%20Career%20Center%20PEDULI">
+                Daftar Sebagai Mitra
+              </a>
+            </Button>
+          )}
         </div>
 
         <div className="grid grid-cols-3 gap-4 mb-8">
@@ -44,50 +97,32 @@ const Partners = () => {
           </div>
           <div className="glass-card rounded-xl p-5 text-center">
             <Briefcase className="h-6 w-6 text-primary mx-auto mb-2" />
-            <p className="text-2xl font-heading font-bold text-foreground">-</p>
+            <p className="text-2xl font-heading font-bold text-foreground">{extraStats?.jobs ?? "-"}</p>
             <p className="text-xs text-muted-foreground">Lowongan Dibuka</p>
           </div>
           <div className="glass-card rounded-xl p-5 text-center">
             <Users className="h-6 w-6 text-primary mx-auto mb-2" />
-            <p className="text-2xl font-heading font-bold text-foreground">-</p>
+            <p className="text-2xl font-heading font-bold text-foreground">{extraStats?.placed ?? "-"}</p>
             <p className="text-xs text-muted-foreground">Alumni Ditempatkan</p>
           </div>
         </div>
 
-        {isLoading ? (
-          <div className="text-center py-16 text-muted-foreground">Memuat data...</div>
-        ) : partners.length === 0 ? (
-          <div className="text-center py-16 text-muted-foreground">
-            <Building2 className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p>Belum ada data perusahaan mitra.</p>
-          </div>
+        {isAdmin ? (
+          <Tabs defaultValue="all">
+            <TabsList className="glass-card flex-wrap h-auto mb-5">
+              <TabsTrigger value="all">Daftar Mitra</TabsTrigger>
+              <TabsTrigger value="manage"><Settings className="h-4 w-4 mr-2" />Kelola (Admin)</TabsTrigger>
+            </TabsList>
+            <TabsContent value="all">{grid}</TabsContent>
+            <TabsContent value="manage"><PartnersManager /></TabsContent>
+          </Tabs>
         ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {partners.map((p) => (
-              <div key={p.id} className="glass-card-hover rounded-xl p-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="h-12 w-12 rounded-xl bg-secondary flex items-center justify-center text-secondary-foreground font-heading font-bold text-sm">
-                    {p.name.split(" ").pop()?.slice(0, 2).toUpperCase()}
-                  </div>
-                  <div>
-                    <h3 className="font-heading font-semibold text-foreground">{p.name}</h3>
-                    <p className="text-xs text-muted-foreground">{p.industry}</p>
-                  </div>
-                </div>
-                {p.description && <p className="text-sm text-muted-foreground mb-3">{p.description}</p>}
-                {p.location && <p className="text-xs text-muted-foreground">{p.location}</p>}
-                {p.website && (
-                  <a href={p.website} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline flex items-center gap-1 mt-2">
-                    <ExternalLink className="h-3 w-3" />Website
-                  </a>
-                )}
-              </div>
-            ))}
-          </div>
+          grid
         )}
       </div>
     </div>
   );
 };
+
 
 export default Partners;
