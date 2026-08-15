@@ -51,6 +51,7 @@ const Navbar = () => {
         { label: "Tes CBT", path: "/cbt" },
         { label: "Konseling", path: "/psikotes" },
         { label: "Jelajahi Kampus", path: "/universities" },
+        ...(user ? [{ label: "Dashboard", path: "/dashboard" }] : []),
       ],
     },
     {
@@ -58,6 +59,7 @@ const Navbar = () => {
       items: [
         { label: "Alumni", path: "/alumni" },
         { label: "Mitra Perusahaan", path: "/partners" },
+        ...(user ? [{ label: "Tracer Study", path: "/tracer" }] : []),
       ],
     },
     {
@@ -71,8 +73,6 @@ const Navbar = () => {
   ];
 
   const extraLinks: Item[] = [
-    { label: "Dashboard", path: "/dashboard", show: !!user },
-    { label: "Tracer Study", path: "/tracer", show: !!user },
     { label: "Admin", path: "/admin", show: hasRole("admin") },
   ].filter((i) => i.show);
 
