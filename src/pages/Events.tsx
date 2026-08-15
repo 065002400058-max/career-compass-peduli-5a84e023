@@ -1,11 +1,16 @@
-import { CalendarDays, MapPin, Clock, Users } from "lucide-react";
+import { CalendarDays, MapPin, Clock, Users, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { id as idLocale } from "date-fns/locale";
 import { motion } from "framer-motion";
+import { useAuth } from "@/contexts/AuthContext";
+import EventsManager from "@/components/admin/EventsManager";
+import { toast } from "sonner";
+
 
 const typeColor: Record<string, string> = {
   "Career Fair": "default",
