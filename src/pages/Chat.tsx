@@ -158,8 +158,9 @@ const Chat = () => {
 
   return (
     <div className="min-h-[calc(100vh-4rem)] gradient-bg-subtle">
-      <div className="container mx-auto max-w-none px-2 sm:px-4 py-3 md:py-6">
-        <div className={`grid grid-cols-1 ${user ? "lg:grid-cols-[260px_1fr]" : ""} gap-4 h-[calc(100dvh-6rem)] md:h-[calc(100vh-7rem)]`}>
+      <div className="w-full max-w-[1600px] mx-auto px-2 sm:px-4 py-2 md:py-5">
+        <div className={`grid grid-cols-1 ${user ? "lg:grid-cols-[240px_1fr]" : ""} gap-3 h-[calc(100dvh-5rem)] md:h-[calc(100vh-6rem)]`}>
+
           {user && (
             <aside className="glass-card rounded-xl p-3 flex flex-col">
               <Button onClick={handleNew} className="w-full mb-3">
