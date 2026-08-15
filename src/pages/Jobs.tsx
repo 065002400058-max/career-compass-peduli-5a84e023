@@ -1,4 +1,4 @@
-import { Search, MapPin, Clock, Building2, Filter, Shield, CheckCircle2 } from "lucide-react";
+import { Search, MapPin, Clock, Building2, Filter, Shield, CheckCircle2, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,6 +13,8 @@ import { id as idLocale } from "date-fns/locale";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import JobsManager from "@/components/admin/JobsManager";
 
 const jobTypes = ["Semua", "Full-time", "Part-time", "Internship", "Remote"];
 const locations = ["Semua", "Jakarta", "Bandung", "Surabaya", "Yogyakarta", "Remote"];
@@ -75,6 +77,17 @@ const Jobs = () => {
             <Badge variant="destructive" className="gap-1"><Shield className="h-3 w-3" /> Mode Admin</Badge>
           )}
         </div>
+
+        {isAdmin && (
+          <Tabs defaultValue="list" className="mb-6">
+            <TabsList className="glass-card flex-wrap h-auto">
+              <TabsTrigger value="list">Daftar Lowongan</TabsTrigger>
+              <TabsTrigger value="manage"><Settings className="h-4 w-4 mr-2" />Kelola (Admin)</TabsTrigger>
+            </TabsList>
+            <TabsContent value="list" />
+            <TabsContent value="manage"><JobsManager /></TabsContent>
+          </Tabs>
+        )}
 
         <div className="glass-card rounded-xl p-4 md:p-6 mb-8">
           <div className="flex flex-col md:flex-row gap-3">

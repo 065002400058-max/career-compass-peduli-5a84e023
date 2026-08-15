@@ -1,11 +1,16 @@
-import { CalendarDays, MapPin, Clock, Users } from "lucide-react";
+import { CalendarDays, MapPin, Clock, Users, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { id as idLocale } from "date-fns/locale";
 import { motion } from "framer-motion";
+import { useAuth } from "@/contexts/AuthContext";
+import EventsManager from "@/components/admin/EventsManager";
+import { toast } from "sonner";
+
 
 const typeColor: Record<string, string> = {
   "Career Fair": "default",
@@ -24,7 +29,39 @@ const item = {
   show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" as const } },
 };
 
+const downloadIcs = (ev: any) => {
+  const dt = new Date(ev.date);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const fmt = (d: Date) =>
+    `${d.getUTCFullYear()}${pad(d.getUTCMonth() + 1)}${pad(d.getUTCDate())}T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}00Z`;
+  const end = new Date(dt.getTime() + 2 * 60 * 60 * 1000);
+  const ics = [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//Career Center PEDULI//ID",
+    "BEGIN:VEVENT",
+    `UID:${ev.id}@careerpeduli`,
+    `DTSTAMP:${fmt(new Date())}`,
+    `DTSTART:${fmt(dt)}`,
+    `DTEND:${fmt(end)}`,
+    `SUMMARY:${ev.title}`,
+    `LOCATION:${ev.location ?? ""}`,
+    `DESCRIPTION:${(ev.description ?? "").replace(/\n/g, " ")}`,
+    "END:VEVENT",
+    "END:VCALENDAR",
+  ].join("\r\n");
+  const url = URL.createObjectURL(new Blob([ics], { type: "text/calendar" }));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${ev.title.replace(/[^a-z0-9]+/gi, "-").toLowerCase()}.ics`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast.success("Event ditambahkan ke kalender Anda");
+};
+
 const Events = () => {
+  const { hasRole } = useAuth();
+  const isAdmin = hasRole("admin");
   const { data: events = [], isLoading } = useQuery({
     queryKey: ["events"],
     queryFn: async () => {
@@ -49,6 +86,17 @@ const Events = () => {
           <h1 className="font-heading text-3xl font-bold text-foreground">Event Karier</h1>
           <p className="text-muted-foreground mt-1">Seminar, workshop, job fair, dan company talk</p>
         </motion.div>
+
+        {isAdmin && (
+          <Tabs defaultValue="list" className="mb-6">
+            <TabsList className="glass-card flex-wrap h-auto">
+              <TabsTrigger value="list">Daftar Event</TabsTrigger>
+              <TabsTrigger value="manage"><Settings className="h-4 w-4 mr-2" />Kelola (Admin)</TabsTrigger>
+            </TabsList>
+            <TabsContent value="list" />
+            <TabsContent value="manage"><EventsManager /></TabsContent>
+          </Tabs>
+        )}
 
         {isLoading ? (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -102,7 +150,7 @@ const Events = () => {
                     <p className="flex items-center gap-2"><MapPin className="h-3.5 w-3.5 text-primary" />{e.location}</p>
                     {e.capacity && <p className="flex items-center gap-2"><Users className="h-3.5 w-3.5 text-primary" />{e.capacity} peserta</p>}
                   </div>
-                  <Button className="w-full mt-4 gradient-bg border-0 hover:opacity-90 transition-opacity" size="sm">Daftar Event</Button>
+                  <Button className="w-full mt-4 gradient-bg border-0 hover:opacity-90 transition-opacity" size="sm" onClick={() => downloadIcs(e)}>Simpan ke Kalender</Button>
                 </div>
               </motion.div>
             ))}

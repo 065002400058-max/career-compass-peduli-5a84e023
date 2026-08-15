@@ -57,7 +57,7 @@ const Auth = () => {
       Object.entries(form).forEach(([k, v]) => {
         if (k !== "full_name" && v && v.toString().trim() !== "") meta[k] = v.toString().trim();
       });
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email: normalizedEmail,
         password: normalizedPassword,
         options: {
@@ -67,9 +67,23 @@ const Auth = () => {
       });
       if (error) {
         toast({ title: "Registrasi Gagal", description: error.message, variant: "destructive" });
+      } else if (data.session) {
+        toast({ title: "Registrasi Berhasil", description: "Akun aktif, selamat datang!" });
+        navigate("/dashboard");
       } else {
-        toast({ title: "Registrasi Berhasil", description: "Silakan cek email untuk verifikasi akun." });
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email: normalizedEmail,
+          password: normalizedPassword,
+        });
+        if (signInError) {
+          toast({ title: "Registrasi Berhasil", description: "Silakan masuk dengan akun Anda." });
+          setIsLogin(true);
+        } else {
+          toast({ title: "Registrasi Berhasil", description: "Akun aktif, selamat datang!" });
+          navigate("/dashboard");
+        }
       }
+
     }
     setLoading(false);
   };

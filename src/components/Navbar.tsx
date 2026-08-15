@@ -41,9 +41,10 @@ const logos = [
   {
     src: bimaAsset.url,
     alt: "BiMA",
-    className: "h-9 w-auto lg:h-11",
+    className: "h-8 w-auto lg:h-10",
     compactClassName: "h-7 w-auto sm:h-8",
   },
+
   { src: tutwuriLogo.url, alt: "Tut Wuri Handayani" },
 ];
 
@@ -53,14 +54,14 @@ type Group = { label: string; items: Item[]; icon: typeof Home };
 /* ---------- Logo strip (shared) ---------- */
 const LogoStrip = ({ compact = false }: { compact?: boolean }) => (
   <div
-    className={`flex items-center justify-center ${
-      compact ? "gap-1.5 sm:gap-2" : "gap-3 lg:gap-4"
+    className={`flex items-center justify-center flex-wrap ${
+      compact ? "gap-1.5 sm:gap-2" : "gap-2 lg:gap-3"
     }`}
   >
     {logos.map((l) => {
       const sizeClass = compact
         ? l.compactClassName || l.className || "h-7 w-7 sm:h-8 sm:w-8"
-        : l.className || "h-9 w-9 lg:h-11 lg:w-11";
+        : l.className || "h-8 w-8 lg:h-10 lg:w-10";
       return (
         <img
           key={l.alt}
@@ -73,6 +74,7 @@ const LogoStrip = ({ compact = false }: { compact?: boolean }) => (
     })}
   </div>
 );
+
 
 const BrandText = ({ compact = false }: { compact?: boolean }) => (
   <div className={compact ? "text-center" : "text-left"}>
@@ -199,12 +201,12 @@ const Navbar = () => {
       {/* ---------- Row 1: Branding ---------- */}
       <div className="bg-background/95 backdrop-blur-xl">
         {/* Desktop / tablet */}
-        <div className="hidden md:grid container mx-auto grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 py-3">
+        <div className="hidden md:grid container mx-auto grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 lg:gap-4 px-4 py-3 overflow-hidden">
           <div className="flex items-center min-w-0">
             {!loading && user && (
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted min-w-0">
                 <User className="h-4 w-4 text-muted-foreground shrink-0" />
-                <span className="text-xs lg:text-sm text-foreground/80 truncate max-w-[120px] lg:max-w-[160px]">
+                <span className="text-xs lg:text-sm text-foreground/80 truncate max-w-[100px] lg:max-w-[160px]">
                   {user.user_metadata?.full_name || user.email}
                 </span>
                 <Badge className="text-[10px] px-2 py-0 shrink-0">{roleLabel}</Badge>
@@ -214,11 +216,12 @@ const Navbar = () => {
 
           <Link
             to="/"
-            className="flex items-center justify-center gap-4 lg:gap-6 min-w-0"
+            className="flex items-center justify-center gap-3 lg:gap-5 min-w-0 flex-wrap"
           >
             <LogoStrip />
             <BrandText />
           </Link>
+
 
           <div className="flex items-center justify-end">
             <AuthActions />
