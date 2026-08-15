@@ -201,12 +201,13 @@ const Index = () => {
       <section className="section-padding">
         <div className="container mx-auto">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-            {stats.map((s) => (
+            {statMeta.map((s) => (
               <div key={s.label} className="glass-card-hover rounded-xl p-5 md:p-6 text-center border-primary/10">
                 <div className="h-12 w-12 rounded-xl bg-accent flex items-center justify-center mx-auto mb-3 border border-primary/20">
                   <s.icon className="h-6 w-6 text-primary" />
                 </div>
-                <p className="text-2xl md:text-3xl font-heading font-bold text-foreground">{s.value}</p>
+                <p className="text-2xl md:text-3xl font-heading font-bold text-foreground">{counts ? counts[s.key].toLocaleString("id-ID") : "—"}</p>
+
                 <p className="text-sm text-muted-foreground mt-1">{s.label}</p>
               </div>
             ))}
