@@ -1,16 +1,19 @@
 import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { Users, Briefcase, Building2, GraduationCap, ArrowRight, Search, Calendar, BarChart3, Shield, Star, Brain, HeartPulse, School } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import mosqueImg from "@/assets/mosque-silhouette.png";
 import ornamentImg from "@/assets/islamic-ornament-top.png";
 
-const stats = [
-  { icon: Users, value: "12,500+", label: "Total Alumni" },
-  { icon: Briefcase, value: "3,200+", label: "Lowongan Kerja" },
-  { icon: Building2, value: "850+", label: "Perusahaan Mitra" },
-  { icon: GraduationCap, value: "150+", label: "Program Beasiswa" },
+const statMeta = [
+  { icon: Users, label: "Total Alumni", key: "alumni" as const },
+  { icon: Briefcase, label: "Lowongan Kerja", key: "jobs" as const },
+  { icon: Building2, label: "Perusahaan Mitra", key: "partners" as const },
+  { icon: GraduationCap, label: "Program Beasiswa", key: "scholarships" as const },
 ];
+
 
 const features = [
   { icon: Search, title: "Portal Lowongan", desc: "Cari dan lamar pekerjaan dari perusahaan mitra terpercaya." },
@@ -21,6 +24,26 @@ const features = [
 
 const Index = () => {
   const { user, hasRole, loading } = useAuth();
+
+  const { data: counts } = useQuery({
+    queryKey: ["home-stats"],
+    queryFn: async () => {
+      const [alumni, jobs, partners, scholarships] = await Promise.all([
+        supabase.from("alumni").select("id", { count: "exact", head: true }),
+        supabase.from("jobs").select("id", { count: "exact", head: true }).eq("status", "approved"),
+        supabase.from("partners").select("id", { count: "exact", head: true }),
+        supabase.from("scholarships").select("id", { count: "exact", head: true }).eq("is_active", true),
+      ]);
+      return {
+        alumni: alumni.count ?? 0,
+        jobs: jobs.count ?? 0,
+        partners: partners.count ?? 0,
+        scholarships: scholarships.count ?? 0,
+      };
+    },
+  });
+
+
 
   const getHeroContent = () => {
     if (!user) {
@@ -178,12 +201,13 @@ const Index = () => {
       <section className="section-padding">
         <div className="container mx-auto">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-            {stats.map((s) => (
+            {statMeta.map((s) => (
               <div key={s.label} className="glass-card-hover rounded-xl p-5 md:p-6 text-center border-primary/10">
                 <div className="h-12 w-12 rounded-xl bg-accent flex items-center justify-center mx-auto mb-3 border border-primary/20">
                   <s.icon className="h-6 w-6 text-primary" />
                 </div>
-                <p className="text-2xl md:text-3xl font-heading font-bold text-foreground">{s.value}</p>
+                <p className="text-2xl md:text-3xl font-heading font-bold text-foreground">{counts ? counts[s.key].toLocaleString("id-ID") : "—"}</p>
+
                 <p className="text-sm text-muted-foreground mt-1">{s.label}</p>
               </div>
             ))}
