@@ -5,12 +5,10 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
 import PartnersManager from "@/components/admin/PartnersManager";
 
 const Partners = () => {
   const { hasRole } = useAuth();
-  const navigate = useNavigate();
   const isAdmin = hasRole("admin");
   const { data: partners = [], isLoading } = useQuery({
     queryKey: ["partners"],
