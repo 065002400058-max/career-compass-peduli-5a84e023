@@ -14,7 +14,7 @@ import duLogo from "@/assets/du-logo-t.png.asset.json";
 import yayasanLogo from "@/assets/yayasan-logo-t.png.asset.json";
 import trisaktiLogo from "@/assets/trisakti-logo-t.png.asset.json";
 import diktiLogo from "@/assets/dikti-logo-t.png.asset.json";
-import bimaLogo from "@/assets/bima-logo.png.asset.json";
+import bimaLogo from "@/assets/bima-logo-icon.png";
 
 const logos = [
   { src: duLogo.url, alt: "Pesantren Daarul 'Uluum Lido" },

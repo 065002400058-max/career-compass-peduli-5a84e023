@@ -3,7 +3,7 @@ import duLogo from "@/assets/du-logo-t.png.asset.json";
 import yayasanLogo from "@/assets/yayasan-logo-t.png.asset.json";
 import trisaktiLogo from "@/assets/trisakti-logo-white.png.asset.json";
 import diktiLogo from "@/assets/dikti-logo-t.png.asset.json";
-import bimaLogo from "@/assets/bima-logo.png.asset.json";
+import bimaLogo from "@/assets/bima-logo-icon.png";
 
 const Footer = () => (
   <footer className="bg-foreground text-background/80 pt-5 pb-20 md:pt-10 md:pb-14">
