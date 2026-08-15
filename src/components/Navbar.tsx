@@ -57,17 +57,20 @@ const LogoStrip = ({ compact = false }: { compact?: boolean }) => (
       compact ? "gap-1.5 sm:gap-2" : "gap-3 lg:gap-4"
     }`}
   >
-    {logos.map((l) => (
-      <img
-        key={l.alt}
-        src={l.src}
-        alt={l.alt}
-        loading="lazy"
-        className={`object-contain shrink-0 ${
-          compact ? "h-7 w-7 sm:h-8 sm:w-8" : "h-9 w-9 lg:h-11 lg:w-11"
-        }`}
-      />
-    ))}
+    {logos.map((l) => {
+      const sizeClass = compact
+        ? l.compactClassName || l.className || "h-7 w-7 sm:h-8 sm:w-8"
+        : l.className || "h-9 w-9 lg:h-11 lg:w-11";
+      return (
+        <img
+          key={l.alt}
+          src={l.src}
+          alt={l.alt}
+          loading="lazy"
+          className={`object-contain shrink-0 ${sizeClass}`}
+        />
+      );
+    })}
   </div>
 );
 
