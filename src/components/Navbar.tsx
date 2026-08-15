@@ -1,15 +1,29 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Menu, X, LogOut, User } from "lucide-react";
+import { Menu, X, LogOut, User, ChevronDown } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { Badge } from "@/components/ui/badge";
-import logo from "@/assets/dulido-logo.png.asset.json";
-import duLogo from "@/assets/daarul-uluum-logo.png.asset.json";
-import yayasanLogo from "@/assets/yayasan-salsabila-logo.png.asset.json";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import duLogo from "@/assets/du-logo-t.png.asset.json";
+import yayasanLogo from "@/assets/yayasan-logo-t.png.asset.json";
 import trisaktiLogo from "@/assets/trisakti-logo.png.asset.json";
 import diktiLogo from "@/assets/diktisaintek-logo.png.asset.json";
 
+const logos = [
+  { src: duLogo.url, alt: "Pesantren Daarul 'Uluum Lido" },
+  { src: yayasanLogo.url, alt: "Yayasan Salsabila Lido" },
+  { src: trisaktiLogo.url, alt: "Universitas Trisakti" },
+  { src: diktiLogo.url, alt: "Diktisaintek Berdampak" },
+];
+
+type Item = { label: string; path: string; show?: boolean };
+type Group = { label: string; items: Item[] };
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
@@ -22,20 +36,45 @@ const Navbar = () => {
     navigate("/");
   };
 
-  const navItems = [
-    { label: "Beranda", path: "/", show: true },
+  const groups: Group[] = [
+    {
+      label: "Karier",
+      items: [
+        { label: "Lowongan Kerja", path: "/jobs" },
+        { label: "Beasiswa", path: "/beasiswa" },
+        { label: "Event Karier", path: "/events" },
+      ],
+    },
+    {
+      label: "Layanan",
+      items: [
+        { label: "Tes CBT", path: "/cbt" },
+        { label: "Konseling", path: "/psikotes" },
+        { label: "Jelajahi Kampus", path: "/universities" },
+      ],
+    },
+    {
+      label: "Jejaring",
+      items: [
+        { label: "Alumni", path: "/alumni" },
+        { label: "Mitra Perusahaan", path: "/partners" },
+      ],
+    },
+    {
+      label: "Tentang",
+      items: [
+        { label: "Tentang Career Center", path: "/tentang" },
+        { label: "FAQ", path: "/tentang#faq" },
+        { label: "Kontak", path: "/tentang#kontak" },
+      ],
+    },
+  ];
+
+  const extraLinks: Item[] = [
     { label: "Dashboard", path: "/dashboard", show: !!user },
-    { label: "Lowongan", path: "/jobs", show: true },
-    { label: "Alumni", path: "/alumni", show: true },
-    { label: "Mitra", path: "/partners", show: true },
-    { label: "Event", path: "/events", show: true },
-    { label: "Tes CBT", path: "/cbt", show: true },
-    { label: "Konseling", path: "/psikotes", show: true },
-    { label: "Kampus", path: "/universities", show: true },
-    { label: "Beasiswa", path: "/beasiswa", show: true },
     { label: "Tracer Study", path: "/tracer", show: !!user },
     { label: "Admin", path: "/admin", show: hasRole("admin") },
-  ].filter((item) => item.show);
+  ].filter((i) => i.show);
 
   const roleLabel = roles.includes("admin")
     ? "Admin"
@@ -51,33 +90,58 @@ const Navbar = () => {
     ? "secondary"
     : "default";
 
+  const linkCls = (active: boolean) =>
+    `px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+      active
+        ? "bg-accent text-accent-foreground"
+        : "text-muted-foreground hover:text-foreground hover:bg-muted"
+    }`;
+
   return (
     <nav className="nav-glass sticky top-0 z-50">
-      <div className="container mx-auto flex items-center justify-between h-16 px-4">
+      <div className="container mx-auto flex items-center justify-between h-16 px-4 gap-2">
         <Link to="/" className="flex items-center gap-1.5 min-w-0">
-          <img src={duLogo.url} alt="Pesantren Daarul Uluum Lido" className="h-8 w-8 md:h-10 md:w-10 object-contain shrink-0" />
-          <img src={yayasanLogo.url} alt="Yayasan Salsabila Lido" className="h-8 w-8 md:h-10 md:w-10 object-contain shrink-0" />
-          <img src={trisaktiLogo.url} alt="Universitas Trisakti" className="h-8 w-8 md:h-10 md:w-10 object-contain shrink-0" />
-          <img src={diktiLogo.url} alt="Diktisaintek Berdampak" className="h-8 w-8 md:h-10 md:w-10 object-contain shrink-0" />
+          {logos.map((l) => (
+            <img
+              key={l.alt}
+              src={l.src}
+              alt={l.alt}
+              className="h-9 w-9 md:h-11 md:w-11 object-contain shrink-0"
+            />
+          ))}
           <span className="font-heading font-bold text-foreground text-[11px] leading-tight sm:text-sm md:text-base truncate">
             Career Center <span className="text-primary">PEDULI</span>
           </span>
         </Link>
 
-
         {/* Desktop */}
-        <div className="hidden lg:flex items-center gap-1">
-          {navItems.map((item) => (
-            <Link
-              key={item.path}
-              to={item.path}
-              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                location.pathname === item.path
-                  ? "bg-accent text-accent-foreground"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
-              }`}
-            >
-              {item.label}
+        <div className="hidden lg:flex items-center gap-0.5">
+          <Link to="/" className={linkCls(location.pathname === "/")}>
+            Beranda
+          </Link>
+          {groups.map((g) => {
+            const active = g.items.some((i) => location.pathname === i.path.split("#")[0]);
+            return (
+              <DropdownMenu key={g.label}>
+                <DropdownMenuTrigger className={`${linkCls(active)} flex items-center gap-1 outline-none`}>
+                  {g.label}
+                  <ChevronDown className="h-3.5 w-3.5" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="bg-popover z-50">
+                  {g.items.map((i) => (
+                    <DropdownMenuItem key={i.path} asChild>
+                      <Link to={i.path} className="cursor-pointer w-full">
+                        {i.label}
+                      </Link>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            );
+          })}
+          {extraLinks.map((i) => (
+            <Link key={i.path} to={i.path} className={linkCls(location.pathname === i.path)}>
+              {i.label}
             </Link>
           ))}
         </div>
@@ -120,22 +184,51 @@ const Navbar = () => {
 
       {/* Mobile menu */}
       {open && (
-        <div className="lg:hidden nav-glass border-t border-border/50 animate-fade-up">
+        <div className="lg:hidden nav-glass border-t border-border/50 animate-fade-up max-h-[80vh] overflow-y-auto">
           <div className="container mx-auto py-4 px-4 flex flex-col gap-1">
-            {navItems.map((item) => (
-              <Link
-                key={item.path}
-                to={item.path}
-                onClick={() => setOpen(false)}
-                className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                  location.pathname === item.path
-                    ? "bg-accent text-accent-foreground"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                }`}
-              >
-                {item.label}
-              </Link>
+            <Link
+              to="/"
+              onClick={() => setOpen(false)}
+              className={`px-4 py-2.5 rounded-lg text-sm font-medium ${linkCls(location.pathname === "/")}`}
+            >
+              Beranda
+            </Link>
+            {groups.map((g) => (
+              <div key={g.label} className="mt-1">
+                <p className="px-4 py-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground/70">
+                  {g.label}
+                </p>
+                {g.items.map((i) => (
+                  <Link
+                    key={i.path}
+                    to={i.path}
+                    onClick={() => setOpen(false)}
+                    className={`block px-6 py-2 rounded-lg text-sm ${linkCls(
+                      location.pathname === i.path.split("#")[0]
+                    )}`}
+                  >
+                    {i.label}
+                  </Link>
+                ))}
+              </div>
             ))}
+            {extraLinks.length > 0 && (
+              <div className="mt-1">
+                <p className="px-4 py-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground/70">
+                  Akun
+                </p>
+                {extraLinks.map((i) => (
+                  <Link
+                    key={i.path}
+                    to={i.path}
+                    onClick={() => setOpen(false)}
+                    className={`block px-6 py-2 rounded-lg text-sm ${linkCls(location.pathname === i.path)}`}
+                  >
+                    {i.label}
+                  </Link>
+                ))}
+              </div>
+            )}
             <div className="flex flex-col gap-2 mt-3 pt-3 border-t border-border">
               {user ? (
                 <>
