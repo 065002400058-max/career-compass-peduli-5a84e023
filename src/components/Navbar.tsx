@@ -21,7 +21,7 @@ const logos = [
   { src: yayasanLogo.url, alt: "Yayasan Salsabila Lido" },
   { src: trisaktiLogo.url, alt: "Universitas Trisakti" },
   { src: diktiLogo.url, alt: "Diktisaintek Berdampak" },
-  { src: bimaLogo.url, alt: "BiMA" },
+  { src: bimaLogo, alt: "BiMA" },
 ];
 
 type Item = { label: string; path: string; show?: boolean };

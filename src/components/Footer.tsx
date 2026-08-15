@@ -13,7 +13,7 @@ const Footer = () => (
         <img src={yayasanLogo.url} alt="Yayasan Salsabila Lido" className="h-9 w-9 object-contain" />
         <img src={trisaktiLogo.url} alt="Universitas Trisakti" className="h-9 w-9 object-contain" />
         <img src={diktiLogo.url} alt="Diktisaintek Berdampak" className="h-9 w-9 object-contain" />
-        <img src={bimaLogo.url} alt="BiMA" className="h-9 w-9 object-contain" />
+        <img src={bimaLogo} alt="BiMA" className="h-9 w-9 object-contain" />
         <span className="font-heading font-bold text-background text-sm">Career Center PEDULI</span>
       </div>
 
