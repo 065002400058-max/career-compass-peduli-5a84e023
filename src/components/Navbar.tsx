@@ -32,20 +32,21 @@ import trisaktiLogo from "@/assets/trisakti-logo-t.png.asset.json";
 import diktiLogo from "@/assets/dikti-logo-t.png.asset.json";
 import tutwuriLogo from "@/assets/tutwuri-logo-t.png.asset.json";
 import bimaAsset from "@/assets/bima-logo-full.png.asset.json";
+import { assetUrl } from "@/lib/assetUrl";
 
 const logos = [
-  { src: duLogo.url, alt: "Pesantren Daarul 'Uluum Lido" },
-  { src: yayasanLogo.url, alt: "Yayasan Salsabila Lido" },
-  { src: trisaktiLogo.url, alt: "Universitas Trisakti" },
-  { src: diktiLogo.url, alt: "Diktisaintek Berdampak" },
+  { src: assetUrl(duLogo.url), alt: "Pesantren Daarul 'Uluum Lido" },
+  { src: assetUrl(yayasanLogo.url), alt: "Yayasan Salsabila Lido" },
+  { src: assetUrl(trisaktiLogo.url), alt: "Universitas Trisakti" },
+  { src: assetUrl(diktiLogo.url), alt: "Diktisaintek Berdampak" },
   {
-    src: bimaAsset.url,
+    src: assetUrl(bimaAsset.url),
     alt: "BiMA",
     className: "h-8 w-auto lg:h-10",
     compactClassName: "h-7 w-auto sm:h-8",
   },
 
-  { src: tutwuriLogo.url, alt: "Tut Wuri Handayani" },
+  { src: assetUrl(tutwuriLogo.url), alt: "Tut Wuri Handayani" },
 ];
 
 type Item = { label: string; path: string; show?: boolean };

@@ -12,14 +12,15 @@ import trisaktiLogo from "@/assets/trisakti-logo-white.png.asset.json";
 import diktiLogo from "@/assets/dikti-logo-t.png.asset.json";
 import bimaAsset from "@/assets/bima-logo-full.png.asset.json";
 import tutwuriLogo from "@/assets/tutwuri-logo-t.png.asset.json";
+import { assetUrl } from "@/lib/assetUrl";
 
 const logos = [
-  { src: duLogo.url, alt: "Pesantren Daarul 'Uluum Lido" },
-  { src: yayasanLogo.url, alt: "Yayasan Salsabila Lido" },
-  { src: trisaktiLogo.url, alt: "Universitas Trisakti" },
-  { src: diktiLogo.url, alt: "Diktisaintek Berdampak" },
-  { src: bimaAsset.url, alt: "BiMA" },
-  { src: tutwuriLogo.url, alt: "Tut Wuri Handayani" },
+  { src: assetUrl(duLogo.url), alt: "Pesantren Daarul 'Uluum Lido" },
+  { src: assetUrl(yayasanLogo.url), alt: "Yayasan Salsabila Lido" },
+  { src: assetUrl(trisaktiLogo.url), alt: "Universitas Trisakti" },
+  { src: assetUrl(diktiLogo.url), alt: "Diktisaintek Berdampak" },
+  { src: assetUrl(bimaAsset.url), alt: "BiMA" },
+  { src: assetUrl(tutwuriLogo.url), alt: "Tut Wuri Handayani" },
 ];
 
 const platformLinks = [
@@ -97,9 +98,14 @@ const Socials = ({ centered = false }: { centered?: boolean }) => (
 );
 
 const LogoRow = () => (
-  <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6 lg:justify-start">
+  <div className="grid grid-cols-6 items-center gap-2 sm:gap-3 lg:gap-2 w-full max-w-md lg:max-w-none mx-auto">
     {logos.map((l) => (
-      <img key={l.alt} src={l.src} alt={l.alt} className="h-11 md:h-12 w-auto object-contain" />
+      <img
+        key={l.alt}
+        src={l.src}
+        alt={l.alt}
+        className="h-8 sm:h-10 lg:h-9 w-full object-contain"
+      />
     ))}
   </div>
 );
