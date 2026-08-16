@@ -51,7 +51,7 @@ const Auth = () => {
         toast({ title: "Login Gagal", description: error.message, variant: "destructive" });
       } else {
         toast({ title: "Login Berhasil", description: "Selamat datang kembali!" });
-        navigate("/dashboard");
+        navigate("/");
       }
     } else {
       const meta: Record<string, string> = { full_name: form.full_name, role };
@@ -76,7 +76,7 @@ const Auth = () => {
           });
           if (!loginErr) {
             toast({ title: "Anda sudah terdaftar", description: "Berhasil masuk ke akun Anda." });
-            navigate("/dashboard");
+            navigate("/");
           } else {
             toast({
               title: "Email sudah terdaftar",
@@ -90,7 +90,7 @@ const Auth = () => {
         }
       } else if (data.session) {
         toast({ title: "Registrasi Berhasil", description: "Akun aktif, selamat datang!" });
-        navigate("/dashboard");
+        navigate("/");
       } else {
         const { error: signInError } = await supabase.auth.signInWithPassword({
           email: normalizedEmail,
@@ -101,7 +101,7 @@ const Auth = () => {
           setIsLogin(true);
         } else {
           toast({ title: "Registrasi Berhasil", description: "Akun aktif, selamat datang!" });
-          navigate("/dashboard");
+          navigate("/");
         }
       }
 
