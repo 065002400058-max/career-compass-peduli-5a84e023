@@ -89,7 +89,6 @@ const Auth = () => {
           toast({ title: "Registrasi Gagal", description: error.message, variant: "destructive" });
         }
       } else if (data.session) {
-      } else if (data.session) {
         toast({ title: "Registrasi Berhasil", description: "Akun aktif, selamat datang!" });
         navigate("/dashboard");
       } else {
