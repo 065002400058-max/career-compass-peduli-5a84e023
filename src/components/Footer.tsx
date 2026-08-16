@@ -98,9 +98,14 @@ const Socials = ({ centered = false }: { centered?: boolean }) => (
 );
 
 const LogoRow = () => (
-  <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6 lg:justify-start">
+  <div className="grid grid-cols-6 items-center gap-2 sm:gap-3 lg:gap-2 w-full max-w-md lg:max-w-none mx-auto">
     {logos.map((l) => (
-      <img key={l.alt} src={l.src} alt={l.alt} className="h-11 md:h-12 w-auto object-contain" />
+      <img
+        key={l.alt}
+        src={l.src}
+        alt={l.alt}
+        className="h-8 sm:h-10 lg:h-9 w-full object-contain"
+      />
     ))}
   </div>
 );
