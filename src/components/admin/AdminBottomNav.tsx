@@ -14,7 +14,7 @@ const AdminBottomNav = ({ active, onSantri, onLayanan }: AdminBottomNavProps) =>
     { key: "beranda", label: "Beranda", icon: Home, action: () => navigate("/") },
     { key: "santri", label: "Santri", icon: Users, action: onSantri },
     { key: "layanan", label: "Layanan", icon: LayoutGrid, action: onLayanan },
-    { key: "profil", label: "Profil", icon: User, action: () => navigate("/dashboard") },
+    { key: "profil", label: "Profil", icon: User, action: () => navigate("/profil") },
   ] as const;
 
   return (
