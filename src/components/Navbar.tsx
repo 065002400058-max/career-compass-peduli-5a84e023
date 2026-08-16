@@ -205,13 +205,13 @@ const Navbar = () => {
         <div className="hidden md:grid container mx-auto grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 lg:gap-4 px-4 py-3 overflow-hidden">
           <div className="flex items-center min-w-0">
             {!loading && user && (
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted min-w-0">
+              <Link to="/profil" className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted min-w-0 hover:bg-accent transition-colors">
                 <User className="h-4 w-4 text-muted-foreground shrink-0" />
                 <span className="text-xs lg:text-sm text-foreground/80 truncate max-w-[100px] lg:max-w-[160px]">
                   {user.user_metadata?.full_name || user.email}
                 </span>
                 <Badge className="text-[10px] px-2 py-0 shrink-0">{roleLabel}</Badge>
-              </div>
+              </Link>
             )}
           </div>
 
@@ -224,7 +224,15 @@ const Navbar = () => {
           </Link>
 
 
-          <div className="flex items-center justify-end">
+          <div className="flex items-center justify-end gap-2">
+            {!loading && user && (
+              <Button variant="ghost" size="sm" asChild>
+                <Link to="/profil">
+                  <User className="h-4 w-4 mr-1.5" />
+                  Profil
+                </Link>
+              </Button>
+            )}
             <AuthActions />
           </div>
         </div>
@@ -372,6 +380,18 @@ const Navbar = () => {
                   </span>
                   <Badge className="text-[10px] px-2 py-0">{roleLabel}</Badge>
                 </div>
+              )}
+              {!loading && user && (
+                <Link
+                  to="/profil"
+                  onClick={() => setOpen(false)}
+                  className={`flex items-center gap-3 px-3 py-2.5 mb-1 rounded-lg text-sm font-medium ${
+                    location.pathname === "/profil" ? "text-primary bg-accent" : "text-foreground"
+                  }`}
+                >
+                  <User className="h-4 w-4" />
+                  Profil Saya
+                </Link>
               )}
               <AuthActions full />
             </div>
