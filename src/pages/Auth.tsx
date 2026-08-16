@@ -67,7 +67,28 @@ const Auth = () => {
         },
       });
       if (error) {
-        toast({ title: "Registrasi Gagal", description: error.message, variant: "destructive" });
+        const msg = error.message.toLowerCase();
+        if (msg.includes("already registered") || msg.includes("already exists") || (error as { code?: string }).code === "user_already_exists") {
+          // Email sudah ada — coba langsung masuk dengan password yang diisi
+          const { error: loginErr } = await supabase.auth.signInWithPassword({
+            email: normalizedEmail,
+            password: normalizedPassword,
+          });
+          if (!loginErr) {
+            toast({ title: "Anda sudah terdaftar", description: "Berhasil masuk ke akun Anda." });
+            navigate("/dashboard");
+          } else {
+            toast({
+              title: "Email sudah terdaftar",
+              description: "Silakan masuk. Jika lupa password, gunakan menu \"Lupa password?\".",
+              variant: "destructive",
+            });
+            setIsLogin(true);
+          }
+        } else {
+          toast({ title: "Registrasi Gagal", description: error.message, variant: "destructive" });
+        }
+      } else if (data.session) {
       } else if (data.session) {
         toast({ title: "Registrasi Berhasil", description: "Akun aktif, selamat datang!" });
         navigate("/dashboard");
