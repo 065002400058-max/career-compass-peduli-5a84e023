@@ -5,12 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { LogIn, UserPlus, Mail, Lock, User, ArrowLeft } from "lucide-react";
+import { LogIn, UserPlus, Mail, Lock, User, ArrowLeft, Eye, EyeOff } from "lucide-react";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -66,7 +67,27 @@ const Auth = () => {
         },
       });
       if (error) {
-        toast({ title: "Registrasi Gagal", description: error.message, variant: "destructive" });
+        const msg = error.message.toLowerCase();
+        if (msg.includes("already registered") || msg.includes("already exists") || (error as { code?: string }).code === "user_already_exists") {
+          // Email sudah ada — coba langsung masuk dengan password yang diisi
+          const { error: loginErr } = await supabase.auth.signInWithPassword({
+            email: normalizedEmail,
+            password: normalizedPassword,
+          });
+          if (!loginErr) {
+            toast({ title: "Anda sudah terdaftar", description: "Berhasil masuk ke akun Anda." });
+            navigate("/dashboard");
+          } else {
+            toast({
+              title: "Email sudah terdaftar",
+              description: "Silakan masuk. Jika lupa password, gunakan menu \"Lupa password?\".",
+              variant: "destructive",
+            });
+            setIsLogin(true);
+          }
+        } else {
+          toast({ title: "Registrasi Gagal", description: error.message, variant: "destructive" });
+        }
       } else if (data.session) {
         toast({ title: "Registrasi Berhasil", description: "Akun aktif, selamat datang!" });
         navigate("/dashboard");
@@ -249,7 +270,15 @@ const Auth = () => {
               <Label>Password *</Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input type="password" placeholder="Min. 6 karakter" value={password} onChange={(e) => setPassword(e.target.value)} className="pl-10" required minLength={6} />
+                <Input type={showPassword ? "text" : "password"} placeholder="Min. 6 karakter" value={password} onChange={(e) => setPassword(e.target.value)} className="pl-10 pr-10" required minLength={6} />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  aria-label={showPassword ? "Sembunyikan password" : "Tampilkan password"}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
               </div>
             </div>
           </div>
