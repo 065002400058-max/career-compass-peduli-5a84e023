@@ -150,6 +150,8 @@ const Navbar = () => {
     ? "Alumni"
     : roles.includes("mitra")
     ? "Mitra"
+    : roles.includes("santri")
+    ? "Santri"
     : "User";
 
   const navItemCls = (active: boolean) =>
