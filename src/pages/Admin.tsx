@@ -141,7 +141,7 @@ const Admin = () => {
 
   return (
     <div className="min-h-screen bg-background pb-24 md:pb-10">
-      <div className="container mx-auto max-w-6xl px-4 md:px-8 pt-6 md:pt-10">
+      <div className="w-full max-w-none px-4 md:px-6 lg:px-10 pt-6 md:pt-10">
         {/* Welcome */}
         <div className="flex items-start justify-between gap-4 mb-6">
           <div>

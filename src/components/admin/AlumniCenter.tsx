@@ -214,7 +214,7 @@ const AlumniCenter = () => {
   return (
     <>
       {/* Ringkasan */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-3 mb-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-2 md:gap-3 mb-4">
         <MiniCard label="Total Alumni" value={stats.total} icon={Users} onClick={() => { resetFilters(); }} />
         <MiniCard label="Tracer Terisi" value={stats.tracer} icon={ClipboardCheck} onClick={() => { resetFilters(); setFKerja("all"); setOnlyNoTracer(false); }} />
         <MiniCard label="Belum Tracer" value={stats.noTracer} icon={Calendar} active={onlyNoTracer} onClick={() => { resetFilters(); setOnlyNoTracer(true); }} />
