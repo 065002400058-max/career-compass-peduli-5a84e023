@@ -121,9 +121,9 @@ const Index = () => {
       </div>
 
       {/* Hero */}
-      <section className="gradient-bg-subtle py-10 md:py-14 px-4 md:px-8 overflow-hidden relative">
+      <section className="gradient-bg-subtle py-12 md:py-20 xl:py-24 px-4 md:px-6 xl:px-8 overflow-hidden relative">
         <div className="container mx-auto">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="grid lg:grid-cols-2 gap-10 xl:gap-16 items-center min-h-[52vh] lg:min-h-[62vh]">
             <div>
               <div className="inline-flex items-center gap-2 bg-accent text-accent-foreground text-sm font-medium px-4 py-1.5 rounded-full mb-6 animate-fade-up border border-primary/20">
                 <Star className="h-3.5 w-3.5 text-secondary fill-secondary" />
