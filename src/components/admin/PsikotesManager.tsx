@@ -90,6 +90,7 @@ export default function PsikotesManager() {
   const [testDlg, setTestDlg] = useState<{ open: boolean; row?: any }>({ open: false });
   const [qDlg, setQDlg] = useState<{ open: boolean; row?: any }>({ open: false });
   const [resDlg, setResDlg] = useState<{ open: boolean; row?: any }>({ open: false });
+  const [delAllDlg, setDelAllDlg] = useState<{ open: boolean; step: 1 | 2; confirmText: string }>({ open: false, step: 1, confirmText: "" });
 
   const del = async (table: "psikotes_categories" | "psikotes_tests" | "psikotes_questions" | "psikotes_results", id: string, msg: string) => {
     if (!confirm(msg)) return;
