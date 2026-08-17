@@ -348,54 +348,199 @@ const AlumniCenter = () => {
 
   return (
     <>
-      {/* Ringkasan */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-2 md:gap-3 mb-4">
-        <MiniCard label="Total Alumni" value={stats.total} icon={Users} onClick={() => { resetFilters(); }} />
-        <MiniCard label="Tracer Terisi" value={stats.tracer} icon={ClipboardCheck} onClick={() => { resetFilters(); setFKerja("all"); setOnlyNoTracer(false); }} />
-        <MiniCard label="Belum Tracer" value={stats.noTracer} icon={Calendar} active={onlyNoTracer} onClick={() => { resetFilters(); setOnlyNoTracer(true); }} />
-        <MiniCard label="Bekerja" value={stats.bekerja} icon={Briefcase} onClick={() => { resetFilters(); setFKerja("Bekerja"); }} />
+      {/* Page header */}
+      <div className="mb-3">
+        <h1 className="font-heading text-[22px] md:text-[24px] font-bold text-foreground leading-tight">Data Alumni</h1>
+        <p className="text-[12.5px] text-muted-foreground mt-1">Kelola dan pantau data alumni serta tracer study secara real-time.</p>
       </div>
 
-      {/* Tracer Study */}
-      <div className="rounded-2xl bg-card border border-border p-4 mb-3 shadow-sm">
-        <div className="flex items-center justify-between gap-3 mb-2">
-          <h3 className="font-heading font-semibold text-foreground text-sm">Tracer Study Alumni</h3>
-          <Button size="sm" variant="outline" className="rounded-xl" onClick={() => { resetFilters(); setOnlyNoTracer(true); }}>
-            Lihat yang Belum Mengisi
-          </Button>
-        </div>
-        <div className="text-xs text-muted-foreground mb-2">
-          Sudah mengisi <span className="text-foreground font-medium">{stats.tracer} alumni</span> · Belum mengisi{" "}
-          <span className="text-foreground font-medium">{stats.noTracer} alumni</span> · {tracerPct}%
-        </div>
-        <div className="h-2.5 rounded-full bg-muted overflow-hidden">
-          <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${tracerPct}%` }} />
-        </div>
-      </div>
-
-      {/* Status pekerjaan + Universitas */}
-      <div className="grid md:grid-cols-2 gap-3 mb-4">
-        <div className="rounded-2xl bg-card border border-border p-4 shadow-sm space-y-2.5">
-          <h3 className="font-heading font-semibold text-foreground text-sm mb-1">Status Pekerjaan Alumni</h3>
-          {statusBreakdown.map((s) => (
-            <Bar key={s.name} label={s.name} value={s.value} total={stats.total} />
+      {/* Tabs + filter */}
+      <div className="flex flex-wrap items-end justify-between gap-2 border-b border-border mb-4">
+        <div className="flex gap-5 overflow-x-auto">
+          {[
+            ["dashboard", "Dashboard Alumni"],
+            ["daftar", "Daftar Alumni"],
+            ["tracer", "Tracer Study"],
+          ].map(([k, label]) => (
+            <button
+              key={k}
+              onClick={() => setTab(k)}
+              className={`whitespace-nowrap pb-2.5 text-[13px] border-b-2 -mb-px transition-colors ${
+                tab === k ? "border-primary text-primary font-medium" : "border-transparent text-foreground/70 hover:text-foreground"
+              }`}
+            >
+              {label}
+            </button>
           ))}
         </div>
-        <div className="rounded-2xl bg-card border border-border p-4 shadow-sm">
-          <h3 className="font-heading font-semibold text-foreground text-sm mb-2">Universitas Alumni</h3>
-          <div className="flex gap-2 mb-3">
-            <Badge variant="outline" className="rounded-full text-[11px]"><MapPin className="h-3 w-3 mr-1" />Dalam Negeri: {uniInfo.dalam}</Badge>
-            <Badge variant="outline" className="rounded-full text-[11px]"><Globe2 className="h-3 w-3 mr-1" />Luar Negeri: {uniInfo.luar}</Badge>
-          </div>
-          {uniInfo.top.length === 0 ? (
-            <p className="text-xs text-muted-foreground">Belum ada data universitas.</p>
-          ) : (
-            <div className="space-y-2.5">
-              {uniInfo.top.map((u) => <Bar key={u.name} label={u.name} value={u.value} total={uniInfo.top[0].value} />)}
-            </div>
-          )}
-        </div>
+        <select
+          value={fKerja}
+          onChange={(e) => setFKerja(e.target.value)}
+          className="mb-2 h-[38px] rounded-lg border border-border bg-card px-3 text-[12px] text-foreground"
+          aria-label="Filter alumni"
+        >
+          <option value="all">Seluruh Alumni</option>
+          {Array.from(new Set(rows.map(workStatus))).sort().map((o) => (
+            <option key={o} value={o}>{o}</option>
+          ))}
+        </select>
       </div>
+
+      {/* ============ TAB: DASHBOARD ============ */}
+      {tab === "dashboard" && (
+        <div className="space-y-3">
+          {/* Statistic cards */}
+          <div className="grid grid-cols-2 md:grid-cols-3 2xl:grid-cols-5 gap-3">
+            <StatCard label="Total Alumni" value={stats.total} note={`${rows.length} data terdaftar`} icon={Users} />
+            <StatCard label="Alumni Bekerja" value={dash.bekerja} note={`${pct(dash.bekerja)}% dari total alumni`} noteClass="text-primary" icon={Briefcase} />
+            <StatCard label="Alumni Melanjutkan" value={dash.lanjut} note={`${pct(dash.lanjut)}% dari total alumni`} noteClass="text-primary" icon={GraduationCap} />
+            <StatCard label="Alumni Belum Bekerja" value={dash.belum} note={`${pct(dash.belum)}% dari total alumni`} icon={Users} />
+            <StatCard label="Tingkat Respon Tracer Study" value={`${tracerPct}%`} note={`${stats.tracer} dari ${stats.total} alumni`} noteClass="text-primary" icon={Target} />
+          </div>
+
+          {/* Chart row 1 */}
+          <div className="grid gap-3 lg:grid-cols-3">
+            <DonutCard title="Alumni Berdasarkan Status" subtitle="Perbandingan status alumni saat ini" data={dash.status} />
+            <HBarCard title="Alumni Berdasarkan Bidang Pekerjaan" subtitle="Top 6 bidang pekerjaan alumni" data={dash.jobField} />
+            <DonutCard title="Alumni Bekerja Dimana" subtitle="Sebaran lokasi kerja alumni" data={dash.workCity} />
+          </div>
+
+          {/* Chart row 2 */}
+          <div className="grid gap-3 lg:grid-cols-3">
+            <HBarCard title="Alumni Berdasarkan Kampus Alma Mater" subtitle="Top 6 kampus asal alumni" data={dash.campus} />
+            <CardBox title="Alumni Berdasarkan Angkatan" subtitle="Distribusi alumni per angkatan">
+              <div className="h-[190px]">
+                {dash.angkatan.length === 0 ? (
+                  <div className="h-full flex items-center justify-center text-[11px] text-muted-foreground">Belum ada data</div>
+                ) : (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={dash.angkatan} margin={{ left: -18, right: 8, top: 6, bottom: 4 }}>
+                      <defs>
+                        <linearGradient id="alumniYear" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#16A34A" stopOpacity={0.18} />
+                          <stop offset="100%" stopColor="#16A34A" stopOpacity={0.01} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid stroke="#F1F5F9" />
+                      <XAxis dataKey="name" tick={{ fontSize: 10, fill: "#94A3B8" }} axisLine={false} tickLine={false} />
+                      <YAxis tick={{ fontSize: 10, fill: "#94A3B8" }} axisLine={false} tickLine={false} />
+                      <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} />
+                      <Area type="monotone" dataKey="value" stroke="#16A34A" strokeWidth={2} fill="url(#alumniYear)" dot={{ r: 3, fill: "#16A34A" }} />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                )}
+              </div>
+            </CardBox>
+            <DonutCard title="Jenis Perusahaan / Instansi" subtitle="Tempat kerja alumni berdasarkan jenis instansi" data={dash.companyType} />
+          </div>
+
+          {/* Bottom grid */}
+          <div className="grid gap-3 lg:grid-cols-12">
+            <div className="lg:col-span-7">
+              <CardBox
+                title="Data Alumni Terbaru"
+                right={
+                  <Button size="sm" variant="outline" className="h-7 rounded-md text-[11px]" onClick={() => setTab("daftar")}>
+                    Lihat Semua
+                  </Button>
+                }
+              >
+                <div className="overflow-x-auto">
+                  <table className="w-full min-w-[560px] text-[11.5px]">
+                    <thead>
+                      <tr className="text-left text-muted-foreground border-b border-border">
+                        {["Nama", "Angkatan", "Status", "Pekerjaan / Kampus", "Lokasi", "Diperbarui"].map((h) => (
+                          <th key={h} className="font-medium py-2 pr-3 whitespace-nowrap">{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border">
+                      {recent.length === 0 ? (
+                        <tr><td colSpan={6} className="py-6 text-center text-muted-foreground">Belum ada data alumni.</td></tr>
+                      ) : recent.map((a) => {
+                        const st = workStatus(a);
+                        const tone = /belum bekerja/i.test(st)
+                          ? "bg-destructive/10 text-destructive"
+                          : /studi|lanjut/i.test(st) ? "bg-blue-500/10 text-blue-600" : /kerja|wirausaha/i.test(st) ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground";
+                        return (
+                          <tr key={a.id} className="hover:bg-muted/40 cursor-pointer" onClick={() => openDetail(a)}>
+                            <td className="py-2 pr-3 text-foreground whitespace-nowrap">{show(a.name, "-")}</td>
+                            <td className="py-2 pr-3 text-muted-foreground">{a.graduation_year ?? "-"}</td>
+                            <td className="py-2 pr-3"><span className={`inline-block rounded-full px-2 py-0.5 text-[10.5px] ${tone}`}>{st}</span></td>
+                            <td className="py-2 pr-3 text-muted-foreground truncate max-w-[180px]">
+                              {[val(a.position), val(a.company) ?? val(a.university)].filter(Boolean).join(" - ") || "-"}
+                            </td>
+                            <td className="py-2 pr-3 text-muted-foreground">{show(a.work_city, "-")}</td>
+                            <td className="py-2 pr-3 text-muted-foreground whitespace-nowrap">
+                              {a.updated_at || a.created_at ? new Date(a.updated_at ?? a.created_at).toLocaleDateString("id-ID") : "-"}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </CardBox>
+            </div>
+
+            <div className="lg:col-span-2.5 lg:col-span-2">
+              <CardBox title="Respon Tracer Study">
+                <ul className="text-[11.5px]">
+                  {[
+                    ["Total Alumni", stats.total],
+                    ["Sudah Mengisi", stats.tracer],
+                    ["Belum Mengisi", stats.noTracer],
+                    ["Tingkat Respon", `${tracerPct}%`],
+                  ].map(([k, v]) => (
+                    <li key={k as string} className="flex items-center justify-between py-1.5">
+                      <span className="text-muted-foreground">{k}</span>
+                      <span className="font-semibold text-foreground">{v as any}</span>
+                    </li>
+                  ))}
+                </ul>
+                <div className="border-t border-border mt-2 pt-2 text-center">
+                  <button className="text-[11.5px] text-primary font-medium" onClick={() => setTab("tracer")}>Lihat Detail</button>
+                </div>
+              </CardBox>
+            </div>
+
+            <div className="lg:col-span-3">
+              <CardBox title="Export Data Alumni" subtitle="Ekspor data tracer study alumni untuk analisis lebih lanjut.">
+                <div className="space-y-2">
+                  <button
+                    onClick={() => exportToExcel(exportRows, "alumni-peduli")}
+                    className="w-full h-8 rounded-md bg-primary text-primary-foreground text-[12px] font-medium flex items-center justify-center gap-1.5"
+                  >
+                    <FileSpreadsheet className="h-3.5 w-3.5" /> Export Excel
+                  </button>
+                  <button
+                    onClick={() => exportToPDF(exportRows, "alumni-peduli", "Data Alumni PEDULI")}
+                    className="w-full h-8 rounded-md bg-destructive text-destructive-foreground text-[12px] font-medium flex items-center justify-center gap-1.5"
+                  >
+                    <FileDown className="h-3.5 w-3.5" /> Export PDF
+                  </button>
+                  <button
+                    onClick={() => {
+                      const blob = new Blob([JSON.stringify(exportRows, null, 2)], { type: "application/json" });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement("a");
+                      a.href = url; a.download = "alumni-peduli.json"; a.click();
+                      URL.revokeObjectURL(url);
+                    }}
+                    className="w-full h-8 rounded-md bg-[#8B5CF6] text-white text-[12px] font-medium flex items-center justify-center gap-1.5"
+                  >
+                    <FileJson className="h-3.5 w-3.5" /> Export JSON
+                  </button>
+                </div>
+              </CardBox>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ============ TAB: DAFTAR ALUMNI ============ */}
+      {tab === "daftar" && (<>
+
 
       {/* Search + filter */}
       <div className="flex gap-2 mb-3">
