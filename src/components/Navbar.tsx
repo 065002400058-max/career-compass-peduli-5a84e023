@@ -15,6 +15,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { Badge } from "@/components/ui/badge";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -246,35 +247,28 @@ const Navbar = () => {
           </div>
         </div>
 
-        {/* Mobile */}
-        <div className="md:hidden px-3 pt-2 pb-2">
-          <div className="flex items-center gap-2">
-            <button
-              aria-label={open ? "Tutup menu" : "Buka menu"}
-              className="p-2 text-foreground shrink-0"
-              onClick={() => setOpen(!open)}
-            >
-              {open ? <X size={22} /> : <Menu size={22} />}
-            </button>
-            <Link to="/" className="flex-1 min-w-0">
-              <LogoStrip compact />
-            </Link>
-            <div className="shrink-0">
-              {!loading && user ? (
-                <Button variant="outline" size="sm" onClick={handleSignOut}>
-                  <LogOut className="h-4 w-4 sm:mr-1.5" />
-                  <span className="hidden sm:inline">Keluar</span>
-                </Button>
-              ) : (
-                <Button size="sm" onClick={() => navigate("/auth")}>
-                  Masuk
-                </Button>
-              )}
-            </div>
-          </div>
-          <Link to="/" className="block mt-1.5">
-            <BrandText compact />
+        {/* Mobile compact header */}
+        <div className="md:hidden h-[56px] px-3 flex items-center gap-2 border-b border-border/60">
+          <button
+            aria-label="Buka menu"
+            className="h-9 w-9 -ml-1 flex items-center justify-center text-foreground shrink-0"
+            onClick={() => setOpen(true)}
+          >
+            <Menu size={22} />
+          </button>
+          <Link to="/" className="flex items-center gap-2 min-w-0 flex-1">
+            <img src={assetUrl(duLogo.url)} alt="Career Center PEDULI" className="h-8 w-8 object-contain shrink-0" loading="lazy" />
+            <span className="font-heading font-bold text-[15px] leading-tight text-foreground truncate">
+              Career Center <span className="text-primary">PEDULI</span>
+            </span>
           </Link>
+          {!loading && user ? (
+            <Link to="/profil" aria-label="Profil Saya" className="h-9 w-9 rounded-full bg-muted flex items-center justify-center shrink-0">
+              <User className="h-4 w-4 text-muted-foreground" />
+            </Link>
+          ) : (
+            <Button size="sm" className="shrink-0" onClick={() => navigate("/auth")}>Masuk</Button>
+          )}
         </div>
       </div>
 
@@ -328,25 +322,53 @@ const Navbar = () => {
       </nav>
 
       {/* ---------- Mobile drawer ---------- */}
-      {open && (
-        <div className="md:hidden bg-background border-t border-border/60 max-h-[75vh] overflow-y-auto animate-fade-up">
-          <div className="container mx-auto px-3 py-2 flex flex-col">
+      <Sheet open={open} onOpenChange={setOpen}>
+        <SheetContent side="left" className="md:hidden p-0 w-[86vw] max-w-[320px] flex flex-col">
+          <div className="h-[56px] px-4 border-b border-border flex items-center gap-2.5 shrink-0">
+            <img src={assetUrl(duLogo.url)} alt="Career Center PEDULI" className="h-8 w-8 object-contain shrink-0" />
+            <div className="leading-tight min-w-0">
+              <p className="font-heading text-[14px] font-bold text-foreground truncate">
+                Career Center <span className="text-primary">PEDULI</span>
+              </p>
+              {!loading && user && (
+                <p className="text-[11px] text-muted-foreground truncate">
+                  {user.user_metadata?.full_name || user.email} &middot; {roleLabel}
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="flex-1 min-h-0 overflow-y-auto px-2.5 py-3">
             <Link
               to="/"
               onClick={() => setOpen(false)}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium ${
-                location.pathname === "/" ? "text-primary bg-accent" : "text-foreground"
+                location.pathname === "/" ? "text-primary bg-accent/60" : "text-foreground"
               }`}
             >
-              <Home className="h-4 w-4" />
+              <Home className={`h-4 w-4 ${location.pathname === "/" ? "text-primary" : "text-muted-foreground"}`} />
               Beranda
             </Link>
+            {extraLinks.map((i) => (
+              <Link
+                key={i.path}
+                to={i.path}
+                onClick={() => setOpen(false)}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium ${
+                  location.pathname === i.path ? "text-primary bg-accent/60" : "text-foreground"
+                }`}
+              >
+                <LayoutGrid className={`h-4 w-4 ${location.pathname === i.path ? "text-primary" : "text-muted-foreground"}`} />
+                {i.label}
+              </Link>
+            ))}
             {groups.map((g) => {
               const Icon = g.icon;
+              const groupActive = g.items.some((i) => location.pathname === i.path.split("#")[0]);
               return (
-                <Collapsible key={g.label}>
+                <Collapsible key={g.label} defaultOpen={groupActive}>
                   <CollapsibleTrigger className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-foreground [&[data-state=open]>svg:last-child]:rotate-180">
-                    <Icon className="h-4 w-4" />
+                    <Icon className="h-4 w-4 text-muted-foreground" />
                     <span className="flex-1 text-left">{g.label}</span>
                     <ChevronDown className="h-4 w-4 transition-transform" />
                   </CollapsibleTrigger>
@@ -358,7 +380,7 @@ const Navbar = () => {
                         onClick={() => setOpen(false)}
                         className={`block pl-10 pr-3 py-2 rounded-lg text-sm ${
                           location.pathname === i.path.split("#")[0]
-                            ? "text-primary"
+                            ? "text-primary bg-accent/60 font-medium"
                             : "text-muted-foreground"
                         }`}
                       >
@@ -369,44 +391,25 @@ const Navbar = () => {
                 </Collapsible>
               );
             })}
-            {extraLinks.map((i) => (
-              <Link
-                key={i.path}
-                to={i.path}
-                onClick={() => setOpen(false)}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-foreground"
-              >
-                <LayoutGrid className="h-4 w-4" />
-                {i.label}
-              </Link>
-            ))}
-            <div className="mt-2 pt-2 border-t border-border">
-              {!loading && user && (
-                <div className="flex items-center gap-2 px-3 pb-2">
-                  <User className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-xs text-muted-foreground truncate">
-                    {user.user_metadata?.full_name || user.email}
-                  </span>
-                  <Badge className="text-[10px] px-2 py-0">{roleLabel}</Badge>
-                </div>
-              )}
-              {!loading && user && (
-                <Link
-                  to="/profil"
-                  onClick={() => setOpen(false)}
-                  className={`flex items-center gap-3 px-3 py-2.5 mb-1 rounded-lg text-sm font-medium ${
-                    location.pathname === "/profil" ? "text-primary bg-accent" : "text-foreground"
-                  }`}
-                >
-                  <User className="h-4 w-4" />
-                  Profil Saya
-                </Link>
-              )}
-              <AuthActions full />
-            </div>
           </div>
-        </div>
-      )}
+
+          <div className="border-t border-border p-3 space-y-2 shrink-0">
+            {!loading && user && (
+              <Link
+                to="/profil"
+                onClick={() => setOpen(false)}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium ${
+                  location.pathname === "/profil" ? "text-primary bg-accent/60" : "text-foreground"
+                }`}
+              >
+                <User className="h-4 w-4 text-muted-foreground" />
+                Profil Saya
+              </Link>
+            )}
+            <AuthActions full />
+          </div>
+        </SheetContent>
+      </Sheet>
 
       {/* ---------- Pattern strip ---------- */}
       <div
