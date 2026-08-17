@@ -13,9 +13,100 @@ import AlumniAddDialog from "@/components/AlumniAddDialog";
 import { exportToExcel, exportToPDF } from "@/lib/exportUtils";
 import { toast } from "sonner";
 import {
+  PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar as RBar, XAxis, YAxis, CartesianGrid,
+  Tooltip, LabelList, AreaChart, Area,
+} from "recharts";
+import {
   Search, Users, Trash2, FileSpreadsheet, FileDown, SlidersHorizontal, ChevronRight,
   GraduationCap, Briefcase, Building2, MapPin, Globe2, ClipboardCheck, Pencil, X, Calendar,
+  TrendingUp, FileJson, Target,
 } from "lucide-react";
+
+const DONUT_COLORS = ["#16A34A", "#3B82F6", "#8B5CF6", "#FACC15", "#F97316", "#EF4444", "#9CA3AF"];
+
+const CardBox = ({ title, subtitle, right, children, className = "" }: any) => (
+  <div className={`rounded-xl border border-border bg-card p-4 shadow-[0_1px_2px_rgba(0,0,0,0.03)] ${className}`}>
+    <div className="flex items-start justify-between gap-2 mb-3">
+      <div>
+        <h3 className="font-heading text-[14px] font-semibold text-foreground leading-tight">{title}</h3>
+        {subtitle && <p className="text-[11px] text-muted-foreground mt-0.5">{subtitle}</p>}
+      </div>
+      {right}
+    </div>
+    {children}
+  </div>
+);
+
+const StatCard = ({ label, value, note, noteClass = "text-muted-foreground", icon: Icon }: any) => (
+  <div className="rounded-xl border border-border bg-card p-3.5 shadow-[0_1px_2px_rgba(0,0,0,0.03)] flex items-start gap-3">
+    <span className="h-10 w-10 rounded-lg bg-accent/70 flex items-center justify-center shrink-0">
+      <Icon className="h-[18px] w-[18px] text-primary" strokeWidth={1.8} />
+    </span>
+    <div className="min-w-0">
+      <p className="text-[12px] text-muted-foreground leading-tight">{label}</p>
+      <p className="font-heading text-[23px] font-bold text-foreground leading-tight mt-0.5">{value}</p>
+      {note && <p className={`text-[11px] mt-0.5 ${noteClass}`}>{note}</p>}
+    </div>
+  </div>
+);
+
+const DonutCard = ({ title, subtitle, data }: { title: string; subtitle: string; data: { name: string; value: number }[] }) => {
+  const total = data.reduce((s, d) => s + d.value, 0);
+  return (
+    <CardBox title={title} subtitle={subtitle}>
+      <div className="flex flex-col sm:flex-row items-center gap-3">
+        <div className="h-[150px] w-[150px] shrink-0">
+          {total === 0 ? (
+            <div className="h-full flex items-center justify-center text-[11px] text-muted-foreground">Belum ada data</div>
+          ) : (
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie data={data} dataKey="value" nameKey="name" innerRadius={44} outerRadius={70} paddingAngle={1} stroke="none">
+                  {data.map((_, i) => <Cell key={i} fill={DONUT_COLORS[i % DONUT_COLORS.length]} />)}
+                </Pie>
+                <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} />
+              </PieChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+        <ul className="flex-1 w-full space-y-1.5 min-w-0">
+          {data.map((d, i) => (
+            <li key={d.name} className="flex items-center gap-2 text-[11.5px]">
+              <span className="h-2 w-2 rounded-full shrink-0" style={{ background: DONUT_COLORS[i % DONUT_COLORS.length] }} />
+              <span className="text-foreground truncate flex-1">{d.name}</span>
+              <span className="text-muted-foreground shrink-0">
+                {d.value} ({total ? ((d.value / total) * 100).toFixed(1) : "0.0"}%)
+              </span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </CardBox>
+  );
+};
+
+const HBarCard = ({ title, subtitle, data }: { title: string; subtitle: string; data: { name: string; value: number }[] }) => (
+  <CardBox title={title} subtitle={subtitle}>
+    <div className="h-[190px]">
+      {data.length === 0 ? (
+        <div className="h-full flex items-center justify-center text-[11px] text-muted-foreground">Belum ada data</div>
+      ) : (
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={data} layout="vertical" margin={{ left: 4, right: 26, top: 4, bottom: 4 }}>
+            <CartesianGrid horizontal={false} stroke="#F1F5F9" />
+            <XAxis type="number" tick={{ fontSize: 10, fill: "#94A3B8" }} axisLine={false} tickLine={false} />
+            <YAxis type="category" dataKey="name" width={112} tick={{ fontSize: 10, fill: "#475569" }} axisLine={false} tickLine={false} />
+            <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} />
+            <RBar dataKey="value" fill="#16A34A" radius={[0, 3, 3, 0]} barSize={11}>
+              <LabelList dataKey="value" position="right" style={{ fontSize: 10, fill: "#16A34A" }} />
+            </RBar>
+          </BarChart>
+        </ResponsiveContainer>
+      )}
+    </div>
+  </CardBox>
+);
+
 
 export const EMPTY = "Belum diisi";
 const NO_TRACER = "Belum mengisi";
