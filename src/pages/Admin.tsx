@@ -11,6 +11,7 @@ import CbtManager from "@/components/admin/CbtManager";
 import PsikotesManager from "@/components/admin/PsikotesManager";
 import ScreeningInsights from "@/components/admin/ScreeningInsights";
 import MonitoringDashboard from "@/components/admin/MonitoringDashboard";
+import AlumniCenter from "@/components/admin/AlumniCenter";
 
 import UniversitiesManager from "@/components/admin/UniversitiesManager";
 import ScholarshipManager from "@/components/admin/ScholarshipManager";
@@ -266,80 +267,9 @@ const Admin = () => {
           </TabsContent>
 
           <TabsContent value="alumni" className="mt-0">
-            <div className="flex flex-col md:flex-row gap-2 mb-3">
-              <div className="relative flex-1">
-                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input placeholder="Cari nama, universitas, jurusan, pekerjaan..." className="pl-10 h-11 rounded-2xl bg-card" value={alumniSearch} onChange={(e) => setAlumniSearch(e.target.value)} />
-              </div>
-              <div className="flex gap-2 flex-wrap">
-                <Button size="sm" variant="outline" className="h-11 rounded-xl" onClick={() => exportToExcel(filteredAlumni, "alumni-peduli")} disabled={filteredAlumni.length === 0}>
-                  <FileSpreadsheet className="h-4 w-4 mr-1.5" /> Excel
-                </Button>
-                <Button size="sm" variant="outline" className="h-11 rounded-xl" onClick={() => exportToPDF(filteredAlumni, "alumni-peduli", "Data Alumni PEDULI")} disabled={filteredAlumni.length === 0}>
-                  <FileDown className="h-4 w-4 mr-1.5" /> PDF
-                </Button>
-                <AlumniAddDialog />
-                <AlumniCsvImport />
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button size="sm" variant="destructive" className="h-11 rounded-xl" disabled={(allAlumni?.length ?? 0) === 0}>
-                      <Trash2 className="h-4 w-4 mr-1.5" /> Hapus Semua
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle className="flex items-center gap-2"><AlertTriangle className="h-5 w-5 text-destructive" /> Hapus semua alumni?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Tindakan ini akan menghapus {allAlumni?.length ?? 0} data alumni secara permanen.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Batal</AlertDialogCancel>
-                      <AlertDialogAction onClick={deleteAllAlumni} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Hapus Semua</AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </div>
-            </div>
-            <div className="text-xs text-muted-foreground mb-2">Menampilkan {filteredAlumni.length} dari {allAlumni?.length ?? 0} alumni</div>
-            <div className="space-y-2 max-h-[70vh] overflow-y-auto pr-0.5">
-              {filteredAlumni.length === 0 ? (
-                <div className="rounded-2xl bg-card border border-border p-8 text-center text-muted-foreground">
-                  <Users className="h-12 w-12 mx-auto mb-3 opacity-40" />
-                  <p className="text-sm">Tidak ada data alumni.</p>
-                </div>
-              ) : (
-                filteredAlumni.map((a: any) => (
-                  <div key={a.id} className="rounded-2xl bg-card border border-border shadow-sm p-4 flex items-start justify-between gap-3 transition-colors hover:bg-accent/30">
-                    <div className="flex items-start gap-3 min-w-0 flex-1">
-                      <div className="h-10 w-10 rounded-full bg-accent flex items-center justify-center font-heading font-bold text-accent-foreground text-sm shrink-0">
-                        {a.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2)}
-                      </div>
-                      <div className="min-w-0 flex-1 space-y-1.5">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <h4 className="font-heading font-semibold text-foreground text-sm">{a.name}</h4>
-                          {a.gender && <Badge variant="outline" className="text-[10px] rounded-full">{a.gender}</Badge>}
-                          {a.status && <Badge variant="secondary" className="text-[10px] rounded-full">{a.status}</Badge>}
-                        </div>
-                        <div className="grid sm:grid-cols-2 gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                          <span className="flex items-center gap-1.5"><Calendar className="h-3.5 w-3.5" /> Angkatan {a.graduation_year ?? "-"}</span>
-                          <span className="flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5" /> {a.origin ?? "-"}</span>
-                          <span className="flex items-center gap-1.5"><GraduationCap className="h-3.5 w-3.5" /> {a.education_level ?? "-"} {a.major ? `· ${a.major}` : ""}</span>
-                          <span className="flex items-center gap-1.5"><BookOpen className="h-3.5 w-3.5" /> {a.university ?? "-"}</span>
-                          <span className="flex items-center gap-1.5"><Briefcase className="h-3.5 w-3.5" /> {a.position ?? "-"}</span>
-                          <span className="flex items-center gap-1.5"><Building className="h-3.5 w-3.5" /> {a.company ?? "-"}</span>
-                          {a.location && <span className="flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5" /> {a.location}</span>}
-                        </div>
-                      </div>
-                    </div>
-                    <Button size="sm" variant="ghost" className="text-destructive hover:bg-destructive/10 shrink-0" onClick={() => deleteAlumni(a.id)}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ))
-              )}
-            </div>
+            <AlumniCenter />
           </TabsContent>
+
 
           <TabsContent value="santri" className="mt-0">
             {(() => {
