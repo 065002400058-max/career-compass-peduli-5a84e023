@@ -337,7 +337,7 @@ const Index = () => {
                   </Button>
                   <Button size="lg" variant="outline" className="bg-transparent border-primary-foreground/40 text-primary-foreground hover:bg-primary-foreground/15 hover:text-primary-foreground" asChild>
                     <Link to={hasRole("admin") ? "/admin" : "/profil"}>
-                      {hasRole("admin") ? "Admin Panel" : "Dashboard"}
+                      {hasRole("admin") ? "Admin Panel" : "Profil Saya"}
                     </Link>
                   </Button>
                 </div>
