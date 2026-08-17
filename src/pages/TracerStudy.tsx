@@ -100,9 +100,40 @@ const TracerStudy = () => {
                 </SelectContent>
               </Select>
             </div>
+            <div><Label>Tahun Lulus</Label><Input type="number" value={form.year_graduated ?? ""} onChange={(e) => setForm({ ...form, year_graduated: e.target.value })} /></div>
+            <div><Label>Fakultas</Label><Input value={form.faculty ?? ""} onChange={(e) => setForm({ ...form, faculty: e.target.value })} /></div>
+            <div><Label>Status Universitas</Label>
+              <Select value={form.university_status ?? ""} onValueChange={(v) => setForm({ ...form, university_status: v })}>
+                <SelectTrigger><SelectValue placeholder="Pilih" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Dalam Negeri">Dalam Negeri</SelectItem>
+                  <SelectItem value="Luar Negeri">Luar Negeri</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div><Label>Bidang Pekerjaan</Label><Input placeholder="Pendidikan, Teknologi Informasi, ..." value={form.job_field ?? ""} onChange={(e) => setForm({ ...form, job_field: e.target.value })} /></div>
             <div><Label>Pekerjaan / Posisi</Label><Input value={form.position ?? ""} onChange={(e) => setForm({ ...form, position: e.target.value })} /></div>
-            <div><Label>Perusahaan / Tempat</Label><Input value={form.company ?? ""} onChange={(e) => setForm({ ...form, company: e.target.value })} /></div>
-            <div className="md:col-span-2"><Label>Lokasi</Label><Input value={form.location ?? ""} onChange={(e) => setForm({ ...form, location: e.target.value })} /></div>
+            <div><Label>Perusahaan / Instansi</Label><Input value={form.company ?? ""} onChange={(e) => setForm({ ...form, company: e.target.value })} /></div>
+            <div><Label>Jenis Perusahaan / Instansi</Label>
+              <Select value={form.company_type ?? ""} onValueChange={(v) => setForm({ ...form, company_type: v })}>
+                <SelectTrigger><SelectValue placeholder="Pilih" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Swasta">Swasta</SelectItem>
+                  <SelectItem value="Pemerintah">Pemerintah</SelectItem>
+                  <SelectItem value="BUMN">BUMN</SelectItem>
+                  <SelectItem value="Pendidikan">Pendidikan</SelectItem>
+                  <SelectItem value="Organisasi">Organisasi</SelectItem>
+                  <SelectItem value="Wirausaha">Wirausaha</SelectItem>
+                  <SelectItem value="Lainnya">Lainnya</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div><Label>Kota Kerja</Label><Input value={form.work_city ?? ""} onChange={(e) => setForm({ ...form, work_city: e.target.value })} /></div>
+            <div><Label>Provinsi Kerja</Label><Input value={form.work_province ?? ""} onChange={(e) => setForm({ ...form, work_province: e.target.value })} /></div>
+            <div><Label>Negara Kerja</Label><Input value={form.work_country ?? ""} onChange={(e) => setForm({ ...form, work_country: e.target.value })} /></div>
+            <div><Label>Pendidikan Lanjutan</Label><Input placeholder="S1 / S2 / ..." value={form.further_education ?? ""} onChange={(e) => setForm({ ...form, further_education: e.target.value })} /></div>
+            <div><Label>Universitas Tujuan</Label><Input value={form.target_university ?? ""} onChange={(e) => setForm({ ...form, target_university: e.target.value })} /></div>
+            <div className="md:col-span-2"><Label>Lokasi (bebas)</Label><Input value={form.location ?? ""} onChange={(e) => setForm({ ...form, location: e.target.value })} /></div>
           </div>
 
           <Button type="submit" className="w-full" disabled={saving}>
