@@ -10,7 +10,7 @@ import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, Legend, LineChart, Line, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
+  PieChart, Pie, Cell, Legend, AreaChart, Area, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
 } from "recharts";
 import { Users, UserCircle, GraduationCap, HeartPulse, Brain, Search, FileSpreadsheet, FileDown, Activity, Target } from "lucide-react";
 
@@ -18,6 +18,82 @@ const COLORS = ["#10B981", "#1E3A8A", "#3B82F6", "#8B5CF6", "#F59E0B", "#EF4444"
 const fmtDate = (d?: string | null) => (d ? new Date(d).toLocaleDateString("id-ID") : "-");
 const fmtDateTime = (d?: string | null) => (d ? new Date(d).toLocaleString("id-ID") : "-");
 const pct = (a: number, b: number) => (b > 0 ? Math.round((a / b) * 1000) / 10 : 0);
+
+const TOOLTIP_STYLE = {
+  background: "hsl(var(--card) / 0.92)",
+  border: "1px solid hsl(var(--primary) / 0.35)",
+  borderRadius: "0.85rem",
+  boxShadow: "0 18px 40px -18px hsl(var(--primary) / 0.55)",
+  backdropFilter: "blur(10px)",
+  fontSize: 12,
+};
+
+/** Kartu chart dengan efek glass, glow, dan animasi masuk */
+function ChartCard({
+  title,
+  subtitle,
+  children,
+  className = "",
+}: {
+  title: string;
+  subtitle?: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div
+      className={`group relative overflow-hidden rounded-3xl border border-border/70 bg-card/80 p-4 shadow-[0_18px_45px_-28px_hsl(var(--primary)/0.45)] backdrop-blur-xl transition-all duration-500 hover:-translate-y-1 hover:border-primary/40 hover:shadow-[0_30px_60px_-24px_hsl(var(--primary)/0.55)] animate-fade-in ${className}`}
+    >
+      <div className="pointer-events-none absolute -top-24 -right-16 h-48 w-48 rounded-full bg-primary/15 blur-3xl transition-opacity duration-500 group-hover:opacity-90 opacity-60" />
+      <div className="pointer-events-none absolute -bottom-24 -left-16 h-48 w-48 rounded-full bg-[#3B82F6]/10 blur-3xl" />
+      <div className="relative mb-3 flex items-center justify-between gap-2">
+        <div>
+          <h3 className="font-heading text-sm font-semibold">{title}</h3>
+          {subtitle && <p className="text-[11px] text-muted-foreground">{subtitle}</p>}
+        </div>
+        <span className="h-2 w-10 rounded-full bg-gradient-to-r from-primary via-[#3B82F6] to-[#8B5CF6]" />
+      </div>
+      <div className="relative">{children}</div>
+    </div>
+  );
+}
+
+/** Definisi gradient & filter 3D untuk semua chart */
+const ChartDefs = () => (
+  <defs>
+    <linearGradient id="gradEmerald" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stopColor="#34D399" stopOpacity={1} />
+      <stop offset="100%" stopColor="#059669" stopOpacity={0.75} />
+    </linearGradient>
+    <linearGradient id="gradRed" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stopColor="#F87171" stopOpacity={1} />
+      <stop offset="100%" stopColor="#DC2626" stopOpacity={0.75} />
+    </linearGradient>
+    <linearGradient id="gradViolet" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stopColor="#A78BFA" stopOpacity={1} />
+      <stop offset="100%" stopColor="#6D28D9" stopOpacity={0.8} />
+    </linearGradient>
+    <linearGradient id="gradBlueH" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stopColor="#1E3A8A" stopOpacity={0.85} />
+      <stop offset="100%" stopColor="#60A5FA" stopOpacity={1} />
+    </linearGradient>
+    <linearGradient id="gradArea" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stopColor="#10B981" stopOpacity={0.55} />
+      <stop offset="100%" stopColor="#10B981" stopOpacity={0} />
+    </linearGradient>
+    <filter id="chart3d" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="6" stdDeviation="5" floodColor="#0F172A" floodOpacity="0.28" />
+    </filter>
+    <filter id="chartGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="6" result="glow" />
+      <feMerge>
+        <feMergeNode in="glow" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+);
+
 
 type StatusKey = "santri" | "alumni" | "unknown";
 type Filter = "all" | "santri" | "alumni";
