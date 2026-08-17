@@ -273,6 +273,43 @@ export default function PsikotesManager() {
           <PsiResultDialog key={`r-${resDlg.row?.id ?? "new"}-${resDlg.open}`} state={resDlg} testId={selectedTest.id} onClose={() => setResDlg({ open: false })} onSaved={refresh} />
         </>
       )}
+
+      <Dialog open={delAllDlg.open} onOpenChange={(o) => !o && setDelAllDlg({ open: false, step: 1, confirmText: "" })}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-destructive flex items-center gap-2">
+              <Trash2 className="h-5 w-5" /> Hapus Semua Data Screening
+            </DialogTitle>
+          </DialogHeader>
+          {delAllDlg.step === 1 ? (
+            <div className="space-y-4">
+              <div className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive space-y-2">
+                <p><b>Peringatan!</b> Tindakan ini akan menghapus seluruh data berikut secara permanen:</p>
+                <ul className="list-disc ml-5 space-y-1">
+                  <li>Semua kategori screening</li>
+                  <li>Semua tes dan pertanyaan</li>
+                  <li>Semua jawaban dan template hasil</li>
+                  <li>Semua riwayat attempt pengguna</li>
+                </ul>
+                <p>Data yang sudah dihapus <b>tidak dapat dikembalikan</b>.</p>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setDelAllDlg({ open: false, step: 1, confirmText: "" })}>Batal</Button>
+                <Button variant="destructive" onClick={() => setDelAllDlg({ open: true, step: 2, confirmText: "" })}>Lanjutkan</Button>
+              </DialogFooter>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">Untuk melanjutkan penghapusan, ketik <b>HAPUS</b> di bawah ini:</p>
+              <Input value={delAllDlg.confirmText} onChange={(e) => setDelAllDlg((s) => ({ ...s, confirmText: e.target.value }))} placeholder="Ketik HAPUS" />
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setDelAllDlg({ open: true, step: 1, confirmText: "" })}>Kembali</Button>
+                <Button variant="destructive" onClick={deleteAll} disabled={delAllDlg.confirmText !== "HAPUS"}>Ya, Hapus Semua</Button>
+              </DialogFooter>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
