@@ -21,6 +21,10 @@ import UniversitiesManager from "@/components/admin/UniversitiesManager";
 import ScholarshipManager from "@/components/admin/ScholarshipManager";
 import ReferralManager from "@/components/admin/ReferralManager";
 import UsageReports from "@/components/admin/UsageReports";
+import JobsManager from "@/components/admin/JobsManager";
+import PartnersManager from "@/components/admin/PartnersManager";
+import EventsManager from "@/components/admin/EventsManager";
+
 import duLogo from "@/assets/du-logo-t.png.asset.json";
 import yayasanLogo from "@/assets/yayasan-logo-t.png.asset.json";
 import trisaktiLogo from "@/assets/trisakti-logo-t.png.asset.json";
