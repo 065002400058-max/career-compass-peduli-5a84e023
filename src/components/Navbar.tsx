@@ -117,7 +117,7 @@ const Navbar = () => {
         { label: "Tes CBT", path: "/cbt" },
         { label: "Konseling", path: "/psikotes" },
         { label: "Jelajahi Kampus", path: "/universities" },
-        ...(user ? [{ label: "Dashboard", path: "/dashboard" }] : []),
+        
       ],
     },
     {

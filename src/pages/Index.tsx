@@ -69,7 +69,7 @@ const Index = () => {
         cta: (
           <div className="flex flex-wrap gap-3 mt-8 animate-fade-up-delay-2">
             <Button size="lg" asChild className="gradient-bg border-0"><Link to="/admin">Buka Admin Panel <ArrowRight className="ml-2 h-4 w-4" /></Link></Button>
-            <Button variant="outline" size="lg" asChild className="border-primary/50"><Link to="/dashboard">Lihat Dashboard</Link></Button>
+            <Button variant="outline" size="lg" asChild className="border-primary/50"><Link to="/admin">Dashboard Monitoring</Link></Button>
           </div>
         ),
       };
@@ -104,7 +104,7 @@ const Index = () => {
       cta: (
         <div className="flex flex-wrap gap-3 mt-8 animate-fade-up-delay-2">
           <Button size="lg" asChild className="gradient-bg border-0"><Link to="/jobs">Cari Lowongan <ArrowRight className="ml-2 h-4 w-4" /></Link></Button>
-          <Button variant="outline" size="lg" asChild className="border-primary/50"><Link to="/dashboard">Lihat Dashboard</Link></Button>
+          <Button variant="outline" size="lg" asChild className="border-primary/50"><Link to="/psikotes">Screening Mental</Link></Button>
         </div>
       ),
     };
