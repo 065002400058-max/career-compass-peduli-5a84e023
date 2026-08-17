@@ -149,7 +149,7 @@ const Index = () => {
               {heroContent.cta}
             </div>
             <div className="flex justify-center animate-float">
-              <img src={mosqueImg} alt="Islamic mosque illustration" className="w-full max-w-sm drop-shadow-2xl" />
+              <img src={mosqueImg} alt="Islamic mosque illustration" className="w-full max-w-sm lg:max-w-md xl:max-w-lg drop-shadow-2xl" />
             </div>
           </div>
         </div>
