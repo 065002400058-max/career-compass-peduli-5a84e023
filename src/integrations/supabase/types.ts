@@ -17,54 +17,87 @@ export type Database = {
       alumni: {
         Row: {
           company: string | null
+          company_type: string | null
           created_at: string
           education_level: string | null
+          faculty: string | null
+          further_education: string | null
           gender: string | null
           graduation_year: number
           id: string
+          job_field: string | null
           location: string | null
           major: string | null
           name: string
           origin: string | null
           position: string | null
           status: string
+          target_university: string | null
+          tracer_filled_at: string | null
           university: string | null
+          university_status: string | null
           updated_at: string
           user_id: string | null
+          work_city: string | null
+          work_country: string | null
+          work_province: string | null
+          year_graduated: number | null
         }
         Insert: {
           company?: string | null
+          company_type?: string | null
           created_at?: string
           education_level?: string | null
+          faculty?: string | null
+          further_education?: string | null
           gender?: string | null
           graduation_year: number
           id?: string
+          job_field?: string | null
           location?: string | null
           major?: string | null
           name: string
           origin?: string | null
           position?: string | null
           status?: string
+          target_university?: string | null
+          tracer_filled_at?: string | null
           university?: string | null
+          university_status?: string | null
           updated_at?: string
           user_id?: string | null
+          work_city?: string | null
+          work_country?: string | null
+          work_province?: string | null
+          year_graduated?: number | null
         }
         Update: {
           company?: string | null
+          company_type?: string | null
           created_at?: string
           education_level?: string | null
+          faculty?: string | null
+          further_education?: string | null
           gender?: string | null
           graduation_year?: number
           id?: string
+          job_field?: string | null
           location?: string | null
           major?: string | null
           name?: string
           origin?: string | null
           position?: string | null
           status?: string
+          target_university?: string | null
+          tracer_filled_at?: string | null
           university?: string | null
+          university_status?: string | null
           updated_at?: string
           user_id?: string | null
+          work_city?: string | null
+          work_country?: string | null
+          work_province?: string | null
+          year_graduated?: number | null
         }
         Relationships: []
       }
