@@ -170,7 +170,7 @@ const Index = () => {
               { icon: HeartPulse, title: "Screening Mental & Konseling", desc: "Cek kondisi mental dan saran konseling.", to: "/psikotes", cta: "Buka Konseling" },
               { icon: School, title: "Jelajahi Kampus", desc: "Eksplorasi kampus dan program studi.", to: "/universities", cta: "Lihat Kampus" },
             ].map((s) => (
-              <Link key={s.title} to={s.to} className="glass-card-hover rounded-2xl p-5 md:p-7 xl:p-8 border-primary/10 group block h-full flex flex-col">
+              <Link key={s.title} to={s.to} className="glass-card-hover rounded-2xl p-5 md:p-7 xl:p-8 border-primary/10 group flex h-full flex-col">
                 <div className="h-11 w-11 md:h-14 md:w-14 rounded-2xl gradient-bg flex items-center justify-center mb-4">
                   <s.icon className="h-5 w-5 md:h-7 md:w-7 text-primary-foreground" />
                 </div>
