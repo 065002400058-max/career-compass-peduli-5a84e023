@@ -42,7 +42,7 @@ function useReport(kind: "cbt" | "psikotes") {
           school_origin: p.school_origin ?? "-",
           university: p.university ?? "-",
           major: p.major ?? "-",
-          role: rMap.get(r.user_id) ?? "-",
+          role: rMap.get(r.user_id) === "santri" ? "SANTRI" : rMap.get(r.user_id) === "alumni" ? "ALUMNI" : "Status belum teridentifikasi",
           test_title: tMap.get(r.test_id) ?? "-",
         };
       });
