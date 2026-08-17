@@ -39,7 +39,7 @@ const TracerStudy = () => {
     e.preventDefault();
     if (!user) return;
     setSaving(true);
-    const payload = { ...form, user_id: user.id, graduation_year: Number(form.graduation_year) || new Date().getFullYear() };
+    const payload = { ...form, user_id: user.id, graduation_year: Number(form.graduation_year) || new Date().getFullYear(), year_graduated: form.year_graduated ? Number(form.year_graduated) : null, tracer_filled_at: new Date().toISOString() };
     const { error } = existing
       ? await supabase.from("alumni").update(payload).eq("id", existing.id)
       : await supabase.from("alumni").insert(payload);
