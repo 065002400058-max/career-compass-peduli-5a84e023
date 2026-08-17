@@ -109,7 +109,7 @@
     background: linear-gradient(135deg, hsl(40, 60%, 50%), hsl(43, 70%, 60%));
   }
   .section-padding {
-    @apply py-16 md:py-24 px-4 md:px-8;
+    @apply py-10 md:py-14 px-4 md:px-6 xl:px-8;
   }
   .nav-glass {
     @apply bg-background/80 backdrop-blur-xl border-b border-border/50;
