@@ -1,4 +1,4 @@
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, MoreHorizontal } from "lucide-react";
 import duLogo from "@/assets/du-logo-t.png.asset.json";
 import { assetUrl } from "@/lib/assetUrl";
 
@@ -52,7 +52,7 @@ const AdminSidebar = ({ main, tools, active, onSelect, toolsOpen, onToggleTools 
               <Item key={i.key} item={i} />
             ))}
             <Item
-              item={{ key: "__tools", label: "Lainnya", icon: tools[0]?.icon }}
+              item={{ key: "__tools", label: "Lainnya", icon: MoreHorizontal }}
               onClick={onToggleTools}
               trailing={<ChevronDown className={`h-3.5 w-3.5 transition-transform duration-200 ${toolsOpen ? "rotate-180" : ""}`} />}
             />
