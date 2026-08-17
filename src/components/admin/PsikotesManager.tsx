@@ -108,6 +108,30 @@ export default function PsikotesManager() {
     refresh();
   };
 
+  const deleteAll = async () => {
+    if (delAllDlg.confirmText !== "HAPUS") {
+      return toast.error("Ketik HAPUS dengan benar");
+    }
+    setDelAllDlg((s) => ({ ...s, step: 1, confirmText: "" }));
+    toast.loading("Menghapus semua data screening...", { id: "del-all-psi" });
+    const { error: errAttempts } = await supabase.from("psikotes_attempts").delete().neq("id", "");
+    if (errAttempts) { toast.dismiss("del-all-psi"); return toast.error(errAttempts.message); }
+    const { error: errResults } = await supabase.from("psikotes_results").delete().neq("id", "");
+    if (errResults) { toast.dismiss("del-all-psi"); return toast.error(errResults.message); }
+    const { error: errAnswers } = await supabase.from("psikotes_answers").delete().neq("id", "");
+    if (errAnswers) { toast.dismiss("del-all-psi"); return toast.error(errAnswers.message); }
+    const { error: errQuestions } = await supabase.from("psikotes_questions").delete().neq("id", "");
+    if (errQuestions) { toast.dismiss("del-all-psi"); return toast.error(errQuestions.message); }
+    const { error: errTests } = await supabase.from("psikotes_tests").delete().neq("id", "");
+    if (errTests) { toast.dismiss("del-all-psi"); return toast.error(errTests.message); }
+    const { error: errCats } = await supabase.from("psikotes_categories").delete().neq("id", "");
+    if (errCats) { toast.dismiss("del-all-psi"); return toast.error(errCats.message); }
+    toast.dismiss("del-all-psi");
+    toast.success("Semua data screening telah dihapus");
+    setSelectedTest(null);
+    refresh();
+  };
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
