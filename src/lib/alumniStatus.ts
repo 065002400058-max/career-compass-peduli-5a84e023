@@ -36,12 +36,13 @@ export const hasTracer = (a: AlumniRecord): boolean =>
     cleanVal(a?.target_university)
   );
 
-/** Klasifikasi eksklusif: setiap alumni tepat masuk ke satu kategori. */
+/** Klasifikasi eksklusif: setiap alumni tepat masuk ke satu kategori.
+ *  Aturan: bila data tracer kosong (mis. semua kolom "-"), alumni dihitung
+ *  "Belum Mengisi Tracer" — status bawaan hasil import tidak dipercaya. */
 export const alumniStatus = (a: AlumniRecord): AlumniStatus => {
-  const raw = (cleanVal(a?.status) ?? "").toLowerCase();
-  const filled = hasTracer(a);
+  if (!hasTracer(a)) return ALUMNI_NOT_FILLED;
 
-  if (!filled && !raw) return ALUMNI_NOT_FILLED;
+  const raw = (cleanVal(a?.status) ?? "").toLowerCase();
 
   if (/wirausaha|usaha|bisnis|freelance|entrepreneur/.test(raw)) return "Wirausaha";
   if (/studi|kuliah|lanjut|sekolah|mahasiswa/.test(raw)) return "Melanjutkan Studi";
@@ -51,7 +52,7 @@ export const alumniStatus = (a: AlumniRecord): AlumniStatus => {
   // status kosong / tidak dikenal → simpulkan dari data tracer
   if (cleanVal(a?.further_education) || cleanVal(a?.target_university)) return "Melanjutkan Studi";
   if (cleanVal(a?.position) || cleanVal(a?.company) || cleanVal(a?.job_field)) return "Bekerja";
-  return filled ? "Belum Bekerja" : ALUMNI_NOT_FILLED;
+  return "Belum Bekerja";
 };
 
 /** Ringkasan agregat yang selalu menjumlah tepat ke total baris. */
