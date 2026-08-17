@@ -639,54 +639,89 @@ const MonitoringDashboard = () => {
 
       {/* Analytics alumni */}
       <div className="grid lg:grid-cols-2 gap-4">
-        <div className="rounded-2xl bg-card border border-border p-4 shadow-sm">
-          <h3 className="font-heading font-semibold text-sm mb-3">Alumni per Angkatan</h3>
-          <ResponsiveContainer width="100%" height={240}>
-            <LineChart data={angkatanChart}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis dataKey="year" fontSize={11} stroke="hsl(var(--muted-foreground))" />
-              <YAxis fontSize={11} allowDecimals={false} stroke="hsl(var(--muted-foreground))" />
-              <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "0.5rem" }} />
-              <Line type="monotone" dataKey="count" stroke="#10B981" strokeWidth={3} dot={{ r: 3 }} />
-            </LineChart>
+        <ChartCard title="Alumni per Angkatan" subtitle="Tren jumlah alumni tiap tahun kelulusan">
+          <ResponsiveContainer width="100%" height={250}>
+            <AreaChart data={angkatanChart}>
+              <ChartDefs />
+              <CartesianGrid strokeDasharray="3 6" stroke="hsl(var(--border))" vertical={false} />
+              <XAxis dataKey="year" fontSize={11} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
+              <YAxis fontSize={11} allowDecimals={false} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
+              <Tooltip contentStyle={TOOLTIP_STYLE} />
+              <Area
+                type="monotone"
+                dataKey="count"
+                stroke="#10B981"
+                strokeWidth={3}
+                fill="url(#gradArea)"
+                dot={{ r: 4, fill: "#10B981", stroke: "#fff", strokeWidth: 2 }}
+                activeDot={{ r: 7, filter: "url(#chartGlow)" }}
+                animationDuration={1400}
+                animationEasing="ease-out"
+              />
+            </AreaChart>
           </ResponsiveContainer>
-        </div>
-        <div className="rounded-2xl bg-card border border-border p-4 shadow-sm">
-          <h3 className="font-heading font-semibold text-sm mb-3">Top Jurusan Alumni</h3>
-          <ResponsiveContainer width="100%" height={240}>
-            <BarChart data={jurusanChart} layout="vertical">
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis type="number" fontSize={11} allowDecimals={false} stroke="hsl(var(--muted-foreground))" />
-              <YAxis type="category" dataKey="name" width={120} fontSize={10} stroke="hsl(var(--muted-foreground))" />
-              <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "0.5rem" }} />
-              <Bar dataKey="value" fill="#3B82F6" radius={[0, 6, 6, 0]} />
+        </ChartCard>
+        <ChartCard title="Top Jurusan Alumni" subtitle="Jurusan terbanyak dari data alumni">
+          <ResponsiveContainer width="100%" height={250}>
+            <BarChart data={jurusanChart} layout="vertical" barSize={16}>
+              <ChartDefs />
+              <CartesianGrid strokeDasharray="3 6" stroke="hsl(var(--border))" horizontal={false} />
+              <XAxis type="number" fontSize={11} allowDecimals={false} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
+              <YAxis type="category" dataKey="name" width={120} fontSize={10} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
+              <Tooltip contentStyle={TOOLTIP_STYLE} cursor={{ fill: "hsl(var(--primary) / 0.08)" }} />
+              <Bar dataKey="value" fill="url(#gradBlueH)" radius={[0, 10, 10, 0]} filter="url(#chart3d)" animationDuration={1200} />
             </BarChart>
           </ResponsiveContainer>
-        </div>
-        <div className="rounded-2xl bg-card border border-border p-4 shadow-sm">
-          <h3 className="font-heading font-semibold text-sm mb-3">Distribusi Gender Alumni</h3>
-          <ResponsiveContainer width="100%" height={240}>
+        </ChartCard>
+        <ChartCard title="Distribusi Gender Alumni" subtitle="Perbandingan gender alumni terdata">
+          <ResponsiveContainer width="100%" height={250}>
             <PieChart>
-              <Pie data={genderChart} dataKey="value" cx="50%" cy="50%" innerRadius={45} outerRadius={85} label={({ name, percent }: any) => `${name} ${(percent * 100).toFixed(0)}%`} fontSize={11}>
-                {genderChart.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+              <ChartDefs />
+              <Pie
+                data={genderChart}
+                dataKey="value"
+                cx="50%"
+                cy="52%"
+                innerRadius={48}
+                outerRadius={88}
+                paddingAngle={4}
+                cornerRadius={8}
+                filter="url(#chart3d)"
+                label={({ name, percent }: any) => `${name} ${(percent * 100).toFixed(0)}%`}
+                fontSize={11}
+                animationDuration={1200}
+              >
+                {genderChart.map((_, i) => (
+                  <Cell key={i} fill={COLORS[i % COLORS.length]} stroke="hsl(var(--card))" strokeWidth={3} />
+                ))}
               </Pie>
-              <Tooltip />
+              <Tooltip contentStyle={TOOLTIP_STYLE} />
             </PieChart>
           </ResponsiveContainer>
-        </div>
-        <div className="rounded-2xl bg-card border border-border p-4 shadow-sm">
-          <h3 className="font-heading font-semibold text-sm mb-3">Universitas Tujuan Alumni</h3>
-          <ResponsiveContainer width="100%" height={240}>
+        </ChartCard>
+        <ChartCard title="Universitas Tujuan Alumni" subtitle="Sebaran universitas alumni">
+          <ResponsiveContainer width="100%" height={250}>
             <RadarChart data={universitasChart}>
+              <ChartDefs />
               <PolarGrid stroke="hsl(var(--border))" />
               <PolarAngleAxis dataKey="subject" fontSize={10} stroke="hsl(var(--muted-foreground))" />
               <PolarRadiusAxis fontSize={9} stroke="hsl(var(--muted-foreground))" />
-              <Radar name="Alumni" dataKey="A" stroke="#10B981" fill="#10B981" fillOpacity={0.5} />
-              <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "0.5rem" }} />
+              <Radar
+                name="Alumni"
+                dataKey="A"
+                stroke="#10B981"
+                strokeWidth={2}
+                fill="url(#gradEmerald)"
+                fillOpacity={0.55}
+                filter="url(#chartGlow)"
+                animationDuration={1400}
+              />
+              <Tooltip contentStyle={TOOLTIP_STYLE} />
             </RadarChart>
           </ResponsiveContainer>
-        </div>
+        </ChartCard>
       </div>
+
 
       {/* Dialog daftar pengguna */}
       <Dialog open={!!list} onOpenChange={(o) => !o && setList(null)}>
