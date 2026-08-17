@@ -251,7 +251,7 @@ const Admin = () => {
               className="relative h-8 w-8 rounded-md flex items-center justify-center text-muted-foreground hover:text-primary"
               aria-label="Notifikasi rujukan"
             >
-              <Bell className="h-4.5 w-4.5" style={{ height: 18, width: 18 }} />
+              <Bell className="h-[18px] w-[18px]" />
               {(counts?.referrals ?? 0) > 0 && (
                 <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-semibold flex items-center justify-center">
                   {counts?.referrals}
@@ -276,18 +276,16 @@ const Admin = () => {
         <div className="h-[5px] bg-primary" />
 
         <main className="flex-1 px-4 md:px-6 lg:px-8 pb-24 lg:pb-10 bg-muted/20">
-          {view !== "dashboard" && (
+          {view !== "dashboard" && view !== "santri" && view !== "alumni" && (
             <div className="pt-5 pb-4 flex items-center gap-2">
               {activeItem && <activeItem.icon className="h-4 w-4 text-primary" />}
               <h1 className="font-heading text-base md:text-lg font-semibold text-foreground">{activeItem?.label}</h1>
-              {view !== "santri" && view !== "alumni" && (
-                <Button variant="outline" size="sm" className="ml-auto h-8 rounded-md text-xs" onClick={() => setView("dashboard")}>
-                  Kembali ke Dashboard
-                </Button>
-              )}
+              <Button variant="outline" size="sm" className="ml-auto h-8 rounded-md text-xs" onClick={() => setView("dashboard")}>
+                Kembali ke Dashboard
+              </Button>
             </div>
           )}
-          <div className={view === "dashboard" ? "" : "pb-6"}>{renderContent()}</div>
+          <div className={view === "dashboard" ? "" : view === "santri" || view === "alumni" ? "pt-5 pb-6" : "pb-6"}>{renderContent()}</div>
         </main>
       </div>
 
