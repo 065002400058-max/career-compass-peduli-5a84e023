@@ -9,15 +9,16 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { HeartPulse, ArrowLeft } from "lucide-react";
+import { HeartPulse, ArrowLeft, Info } from "lucide-react";
 import { toast } from "sonner";
+import { detectScreeningKind, itemScore, interpretScreening, POSITIVE_MESSAGE, DISCLAIMER } from "@/lib/psikotesScoring";
 
 const PsikotesTake = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user, loading } = useAuth();
   const [answers, setAnswers] = useState<Record<string, string>>({});
-  const [result, setResult] = useState<null | { score: number; level: string; conclusion: string; recommendation: string }>(null);
+  const [result, setResult] = useState<null | { score: string; level: string; conclusion: string; recommendation: string }>(null);
 
   useEffect(() => { if (!loading && !user) navigate("/auth"); }, [loading, user, navigate]);
 
@@ -34,26 +35,41 @@ const PsikotesTake = () => {
 
   const handleSubmit = async () => {
     if (!data?.test || !user) return;
+    const kind = detectScreeningKind(data.test.title, (data.test as any).psikotes_categories?.name);
     let total = 0;
     const answerData: any[] = [];
-    for (const q of data.questions as any[]) {
+    (data.questions as any[]).forEach((q, idx) => {
       const chosen = q.psikotes_answers.find((a: any) => a.id === answers[q.id]);
-      const sc = chosen?.score ?? 0;
-      total += sc;
-      answerData.push({ question_id: q.id, answer_id: chosen?.id, score: sc });
+      const raw = chosen?.score ?? 0;
+      const scored = itemScore(kind, idx + 1, raw);
+      total += scored;
+      answerData.push({ question_id: q.id, answer_id: chosen?.id, score: raw, scored });
+    });
+
+    const interpreted = interpretScreening(kind, total, (data.questions as any[]).length || 6);
+    let level: string, conclusion: string, recommendation: string, displayScore: string;
+
+    if (interpreted) {
+      level = interpreted.level;
+      conclusion = interpreted.conclusion;
+      recommendation = interpreted.recommendation;
+      displayScore = interpreted.displayScore;
+    } else {
+      const matched = (data.results as any[]).find(r => total >= r.min_score && total <= r.max_score);
+      level = matched?.level ?? "Hasil Screening";
+      conclusion = matched?.conclusion ?? "Berdasarkan hasil screening, skor Anda telah tercatat pada sistem.";
+      recommendation = matched?.recommendation ?? "Jika Anda merasa perlu berbicara lebih lanjut, Anda dapat menghubungi konselor kami.";
+      displayScore = String(total);
     }
-    const matched = (data.results as any[]).find(r => total >= r.min_score && total <= r.max_score);
-    const level = matched?.level ?? "Tidak diketahui";
-    const conclusion = matched?.conclusion ?? "Hasil tidak dapat diinterpretasikan.";
-    const recommendation = matched?.recommendation ?? "Konsultasikan ke konselor.";
 
     const { error } = await supabase.from("psikotes_attempts").insert({
       user_id: user.id, test_id: data.test.id, total_score: total,
       level, conclusion, recommendation, answers: answerData,
     });
     if (error) { toast.error("Gagal menyimpan"); return; }
-    setResult({ score: total, level, conclusion, recommendation });
+    setResult({ score: displayScore, level, conclusion, recommendation });
   };
+
 
   const answered = Object.keys(answers).length;
   const totalQ = data?.questions.length ?? 0;
