@@ -24,35 +24,43 @@ export const cleanVal = (v: any): string | null => {
   return s === "" || s === "-" ? null : s;
 };
 
+/** Data karier nyata (bukan "-"). */
+export const careerData = (a: AlumniRecord): string | null =>
+  cleanVal(a?.position) ||
+  cleanVal(a?.company) ||
+  cleanVal(a?.job_field) ||
+  cleanVal(a?.work_city) ||
+  null;
+
+/** Data studi lanjut nyata: kampus alma mater / rencana studi. */
+export const studyData = (a: AlumniRecord): string | null =>
+  cleanVal(a?.university) ||
+  cleanVal(a?.faculty) ||
+  cleanVal(a?.further_education) ||
+  cleanVal(a?.target_university) ||
+  null;
+
 /** Alumni dianggap sudah mengisi tracer bila ada penanda waktu atau minimal satu data karier/studi. */
 export const hasTracer = (a: AlumniRecord): boolean =>
-  !!a?.tracer_filled_at ||
-  !!(
-    cleanVal(a?.position) ||
-    cleanVal(a?.company) ||
-    cleanVal(a?.job_field) ||
-    cleanVal(a?.further_education) ||
-    cleanVal(a?.work_city) ||
-    cleanVal(a?.target_university)
-  );
+  !!a?.tracer_filled_at || !!careerData(a) || !!studyData(a);
 
 /** Klasifikasi eksklusif: setiap alumni tepat masuk ke satu kategori.
- *  Aturan: bila data tracer kosong (mis. semua kolom "-"), alumni dihitung
- *  "Belum Mengisi Tracer" — status bawaan hasil import tidak dipercaya. */
+ *  Aturan: data isi ("-" = kosong) yang menentukan, bukan kolom status bawaan import.
+ *  - ada data pekerjaan  → Bekerja / Wirausaha
+ *  - ada data kampus/studi lanjut → Melanjutkan Studi (konsisten dengan grafik Kampus Alma Mater)
+ *  - tidak ada data apa pun → Belum Mengisi Tracer */
 export const alumniStatus = (a: AlumniRecord): AlumniStatus => {
-  if (!hasTracer(a)) return ALUMNI_NOT_FILLED;
-
   const raw = (cleanVal(a?.status) ?? "").toLowerCase();
+  const career = careerData(a);
+  const study = studyData(a);
 
-  if (/wirausaha|usaha|bisnis|freelance|entrepreneur/.test(raw)) return "Wirausaha";
-  if (/studi|kuliah|lanjut|sekolah|mahasiswa/.test(raw)) return "Melanjutkan Studi";
-  if (/belum|tidak bekerja|mencari/.test(raw)) return "Belum Bekerja";
-  if (/kerja|karyawan|pegawai|guru|asn|pns/.test(raw)) return "Bekerja";
-
-  // status kosong / tidak dikenal → simpulkan dari data tracer
-  if (cleanVal(a?.further_education) || cleanVal(a?.target_university)) return "Melanjutkan Studi";
-  if (cleanVal(a?.position) || cleanVal(a?.company) || cleanVal(a?.job_field)) return "Bekerja";
-  return "Belum Bekerja";
+  if (career) {
+    if (/wirausaha|usaha|bisnis|freelance|entrepreneur/.test(raw)) return "Wirausaha";
+    return "Bekerja";
+  }
+  if (study) return "Melanjutkan Studi";
+  if (a?.tracer_filled_at) return "Belum Bekerja";
+  return ALUMNI_NOT_FILLED;
 };
 
 /** Ringkasan agregat yang selalu menjumlah tepat ke total baris. */
