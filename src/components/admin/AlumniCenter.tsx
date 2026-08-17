@@ -204,27 +204,18 @@ const AlumniCenter = () => {
 
   const rows: AlumniRow[] = alumni ?? [];
 
-  const stats = useMemo(() => {
-    const tracer = rows.filter(hasTracer).length;
-    const bekerja = rows.filter((a) => hasTracer(a) && /bekerja/i.test(a.status ?? "") && !/belum/i.test(a.status ?? "")).length;
-    return { total: rows.length, tracer, noTracer: rows.length - tracer, bekerja };
-  }, [rows]);
+  const summary = useMemo(() => alumniSummary(rows), [rows]);
 
-  const statusBreakdown = useMemo(() => {
-    const cats = ["Bekerja", "Belum Bekerja", "Wirausaha", "Melanjutkan Studi"];
-    const map = new Map(cats.map((c) => [c, 0]));
-    rows.forEach((a) => {
-      const s = (val(a.status) ?? "").toLowerCase();
-      const key =
-        /wirausaha|usaha|bisnis/.test(s) ? "Wirausaha"
-        : /studi|kuliah|lanjut/.test(s) ? "Melanjutkan Studi"
-        : /belum/.test(s) ? "Belum Bekerja"
-        : /kerja/.test(s) ? "Bekerja"
-        : null;
-      if (key) map.set(key, (map.get(key) ?? 0) + 1);
-    });
-    return cats.map((c) => ({ name: c, value: map.get(c) ?? 0 }));
-  }, [rows]);
+  const stats = useMemo(
+    () => ({ total: summary.total, tracer: summary.tracer, noTracer: summary.noTracer, bekerja: summary.bekerja }),
+    [summary],
+  );
+
+  const statusBreakdown = useMemo(
+    () => ALUMNI_STATUS_ORDER.map((name) => ({ name, value: summary.counts[name] })),
+    [summary],
+  );
+
 
   const uniInfo = useMemo(() => {
     const dalam = rows.filter((a) => /dalam/i.test(a.university_status ?? "")).length;
