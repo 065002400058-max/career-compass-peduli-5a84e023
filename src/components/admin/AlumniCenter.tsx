@@ -233,6 +233,50 @@ const AlumniCenter = () => {
     return { dalam, luar, top };
   }, [rows]);
 
+  /* ---- dashboard derived data (real data) ---- */
+  const topN = (key: string, n = 6) => {
+    const m = new Map<string, number>();
+    rows.forEach((a) => {
+      const v = val(a[key]);
+      if (v) m.set(v, (m.get(v) ?? 0) + 1);
+    });
+    const all = Array.from(m, ([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
+    if (all.length <= n) return all;
+    const rest = all.slice(n - 1).reduce((s, d) => s + d.value, 0);
+    return [...all.slice(0, n - 1), { name: "Lainnya", value: rest }];
+  };
+
+  const dash = useMemo(() => {
+    const bekerja = rows.filter((a) => /kerja|wirausaha/i.test(a.status ?? "") && !/belum/i.test(a.status ?? "")).length;
+    const lanjut = rows.filter((a) => /studi|kuliah|lanjut/i.test(a.status ?? "")).length;
+    const belum = rows.filter((a) => /belum/i.test(a.status ?? "")).length;
+    const years = new Map<string, number>();
+    rows.forEach((a) => {
+      const y = val(a.graduation_year);
+      if (y) years.set(y, (years.get(y) ?? 0) + 1);
+    });
+    return {
+      bekerja, lanjut, belum,
+      status: [
+        { name: "Bekerja", value: bekerja },
+        { name: "Melanjutkan Studi", value: lanjut },
+        { name: "Belum Bekerja", value: belum },
+      ],
+      jobField: topN("job_field"),
+      workCity: topN("work_city"),
+      campus: topN("university"),
+      companyType: topN("company_type", 4),
+      angkatan: Array.from(years, ([name, value]) => ({ name, value })).sort((a, b) => a.name.localeCompare(b.name)),
+    };
+  }, [rows]);
+
+  const pct = (n: number) => (stats.total ? ((n / stats.total) * 100).toFixed(1) : "0.0");
+
+  const recent = useMemo(
+    () => [...rows].sort((a, b) => String(b.updated_at ?? b.created_at ?? "").localeCompare(String(a.updated_at ?? a.created_at ?? ""))).slice(0, 5),
+    [rows],
+  );
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     return rows.filter((a) => {
