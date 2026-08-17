@@ -12,6 +12,8 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Trash2, Pencil, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
+import PsikotesJsonImport from "@/components/admin/PsikotesJsonImport";
+
 
 type Opt = { text: string; score: number };
 const defaultOpts = (): Opt[] => [
