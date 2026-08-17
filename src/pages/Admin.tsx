@@ -4,10 +4,13 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 import {
   Users, Briefcase, Building2, CheckCircle, XCircle, Brain, HeartPulse, GraduationCap,
-  Award, UserCircle, MoreHorizontal, TrendingUp, FileDown, ChevronLeft, Bell,
+  Award, MoreHorizontal, TrendingUp, FileDown, Bell, Menu, LayoutDashboard, UserCircle,
+  ChevronDown, ArrowRight, User as UserIcon,
 } from "lucide-react";
+import AdminSidebar, { AdminNavItem } from "@/components/admin/AdminSidebar";
 import AdminBottomNav from "@/components/admin/AdminBottomNav";
 import SantriCenter from "@/components/admin/SantriCenter";
 import AlumniCenter from "@/components/admin/AlumniCenter";
@@ -18,33 +21,70 @@ import UniversitiesManager from "@/components/admin/UniversitiesManager";
 import ScholarshipManager from "@/components/admin/ScholarshipManager";
 import ReferralManager from "@/components/admin/ReferralManager";
 import UsageReports from "@/components/admin/UsageReports";
+import duLogo from "@/assets/du-logo-t.png.asset.json";
+import yayasanLogo from "@/assets/yayasan-logo-t.png.asset.json";
+import trisaktiLogo from "@/assets/trisakti-logo-t.png.asset.json";
+import diktiLogo from "@/assets/dikti-logo-t.png.asset.json";
+import tutwuriLogo from "@/assets/tutwuri-logo-t.png.asset.json";
+import { assetUrl } from "@/lib/assetUrl";
 
-type Segment = "santri" | "alumni" | "lainnya";
-
-const TOOLS = [
-  { value: "jobs", label: "Validasi Lowongan", icon: Briefcase, desc: "Tinjau dan setujui lowongan dari mitra." },
-  { value: "partners", label: "Mitra", icon: Building2, desc: "Kelola data mitra perusahaan." },
-  { value: "cbt", label: "Tes CBT", icon: Brain, desc: "Kategori, tes, soal, dan jawaban CBT." },
-  { value: "psikotes", label: "Psikotes", icon: HeartPulse, desc: "Screening mental & instrumen konseling." },
-  { value: "screening", label: "Hasil Screening", icon: TrendingUp, desc: "Rekap interpretasi hasil screening." },
-  { value: "universities", label: "Kampus", icon: GraduationCap, desc: "Direktori kampus dalam & luar negeri." },
-  { value: "scholarships", label: "Beasiswa", icon: Award, desc: "Kelola informasi beasiswa." },
-  { value: "referrals", label: "Rujukan", icon: Users, desc: "Tindak lanjut rujukan konseling." },
-  { value: "reports", label: "Laporan Pengguna", icon: FileDown, desc: "Unduh laporan aktivitas pengguna." },
+const HEADER_LOGOS = [
+  { src: assetUrl(duLogo.url), alt: "Pesantren Daarul 'Uluum Lido" },
+  { src: assetUrl(yayasanLogo.url), alt: "Yayasan Salsabila Lido" },
+  { src: assetUrl(trisaktiLogo.url), alt: "Universitas Trisakti" },
+  { src: assetUrl(diktiLogo.url), alt: "Diktisaintek Berdampak" },
+  { src: assetUrl(tutwuriLogo.url), alt: "Tut Wuri Handayani" },
 ];
 
-const SEGMENTS: { key: Segment; label: string; icon: any }[] = [
+const MAIN_NAV: AdminNavItem[] = [
+  { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },
   { key: "santri", label: "Data Santri", icon: UserCircle },
   { key: "alumni", label: "Data Alumni", icon: Users },
-  { key: "lainnya", label: "Lainnya", icon: MoreHorizontal },
+];
+
+const TOOL_NAV: AdminNavItem[] = [
+  { key: "jobs", label: "Validasi Lowongan", icon: Briefcase },
+  { key: "partners", label: "Mitra", icon: Building2 },
+  { key: "cbt", label: "Tes CBT", icon: Brain },
+  { key: "psikotes", label: "Psikotes", icon: HeartPulse },
+  { key: "screening", label: "Hasil Screening", icon: TrendingUp },
+  { key: "universities", label: "Kampus", icon: GraduationCap },
+  { key: "scholarships", label: "Beasiswa", icon: Award },
+  { key: "referrals", label: "Rujukan", icon: Users },
+  { key: "reports", label: "Laporan Pengguna", icon: FileDown },
+];
+
+const MENU_CARDS = [
+  {
+    key: "santri",
+    icon: Users,
+    title: "Data Santri",
+    desc: "Kelola data santri, layanan, screening, CBT, psikotes, dan konseling.",
+    cta: "Lihat Data Santri",
+  },
+  {
+    key: "alumni",
+    icon: GraduationCap,
+    title: "Data Alumni",
+    desc: "Kelola data alumni, tracer study, pekerjaan, pendidikan, dan karier.",
+    cta: "Lihat Data Alumni",
+  },
+  {
+    key: "tools",
+    icon: MoreHorizontal,
+    title: "Lainnya",
+    desc: "Akses fitur administrasi seperti lowongan, mitra, kampus, beasiswa, dan lainnya.",
+    cta: "Lihat Menu Lainnya",
+  },
 ];
 
 const Admin = () => {
   const { user, loading, hasRole } = useAuth();
   const navigate = useNavigate();
   const qc = useQueryClient();
-  const [segment, setSegment] = useState<Segment>("santri");
-  const [tool, setTool] = useState<string | null>(null);
+  const [view, setView] = useState("dashboard");
+  const [toolsOpen, setToolsOpen] = useState(false);
+  const [drawer, setDrawer] = useState(false);
 
   useEffect(() => {
     if (!loading && (!user || !hasRole("admin"))) navigate("/");
@@ -61,9 +101,7 @@ const Admin = () => {
   const { data: counts } = useQuery({
     queryKey: ["admin-counts"],
     queryFn: async () => {
-      const [referrals] = await Promise.all([
-        supabase.from("counseling_referrals").select("id", { count: "exact", head: true }).eq("status", "pending"),
-      ]);
+      const referrals = await supabase.from("counseling_referrals").select("id", { count: "exact", head: true }).eq("status", "pending");
       return { referrals: referrals.count ?? 0 };
     },
     enabled: isAdmin,
@@ -72,16 +110,56 @@ const Admin = () => {
   if (loading) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Memuat...</div>;
   if (!isAdmin) return null;
 
-  const approveJob = async (id: string, status: "approved" | "rejected") => {
+  const select = (key: string) => {
+    if (key === "tools") {
+      setToolsOpen(true);
+      setView("jobs");
+    } else {
+      setView(key);
+      if (TOOL_NAV.some((t) => t.key === key)) setToolsOpen(true);
+    }
+    setDrawer(false);
+  };
+
+  const setJobStatus = async (id: string, status: "approved" | "rejected") => {
     await supabase.from("jobs").update({ status }).eq("id", id);
     qc.invalidateQueries({ queryKey: ["admin-pending-jobs"] });
   };
 
-  const goSegment = (s: Segment) => { setSegment(s); setTool(null); };
-  const activeTool = TOOLS.find((t) => t.value === tool);
+  const activeItem = [...MAIN_NAV, ...TOOL_NAV].find((i) => i.key === view);
 
-  const renderTool = () => {
-    switch (tool) {
+  const Dashboard = () => (
+    <div className="pt-8 md:pt-10 pb-6">
+      <div className="text-center">
+        <h1 className="font-heading text-[20px] md:text-[26px] font-bold text-foreground">
+          Selamat datang di Admin Career Center <span className="text-primary">PEDULI</span>
+        </h1>
+        <p className="text-xs md:text-sm text-muted-foreground mt-1.5">
+          Kelola data dan layanan santri/alumni dengan mudah dan terintegrasi.
+        </p>
+      </div>
+      <div className="mt-6 md:mt-7 mx-auto max-w-[980px] grid gap-4 md:gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        {MENU_CARDS.map((c) => (
+          <div key={c.key} className="rounded-lg border border-border bg-card p-6 md:p-7 flex flex-col items-center text-center shadow-[0_1px_2px_hsl(var(--foreground)/0.04)]">
+            <span className="h-14 w-14 rounded-full bg-primary flex items-center justify-center">
+              <c.icon className="h-6 w-6 text-primary-foreground" strokeWidth={1.9} />
+            </span>
+            <h2 className="font-heading text-base md:text-[17px] font-semibold text-foreground mt-3.5">{c.title}</h2>
+            <p className="text-xs md:text-[13px] text-muted-foreground leading-relaxed mt-2 max-w-[240px] flex-1">{c.desc}</p>
+            <Button size="sm" className="mt-5 h-9 rounded-md px-4 text-[13px] w-full sm:w-auto" onClick={() => select(c.key)}>
+              {c.cta} <ArrowRight className="h-3.5 w-3.5 ml-1.5" />
+            </Button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  const renderContent = () => {
+    switch (view) {
+      case "dashboard": return <Dashboard />;
+      case "santri": return <SantriCenter />;
+      case "alumni": return <AlumniCenter />;
       case "jobs":
         return (
           <div className="rounded-lg border border-border bg-card divide-y divide-border overflow-hidden">
@@ -98,10 +176,10 @@ const Admin = () => {
                     <p className="text-sm text-muted-foreground truncate">{job.company} · {job.location}</p>
                   </div>
                   <div className="flex gap-2 shrink-0">
-                    <Button size="sm" variant="outline" className="text-destructive border-destructive/30" onClick={() => approveJob(job.id, "rejected")}>
+                    <Button size="sm" variant="outline" className="text-destructive border-destructive/30" onClick={() => setJobStatus(job.id, "rejected")}>
                       <XCircle className="h-4 w-4" />
                     </Button>
-                    <Button size="sm" onClick={() => approveJob(job.id, "approved")}>
+                    <Button size="sm" onClick={() => setJobStatus(job.id, "approved")}>
                       <CheckCircle className="h-4 w-4 mr-1" />Approve
                     </Button>
                   </div>
@@ -128,99 +206,93 @@ const Admin = () => {
     }
   };
 
+  const sidebar = (
+    <AdminSidebar
+      main={MAIN_NAV}
+      tools={TOOL_NAV}
+      active={view}
+      onSelect={select}
+      toolsOpen={toolsOpen}
+      onToggleTools={() => setToolsOpen((o) => !o)}
+    />
+  );
+
   return (
-    <div className="min-h-screen bg-muted/20 pb-24 md:pb-10">
-      <div className="w-full px-4 md:px-6 lg:px-10 xl:px-12 pt-5 md:pt-8 max-w-[1800px] mx-auto">
-        {/* Header */}
-        <div className="flex items-start justify-between gap-4 mb-4">
-          <div>
-            <p className="text-xs uppercase tracking-wide text-muted-foreground">Administrasi</p>
-            <h1 className="font-heading text-xl md:text-2xl font-semibold text-foreground">
-              Career Center <span className="text-primary">PEDULI</span>
-            </h1>
-          </div>
+    <div className="min-h-screen bg-[hsl(var(--background))] flex w-full">
+      {/* Desktop sidebar */}
+      <aside className="hidden lg:block w-[200px] shrink-0 border-r border-border sticky top-0 h-screen">{sidebar}</aside>
+
+      {/* Mobile drawer */}
+      <Sheet open={drawer} onOpenChange={setDrawer}>
+        <SheetContent side="left" className="p-0 w-[220px]">{sidebar}</SheetContent>
+      </Sheet>
+
+      <div className="flex-1 min-w-0 flex flex-col">
+        {/* Top header */}
+        <header className="h-[60px] bg-card border-b border-border flex items-center gap-3 px-3 md:px-5">
           <button
-            onClick={() => { setSegment("lainnya"); setTool("referrals"); }}
-            className="relative shrink-0 h-9 w-9 rounded-md border border-border bg-card flex items-center justify-center text-muted-foreground hover:text-primary transition-colors"
-            aria-label="Notifikasi rujukan"
+            onClick={() => setDrawer(true)}
+            className="h-8 w-8 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground lg:hidden"
+            aria-label="Buka menu"
           >
-            <Bell className="h-4 w-4" />
-            {(counts?.referrals ?? 0) > 0 && <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-primary" />}
+            <Menu className="h-5 w-5" />
           </button>
-        </div>
+          <span className="font-heading text-sm md:text-base font-semibold text-foreground">Admin</span>
 
-        {/* Segment tabs */}
-        <div className="rounded-lg border border-border bg-card mb-5 overflow-hidden">
-          <div className="grid grid-cols-3">
-            {SEGMENTS.map((s) => {
-              const active = segment === s.key;
-              return (
-                <button
-                  key={s.key}
-                  onClick={() => goSegment(s.key)}
-                  className={`flex items-center justify-center gap-2 py-3 text-xs md:text-sm font-medium border-b-2 transition-colors ${
-                    active ? "border-primary bg-accent/50 text-primary" : "border-transparent text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <s.icon className="h-4 w-4" />
-                  <span className="truncate">{s.label}</span>
-                </button>
-              );
-            })}
+          <div className="hidden md:flex items-center gap-4 mx-auto">
+            {HEADER_LOGOS.map((l) => (
+              <img key={l.alt} src={l.src} alt={l.alt} className="h-7 w-auto object-contain" loading="lazy" />
+            ))}
           </div>
-        </div>
 
-        {segment === "santri" && <SantriCenter />}
-        {segment === "alumni" && <AlumniCenter />}
-
-        {segment === "lainnya" && (
-          <div className="space-y-4">
-            {!tool ? (
-              <>
-                <div>
-                  <h2 className="font-heading text-xl md:text-2xl font-semibold text-foreground">Lainnya</h2>
-                  <p className="text-sm text-muted-foreground">Fungsi administratif layanan Career Center PEDULI.</p>
-                </div>
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-                  {TOOLS.map((t) => (
-                    <button
-                      key={t.value}
-                      onClick={() => setTool(t.value)}
-                      className="text-left rounded-lg border border-border bg-card p-4 hover:border-primary/40 hover:bg-accent/30 transition-colors"
-                    >
-                      <span className="flex items-center gap-2 mb-1.5">
-                        <t.icon className="h-4 w-4 text-primary" strokeWidth={1.8} />
-                        <span className="font-heading text-sm font-semibold text-foreground">{t.label}</span>
-                      </span>
-                      <span className="block text-xs text-muted-foreground leading-relaxed">{t.desc}</span>
-                    </button>
-                  ))}
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="flex items-center gap-3">
-                  <Button variant="outline" size="sm" className="rounded-md" onClick={() => setTool(null)}>
-                    <ChevronLeft className="h-4 w-4 mr-1" />Kembali
-                  </Button>
-                  {activeTool && (
-                    <div className="flex items-center gap-2">
-                      <activeTool.icon className="h-4 w-4 text-primary" />
-                      <h2 className="font-heading text-base md:text-lg font-semibold text-foreground">{activeTool.label}</h2>
-                    </div>
-                  )}
-                </div>
-                {renderTool()}
-              </>
-            )}
+          <div className="ml-auto md:ml-0 flex items-center gap-2 md:gap-3">
+            <button
+              onClick={() => select("referrals")}
+              className="relative h-8 w-8 rounded-md flex items-center justify-center text-muted-foreground hover:text-primary"
+              aria-label="Notifikasi rujukan"
+            >
+              <Bell className="h-[18px] w-[18px]" />
+              {(counts?.referrals ?? 0) > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-semibold flex items-center justify-center">
+                  {counts?.referrals}
+                </span>
+              )}
+            </button>
+            <div className="hidden sm:block h-6 w-px bg-border" />
+            <button onClick={() => navigate("/profil")} className="flex items-center gap-2 text-left">
+              <span className="h-8 w-8 rounded-md border border-border flex items-center justify-center text-muted-foreground">
+                <UserIcon className="h-4 w-4" />
+              </span>
+              <span className="hidden sm:block leading-tight">
+                <span className="block text-[13px] font-semibold text-foreground">{user?.email?.split("@")[0] ?? "Admin"}</span>
+                <span className="block text-[11px] text-muted-foreground">Administrator</span>
+              </span>
+              <ChevronDown className="hidden sm:block h-3.5 w-3.5 text-muted-foreground" />
+            </button>
           </div>
-        )}
+        </header>
+
+        {/* Green strip */}
+        <div className="h-[5px] bg-primary" />
+
+        <main className="flex-1 px-4 md:px-6 lg:px-8 pb-24 lg:pb-10 bg-muted/20">
+          {view !== "dashboard" && view !== "santri" && view !== "alumni" && (
+            <div className="pt-5 pb-4 flex items-center gap-2">
+              {activeItem && <activeItem.icon className="h-4 w-4 text-primary" />}
+              <h1 className="font-heading text-base md:text-lg font-semibold text-foreground">{activeItem?.label}</h1>
+              <Button variant="outline" size="sm" className="ml-auto h-8 rounded-md text-xs" onClick={() => setView("dashboard")}>
+                Kembali ke Dashboard
+              </Button>
+            </div>
+          )}
+          <div className={view === "dashboard" ? "" : view === "santri" || view === "alumni" ? "pt-5 pb-6" : "pb-6"}>{renderContent()}</div>
+        </main>
       </div>
 
       <AdminBottomNav
-        active={segment === "santri" ? "santri" : segment === "lainnya" ? "layanan" : "beranda"}
-        onSantri={() => goSegment("santri")}
-        onLayanan={() => goSegment("lainnya")}
+        active={view === "santri" ? "santri" : view === "dashboard" ? "beranda" : "layanan"}
+        onSantri={() => select("santri")}
+        onLayanan={() => select("tools")}
       />
     </div>
   );
