@@ -484,54 +484,92 @@ const MonitoringDashboard = () => {
 
       {/* Diagram */}
       <div className="grid lg:grid-cols-2 gap-4">
-        <div className="rounded-2xl bg-card border border-border p-4 shadow-sm">
-          <h3 className="font-heading font-semibold text-sm mb-3">Komposisi Populasi</h3>
-          <ResponsiveContainer width="100%" height={240}>
+        <ChartCard title="Komposisi Populasi" subtitle="Santri, alumni, & belum teridentifikasi">
+          <ResponsiveContainer width="100%" height={250}>
             <PieChart>
-              <Pie data={populationChart} dataKey="value" cx="50%" cy="50%" innerRadius={50} outerRadius={90} label={({ name, percent }: any) => `${name} ${(percent * 100).toFixed(0)}%`} fontSize={11}>
-                {populationChart.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+              <ChartDefs />
+              {/* lapisan bawah untuk efek kedalaman 3D */}
+              <Pie
+                data={populationChart}
+                dataKey="value"
+                cx="50%"
+                cy="55%"
+                innerRadius={52}
+                outerRadius={92}
+                startAngle={90}
+                endAngle={-270}
+                isAnimationActive={false}
+                stroke="none"
+              >
+                {populationChart.map((_, i) => (
+                  <Cell key={i} fill={COLORS[i % COLORS.length]} fillOpacity={0.25} />
+                ))}
               </Pie>
-              <Tooltip />
+              <Pie
+                data={populationChart}
+                dataKey="value"
+                cx="50%"
+                cy="50%"
+                innerRadius={52}
+                outerRadius={92}
+                paddingAngle={4}
+                cornerRadius={8}
+                startAngle={90}
+                endAngle={-270}
+                filter="url(#chart3d)"
+                label={({ name, percent }: any) => `${name} ${(percent * 100).toFixed(0)}%`}
+                fontSize={11}
+                animationDuration={1300}
+              >
+                {populationChart.map((_, i) => (
+                  <Cell key={i} fill={COLORS[i % COLORS.length]} stroke="hsl(var(--card))" strokeWidth={3} />
+                ))}
+              </Pie>
+              <Tooltip contentStyle={TOOLTIP_STYLE} />
             </PieChart>
           </ResponsiveContainer>
-        </div>
-        <div className="rounded-2xl bg-card border border-border p-4 shadow-sm">
-          <h3 className="font-heading font-semibold text-sm mb-3">Partisipasi Layanan (Sudah vs Belum)</h3>
-          <ResponsiveContainer width="100%" height={240}>
-            <BarChart data={participationChart}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis dataKey="name" fontSize={11} stroke="hsl(var(--muted-foreground))" />
-              <YAxis fontSize={11} stroke="hsl(var(--muted-foreground))" allowDecimals={false} />
-              <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "0.5rem" }} />
-              <Legend />
-              <Bar dataKey="Sudah" fill="#10B981" radius={[6, 6, 0, 0]} />
-              <Bar dataKey="Belum" fill="#EF4444" radius={[6, 6, 0, 0]} />
+        </ChartCard>
+        <ChartCard title="Partisipasi Layanan" subtitle="Sudah vs belum mengikuti tiap layanan">
+          <ResponsiveContainer width="100%" height={250}>
+            <BarChart data={participationChart} barGap={6}>
+              <ChartDefs />
+              <CartesianGrid strokeDasharray="3 6" stroke="hsl(var(--border))" vertical={false} />
+              <XAxis dataKey="name" fontSize={11} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
+              <YAxis fontSize={11} stroke="hsl(var(--muted-foreground))" allowDecimals={false} tickLine={false} axisLine={false} />
+              <Tooltip contentStyle={TOOLTIP_STYLE} cursor={{ fill: "hsl(var(--primary) / 0.08)" }} />
+              <Legend iconType="circle" wrapperStyle={{ fontSize: 11 }} />
+              <Bar dataKey="Sudah" fill="url(#gradEmerald)" radius={[10, 10, 4, 4]} filter="url(#chart3d)" animationDuration={1200} />
+              <Bar dataKey="Belum" fill="url(#gradRed)" radius={[10, 10, 4, 4]} filter="url(#chart3d)" animationDuration={1400} />
             </BarChart>
           </ResponsiveContainer>
-        </div>
+        </ChartCard>
       </div>
 
       {/* Hasil screening per instrumen */}
       <div className="grid lg:grid-cols-3 gap-4">
         {([["PSS-10", screeningCats.pss10], ["BRS", screeningCats.brs], ["SRQ-20", screeningCats.srq20]] as const).map(([label, cats]) => (
-          <div key={label} className="rounded-2xl bg-card border border-border p-4 shadow-sm">
-            <h3 className="font-heading font-semibold text-sm mb-3">Hasil {label}</h3>
+          <ChartCard key={label} title={`Hasil ${label}`} subtitle="Klik kategori untuk melihat daftar nama">
             {cats.length === 0 ? (
               <p className="text-xs text-muted-foreground">Belum ada data.</p>
             ) : (
               <>
-                <ResponsiveContainer width="100%" height={180}>
-                  <BarChart data={cats.map((c) => ({ name: c.level, total: c.total }))}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                    <XAxis dataKey="name" fontSize={9} stroke="hsl(var(--muted-foreground))" />
-                    <YAxis fontSize={10} allowDecimals={false} stroke="hsl(var(--muted-foreground))" />
-                    <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "0.5rem" }} />
-                    <Bar dataKey="total" fill="#8B5CF6" radius={[6, 6, 0, 0]} />
+                <ResponsiveContainer width="100%" height={185}>
+                  <BarChart data={cats.map((c) => ({ name: c.level, total: c.total }))} barSize={26}>
+                    <ChartDefs />
+                    <CartesianGrid strokeDasharray="3 6" stroke="hsl(var(--border))" vertical={false} />
+                    <XAxis dataKey="name" fontSize={9} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
+                    <YAxis fontSize={10} allowDecimals={false} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
+                    <Tooltip contentStyle={TOOLTIP_STYLE} cursor={{ fill: "hsl(var(--primary) / 0.08)" }} />
+                    <Bar dataKey="total" fill="url(#gradViolet)" radius={[10, 10, 4, 4]} filter="url(#chart3d)" animationDuration={1200} />
                   </BarChart>
                 </ResponsiveContainer>
                 <div className="space-y-1.5 mt-2">
                   {cats.map((c) => (
-                    <button key={c.level} className="w-full text-left rounded-lg bg-muted/40 px-3 py-2 hover:bg-accent/50" onClick={() => openList(`${label} — ${c.level}`, c.rows)}>
+                    <button
+                      key={c.level}
+                      className="w-full text-left rounded-xl border border-transparent bg-muted/40 px-3 py-2 transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:bg-accent/50"
+                      onClick={() => openList(`${label} — ${c.level}`, c.rows)}
+                    >
                       <div className="text-xs font-medium">{c.level}</div>
                       <div className="text-[11px] text-muted-foreground">Total {c.total} · Santri {c.santri} · Alumni {c.alumni}</div>
                     </button>
@@ -539,9 +577,10 @@ const MonitoringDashboard = () => {
                 </div>
               </>
             )}
-          </div>
+          </ChartCard>
         ))}
       </div>
+
 
       {/* Tabel monitoring */}
       <div className="rounded-2xl bg-card border border-border p-4 shadow-sm space-y-3">
