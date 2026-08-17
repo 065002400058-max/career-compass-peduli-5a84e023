@@ -120,7 +120,7 @@ const Admin = () => {
     tools: "jobs",
     counseling: "referrals",
     unidentified: "alumni",
-    events: "jobs",
+    
     settings: "reports",
   };
 
