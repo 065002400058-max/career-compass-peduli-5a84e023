@@ -507,17 +507,8 @@ const AlumniDashboard = () => {
               </Link>
             </Card>
 
-            <Card className="p-4">
-              <h3 className="flex items-center gap-2 text-[14px] font-semibold text-foreground">
-                <PencilLine className="h-4 w-4 text-emerald-600" /> Update Pekerjaan
-              </h3>
-              <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
-                Pastikan informasi pekerjaan selalu terbaru agar terhubung dengan peluang terbaik untukmu.
-              </p>
-              <Link to="/tracer" className="mt-3 flex items-center justify-center rounded-md bg-emerald-50 py-1.5 text-[11px] font-medium text-emerald-700 hover:bg-emerald-100">
-                Perbarui Sekarang
-              </Link>
-            </Card>
+            <GraduateStatusCard />
+
 
             <Card className="p-4">
               <h3 className="flex items-center gap-2 text-[14px] font-semibold text-foreground">
