@@ -121,9 +121,9 @@ const Index = () => {
       </div>
 
       {/* Hero */}
-      <section className="gradient-bg-subtle py-10 md:py-14 px-4 md:px-8 overflow-hidden relative">
+      <section className="gradient-bg-subtle py-12 md:py-20 xl:py-24 px-4 md:px-6 xl:px-8 overflow-hidden relative">
         <div className="container mx-auto">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="grid lg:grid-cols-2 gap-10 xl:gap-16 items-center lg:min-h-[520px]">
             <div>
               <div className="inline-flex items-center gap-2 bg-accent text-accent-foreground text-sm font-medium px-4 py-1.5 rounded-full mb-6 animate-fade-up border border-primary/20">
                 <Star className="h-3.5 w-3.5 text-secondary fill-secondary" />
@@ -149,40 +149,92 @@ const Index = () => {
               {heroContent.cta}
             </div>
             <div className="flex justify-center animate-float">
-              <img src={mosqueImg} alt="Islamic mosque illustration" className="w-full max-w-sm drop-shadow-2xl" />
+              <img src={mosqueImg} alt="Islamic mosque illustration" className="w-full max-w-sm lg:max-w-md xl:max-w-lg drop-shadow-2xl" />
             </div>
           </div>
         </div>
       </section>
 
       {/* Layanan Karier - CBT, Psikotes, Universities */}
-      <section className="py-8 md:py-12 px-4 md:px-8 relative">
+      <section className="section-padding relative">
         <div className="container mx-auto">
-          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-3 mb-5 md:mb-7">
+          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-3 mb-6 md:mb-9">
             <div>
-              <h2 className="font-heading text-2xl md:text-4xl font-bold text-foreground">Layanan Karier</h2>
-              <p className="text-muted-foreground mt-1 text-sm md:text-base">Tes CBT, Psikotes, dan kampus tersedia di halaman biasa.</p>
+              <h2 className="font-heading text-2xl md:text-4xl xl:text-[2.6rem] font-bold text-foreground">Layanan Karier</h2>
+              <p className="text-muted-foreground mt-1.5 text-sm md:text-base">Tes CBT, Psikotes, dan kampus tersedia di halaman biasa.</p>
             </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
             {[
               { icon: Brain, title: "Tes CBT", desc: "Tes Potensi Akademik & Minat Bakat.", to: "/cbt", cta: "Buka CBT" },
               { icon: HeartPulse, title: "Screening Mental & Konseling", desc: "Cek kondisi mental dan saran konseling.", to: "/psikotes", cta: "Buka Konseling" },
               { icon: School, title: "Jelajahi Kampus", desc: "Eksplorasi kampus dan program studi.", to: "/universities", cta: "Lihat Kampus" },
             ].map((s) => (
-              <Link key={s.title} to={s.to} className="glass-card-hover rounded-xl p-4 md:p-5 border-primary/10 group block">
-                <div className="h-10 w-10 md:h-11 md:w-11 rounded-xl gradient-bg flex items-center justify-center mb-3">
-                  <s.icon className="h-5 w-5 text-primary-foreground" />
+              <Link key={s.title} to={s.to} className="glass-card-hover rounded-2xl p-5 md:p-7 xl:p-8 border-primary/10 group flex h-full flex-col">
+                <div className="h-11 w-11 md:h-14 md:w-14 rounded-2xl gradient-bg flex items-center justify-center mb-4">
+                  <s.icon className="h-5 w-5 md:h-7 md:w-7 text-primary-foreground" />
                 </div>
-                <h3 className="font-heading font-semibold text-foreground text-base md:text-lg leading-tight">{s.title}</h3>
-                <p className="text-xs md:text-sm text-muted-foreground mt-1.5 min-h-[34px]">{s.desc}</p>
-                <span className="inline-flex items-center gap-1 text-xs md:text-sm text-primary mt-3 group-hover:gap-2 transition-all">
+                <h3 className="font-heading font-semibold text-foreground text-base md:text-xl leading-tight">{s.title}</h3>
+                <p className="text-sm md:text-base text-muted-foreground mt-2 flex-1">{s.desc}</p>
+                <span className="inline-flex items-center gap-1 text-sm md:text-base text-primary mt-4 group-hover:gap-2 transition-all">
                   {s.cta} <ArrowRight className="h-4 w-4" />
                 </span>
               </Link>
             ))}
           </div>
         </div>
+      </section>
+
+      {/* Bismillah Quote */}
+      <section className="py-8 relative">
+        <div className="container mx-auto text-center">
+          <p className="font-arabic text-2xl md:text-3xl text-primary/80 animate-shimmer">
+            ﷽
+          </p>
+          <p className="text-muted-foreground text-sm md:text-base mt-2 italic">
+            "Sebaik-baik manusia adalah yang paling bermanfaat bagi manusia lain." — HR. Ahmad
+          </p>
+        </div>
+      </section>
+
+      {/* Stats */}
+      <section className="pb-4 px-4 md:px-6 xl:px-8">
+        <div className="container mx-auto">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+            {statMeta.map((s) => (
+              <div key={s.label} className="glass-card-hover rounded-2xl p-5 md:p-7 xl:p-8 text-center border-primary/10">
+                <div className="h-12 w-12 md:h-14 md:w-14 rounded-2xl bg-accent flex items-center justify-center mx-auto mb-3 border border-primary/20">
+                  <s.icon className="h-6 w-6 md:h-7 md:w-7 text-primary" />
+                </div>
+                <p className="text-2xl md:text-4xl font-heading font-bold text-foreground">{counts ? counts[s.key].toLocaleString("id-ID") : "—"}</p>
+
+                <p className="text-sm md:text-base text-muted-foreground mt-1">{s.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Features */}
+      <section className="section-padding relative">
+        <div className="container mx-auto">
+          <div className="text-center max-w-2xl mx-auto mb-8 md:mb-10">
+            <h2 className="font-heading text-3xl md:text-4xl xl:text-[2.6rem] font-bold text-foreground">Fitur Unggulan</h2>
+            <p className="text-muted-foreground mt-3 md:text-lg">Semua yang Anda butuhkan untuk membangun karier yang sukses dan berkah.</p>
+          </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+            {features.map((f) => (
+              <div key={f.title} className="glass-card-hover rounded-2xl p-5 md:p-7 xl:p-8 border-primary/10">
+                <div className="h-12 w-12 md:h-14 md:w-14 rounded-2xl gradient-bg flex items-center justify-center mb-4">
+                  <f.icon className="h-6 w-6 md:h-7 md:w-7 text-primary-foreground" />
+                </div>
+                <h3 className="font-heading font-semibold text-foreground text-base md:text-xl">{f.title}</h3>
+                <p className="text-sm md:text-base text-muted-foreground mt-2">{f.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
       </section>
 
       {/* Bismillah Quote */}
