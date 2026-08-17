@@ -444,6 +444,7 @@ const Admin = () => {
           <TabsContent value="cbt" className="mt-0"><CbtManager /></TabsContent>
           <TabsContent value="psikotes" className="mt-0"><PsikotesManager /></TabsContent>
           <TabsContent value="screening" className="mt-0"><ScreeningInsights /></TabsContent>
+          <TabsContent value="monitor" className="mt-0"><MonitoringDashboard /></TabsContent>
 
           <TabsContent value="universities" className="mt-0"><UniversitiesManager /></TabsContent>
           <TabsContent value="scholarships" className="mt-0"><ScholarshipManager /></TabsContent>
