@@ -173,39 +173,36 @@ const Admin = () => {
       case "alumni": return <AlumniCenter />;
       case "jobs":
         return (
-          <div className="rounded-lg border border-border bg-card divide-y divide-border overflow-hidden">
-            {(pendingJobs?.length ?? 0) === 0 ? (
-              <div className="p-10 text-center text-muted-foreground">
-                <CheckCircle className="h-10 w-10 mx-auto mb-3 opacity-40" />
-                <p className="text-sm">Tidak ada lowongan yang menunggu validasi.</p>
-              </div>
-            ) : (
-              pendingJobs?.map((job: any) => (
-                <div key={job.id} className="p-4 flex items-center justify-between gap-4">
-                  <div className="min-w-0">
-                    <h4 className="font-heading font-semibold text-foreground truncate">{job.title}</h4>
-                    <p className="text-sm text-muted-foreground truncate">{job.company} · {job.location}</p>
-                  </div>
-                  <div className="flex gap-2 shrink-0">
-                    <Button size="sm" variant="outline" className="text-destructive border-destructive/30" onClick={() => setJobStatus(job.id, "rejected")}>
-                      <XCircle className="h-4 w-4" />
-                    </Button>
-                    <Button size="sm" onClick={() => setJobStatus(job.id, "approved")}>
-                      <CheckCircle className="h-4 w-4 mr-1" />Approve
-                    </Button>
-                  </div>
+          <div className="space-y-4">
+            {(pendingJobs?.length ?? 0) > 0 && (
+              <div className="rounded-lg border border-border bg-card divide-y divide-border overflow-hidden">
+                <div className="px-4 py-2.5 text-xs font-semibold text-foreground bg-muted/40">
+                  Menunggu Validasi ({pendingJobs?.length})
                 </div>
-              ))
+                {pendingJobs?.map((job: any) => (
+                  <div key={job.id} className="p-4 flex items-center justify-between gap-4">
+                    <div className="min-w-0">
+                      <h4 className="font-heading font-semibold text-foreground truncate">{job.title}</h4>
+                      <p className="text-sm text-muted-foreground truncate">{job.company} · {job.location}</p>
+                    </div>
+                    <div className="flex gap-2 shrink-0">
+                      <Button size="sm" variant="outline" className="text-destructive border-destructive/30" onClick={() => setJobStatus(job.id, "rejected")}>
+                        <XCircle className="h-4 w-4" />
+                      </Button>
+                      <Button size="sm" onClick={() => setJobStatus(job.id, "approved")}>
+                        <CheckCircle className="h-4 w-4 mr-1" />Approve
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
             )}
+            <JobsManager />
           </div>
         );
-      case "partners":
-        return (
-          <div className="rounded-lg border border-border bg-card p-10 text-center text-muted-foreground">
-            <Building2 className="h-10 w-10 mx-auto mb-3 opacity-40" />
-            <p className="text-sm">Manajemen mitra perusahaan akan ditampilkan di sini.</p>
-          </div>
-        );
+      case "partners": return <PartnersManager />;
+      case "events": return <EventsManager />;
+
       case "cbt": return <CbtManager />;
       case "psikotes": return <PsikotesManager />;
       case "screening": return <ScreeningInsights />;
