@@ -43,16 +43,17 @@ const MAIN_NAV: AdminNavItem[] = [
 ];
 
 const TOOL_NAV: AdminNavItem[] = [
-  { key: "jobs", label: "Validasi Lowongan", icon: Briefcase },
+  { key: "jobs", label: "Lowongan Kerja", icon: Briefcase },
   { key: "partners", label: "Mitra", icon: Building2 },
   { key: "cbt", label: "Tes CBT", icon: Brain },
   { key: "psikotes", label: "Psikotes", icon: HeartPulse },
-  { key: "screening", label: "Hasil Screening", icon: TrendingUp },
+  { key: "screening", label: "Screening Mental", icon: TrendingUp },
   { key: "universities", label: "Kampus", icon: GraduationCap },
   { key: "scholarships", label: "Beasiswa", icon: Award },
   { key: "referrals", label: "Rujukan", icon: Users },
   { key: "reports", label: "Laporan Pengguna", icon: FileDown },
 ];
+
 
 const MENU_CARDS = [
   {
