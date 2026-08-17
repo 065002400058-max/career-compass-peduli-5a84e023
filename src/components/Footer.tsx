@@ -111,7 +111,7 @@ const LogoRow = () => (
 );
 
 const Footer = () => (
-  <footer className="bg-foreground text-background/80 pt-8 pb-24 md:pt-10 md:pb-14">
+  <footer className="bg-foreground text-background/80 pt-6 pb-8 md:pt-10 md:pb-12">
     <div className="container mx-auto px-4">
       {/* Desktop */}
       <div className="hidden lg:grid grid-cols-[1.4fr_1fr_1fr_1.2fr] gap-8">
