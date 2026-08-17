@@ -19,6 +19,8 @@ import {
   Quote,
 } from "lucide-react";
 import { detectScreeningKind, type ScreeningKind } from "@/lib/psikotesScoring";
+import AlumniInsight from "@/components/shared/AlumniInsight";
+import GraduateStatusCard from "@/components/shared/GraduateStatusCard";
 
 /* ---------------- helpers ---------------- */
 
@@ -524,6 +526,11 @@ const SantriDashboard = () => {
                 </div>
               </div>
             </Card>
+
+            {/* Catatan & Rekomendasi */}
+            {/* Status setelah lulus + grafik alumni */}
+            <GraduateStatusCard />
+            <AlumniInsight />
 
             {/* Catatan & Rekomendasi */}
             <Card className="p-5">
