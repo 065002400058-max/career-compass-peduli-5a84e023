@@ -9,6 +9,8 @@ import AlumniAddDialog from "@/components/AlumniAddDialog";
 import AdminBottomNav from "@/components/admin/AdminBottomNav";
 import CbtManager from "@/components/admin/CbtManager";
 import PsikotesManager from "@/components/admin/PsikotesManager";
+import ScreeningInsights from "@/components/admin/ScreeningInsights";
+
 import UniversitiesManager from "@/components/admin/UniversitiesManager";
 import ScholarshipManager from "@/components/admin/ScholarshipManager";
 import ReferralManager from "@/components/admin/ReferralManager";
@@ -26,11 +28,13 @@ const SERVICE_TABS = [
   { value: "partners", label: "Mitra", icon: Building2 },
   { value: "cbt", label: "Tes CBT", icon: Brain },
   { value: "psikotes", label: "Psikotes", icon: HeartPulse },
+  { value: "screening", label: "Hasil Screening", icon: TrendingUp },
   { value: "universities", label: "Kampus", icon: GraduationCap },
   { value: "scholarships", label: "Beasiswa", icon: Award },
   { value: "referrals", label: "Rujukan", icon: Users },
   { value: "reports", label: "Laporan Pengguna", icon: FileDown },
 ];
+
 
 const Admin = () => {
   const { user, loading, hasRole } = useAuth();
@@ -437,6 +441,8 @@ const Admin = () => {
 
           <TabsContent value="cbt" className="mt-0"><CbtManager /></TabsContent>
           <TabsContent value="psikotes" className="mt-0"><PsikotesManager /></TabsContent>
+          <TabsContent value="screening" className="mt-0"><ScreeningInsights /></TabsContent>
+
           <TabsContent value="universities" className="mt-0"><UniversitiesManager /></TabsContent>
           <TabsContent value="scholarships" className="mt-0"><ScholarshipManager /></TabsContent>
           <TabsContent value="referrals" className="mt-0"><ReferralManager /></TabsContent>
