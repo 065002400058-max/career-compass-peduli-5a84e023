@@ -509,6 +509,47 @@ const AlumniCenter = () => {
           ))
         )}
       </div>
+      </>)}
+
+      {/* ============ TAB: TRACER STUDY ============ */}
+      {tab === "tracer" && (
+        <div className="grid gap-3 lg:grid-cols-3">
+          <CardBox title="Progress Tracer Study" subtitle={`${stats.tracer} dari ${stats.total} alumni sudah mengisi`} className="lg:col-span-2">
+            <div className="h-2 rounded-full bg-muted overflow-hidden mb-4">
+              <div className="h-full rounded-full bg-primary" style={{ width: `${tracerPct}%` }} />
+            </div>
+            <div className="space-y-2.5">
+              <Bar label="Sudah mengisi" value={stats.tracer} total={stats.total || 1} />
+              <Bar label="Belum mengisi" value={stats.noTracer} total={stats.total || 1} />
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              className="mt-4 h-8 rounded-md text-[12px]"
+              onClick={() => { resetFilters(); setOnlyNoTracer(true); setTab("daftar"); }}
+            >
+              Lihat alumni yang belum mengisi
+            </Button>
+          </CardBox>
+          <CardBox title="Respon Tracer Study" subtitle="Ringkasan pengisian">
+            <ul className="text-[12px] divide-y divide-border">
+              {[
+                ["Total Alumni", stats.total],
+                ["Sudah Mengisi", stats.tracer],
+                ["Belum Mengisi", stats.noTracer],
+                ["Tingkat Respon", `${tracerPct}%`],
+              ].map(([k, v]) => (
+                <li key={k as string} className="flex items-center justify-between py-2">
+                  <span className="text-muted-foreground">{k}</span>
+                  <span className="font-semibold text-foreground">{v as any}</span>
+                </li>
+              ))}
+            </ul>
+          </CardBox>
+        </div>
+      )}
+
+
 
       {/* Detail */}
       <Sheet open={!!detail} onOpenChange={(o) => { if (!o) { setDetail(null); setEditing(false); } }}>
