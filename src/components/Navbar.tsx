@@ -100,7 +100,9 @@ const Navbar = () => {
     navigate("/");
   };
 
-  const groups: Group[] = [
+  const isAdmin = hasRole("admin");
+
+  const publicGroups: Group[] = [
     {
       label: "Karier",
       icon: Briefcase,
@@ -140,9 +142,13 @@ const Navbar = () => {
     },
   ];
 
+  // Admin mengelola semua modul dari Dashboard, jadi menu publik disederhanakan.
+  const groups: Group[] = isAdmin ? [] : publicGroups;
+
   const extraLinks: Item[] = [
-    { label: "Admin", path: "/admin", show: hasRole("admin") },
+    { label: "Dashboard", path: "/admin", show: isAdmin },
   ].filter((i) => i.show);
+
 
   const roleLabel = roles.includes("admin")
     ? "Admin"
