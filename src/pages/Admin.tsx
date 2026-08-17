@@ -114,16 +114,21 @@ const Admin = () => {
   if (loading) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Memuat...</div>;
   if (!isAdmin) return null;
 
+  const ALIAS: Record<string, string> = {
+    tools: "jobs",
+    counseling: "referrals",
+    unidentified: "alumni",
+    events: "jobs",
+    settings: "reports",
+  };
+
   const select = (key: string) => {
-    if (key === "tools") {
-      setToolsOpen(true);
-      setView("jobs");
-    } else {
-      setView(key);
-      if (TOOL_NAV.some((t) => t.key === key)) setToolsOpen(true);
-    }
+    const target = ALIAS[key] ?? key;
+    setView(target);
+    if (TOOL_NAV.some((t) => t.key === target)) setToolsOpen(true);
     setDrawer(false);
   };
+
 
   const setJobStatus = async (id: string, status: "approved" | "rejected") => {
     await supabase.from("jobs").update({ status }).eq("id", id);
