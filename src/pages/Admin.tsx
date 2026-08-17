@@ -10,6 +10,7 @@ import AdminBottomNav from "@/components/admin/AdminBottomNav";
 import CbtManager from "@/components/admin/CbtManager";
 import PsikotesManager from "@/components/admin/PsikotesManager";
 import ScreeningInsights from "@/components/admin/ScreeningInsights";
+import MonitoringDashboard from "@/components/admin/MonitoringDashboard";
 
 import UniversitiesManager from "@/components/admin/UniversitiesManager";
 import ScholarshipManager from "@/components/admin/ScholarshipManager";
@@ -176,7 +177,7 @@ const Admin = () => {
             </span>
           </button>
           <button
-            onClick={() => navigate("/dashboard")}
+            onClick={() => setTab("monitor")}
             className="md:col-span-2 rounded-2xl bg-card border border-border p-5 text-left flex items-center gap-4 shadow-sm transition-colors hover:bg-accent/40"
           >
             <span className="h-11 w-11 rounded-xl bg-accent flex items-center justify-center shrink-0">
