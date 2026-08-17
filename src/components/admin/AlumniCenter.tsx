@@ -243,28 +243,25 @@ const AlumniCenter = () => {
   };
 
   const dash = useMemo(() => {
-    const bekerja = rows.filter((a) => /kerja|wirausaha/i.test(a.status ?? "") && !/belum/i.test(a.status ?? "")).length;
-    const lanjut = rows.filter((a) => /studi|kuliah|lanjut/i.test(a.status ?? "")).length;
-    const belum = rows.filter((a) => /belum/i.test(a.status ?? "")).length;
     const years = new Map<string, number>();
     rows.forEach((a) => {
       const y = val(a.graduation_year);
       if (y) years.set(y, (years.get(y) ?? 0) + 1);
     });
     return {
-      bekerja, lanjut, belum,
-      status: [
-        { name: "Bekerja", value: bekerja },
-        { name: "Melanjutkan Studi", value: lanjut },
-        { name: "Belum Bekerja", value: belum },
-      ],
+      bekerja: summary.bekerja,
+      lanjut: summary.lanjut,
+      belum: summary.belum,
+      belumMengisi: summary.belumMengisi,
+      status: statusBreakdown.filter((d) => d.value > 0),
       jobField: topN("job_field"),
       workCity: topN("work_city"),
       campus: topN("university"),
       companyType: topN("company_type", 4),
       angkatan: Array.from(years, ([name, value]) => ({ name, value })).sort((a, b) => a.name.localeCompare(b.name)),
     };
-  }, [rows]);
+  }, [rows, summary, statusBreakdown]);
+
 
   const pct = (n: number) => (stats.total ? ((n / stats.total) * 100).toFixed(1) : "0.0");
 
