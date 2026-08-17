@@ -1,20 +1,23 @@
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { FileJson, Loader2, AlertTriangle, Download } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { FileJson, Loader2, Download } from "lucide-react";
 import { toast } from "sonner";
 
-type UnivType = "dalam_negeri" | "luar_negeri" | "kedinasan";
+export type UnivType = "dalam_negeri" | "luar_negeri" | "kedinasan";
 
-const TYPE_LABELS: Record<UnivType, string> = {
+export const TYPE_LABELS: Record<UnivType, string> = {
   dalam_negeri: "Dalam Negeri",
   luar_negeri: "Luar Negeri",
-  kedinasan: "Sekolah Kedinasan",
+  kedinasan: "Kedinasan",
 };
 
-const TYPE_ALIASES: Record<string, UnivType> = {
+const CATEGORY_ALIASES: Record<string, UnivType> = {
   dalam_negeri: "dalam_negeri",
   "dalam negeri": "dalam_negeri",
   dalamnegeri: "dalam_negeri",
@@ -27,63 +30,85 @@ const TYPE_ALIASES: Record<string, UnivType> = {
   "sekolah kedinasan": "kedinasan",
 };
 
-type ParsedUniv = {
+type Row = {
+  no: number;
   name: string;
+  categoryRaw: string;
+  type: UnivType | null;
+  city: string;
   country: string;
-  type: UnivType;
-  website_url: string;
-  city: string | null;
+  website: string;
   description: string | null;
-  logo_url: string | null;
+  status: "valid" | "duplicate" | "invalid";
+  reason?: string;
 };
 
-type Preview = {
-  fileName: string;
-  valid: ParsedUniv[];
-  invalid: { row: number; name: string; reason: string }[];
-  counts: Record<string, number>;
-};
+type Preview = { fileName: string; rows: Row[] };
 
 const SAMPLE = {
-  universities: [
+  campuses: [
     {
-      name: "Institut Teknologi Bandung",
-      type: "dalam_negeri",
+      name: "Akademi Kepolisian",
+      category: "Kedinasan",
+      city: "Semarang",
       country: "Indonesia",
-      city: "Bandung",
-      website_url: "https://www.itb.ac.id",
-      description: "Perguruan tinggi teknik negeri terkemuka di Indonesia.",
-      logo_url: "",
+      website: "https://www.akpol.ac.id",
+      description: "Lembaga pendidikan perwira Polri.",
+    },
+    {
+      name: "Institut Pertanian Bogor",
+      category: "Dalam Negeri",
+      city: "Bogor",
+      country: "Indonesia",
+      website: "https://www.ipb.ac.id",
+      description: "Perguruan tinggi negeri bidang pertanian.",
     },
     {
       name: "Al-Azhar University",
-      type: "luar_negeri",
-      country: "Mesir",
+      category: "Luar Negeri",
       city: "Cairo",
-      website_url: "https://www.azhar.edu.eg",
-      description: "Universitas Islam tertua dan paling bergengsi di dunia.",
-    },
-    {
-      name: "Akademi Kepolisian",
-      type: "kedinasan",
-      country: "Indonesia",
-      city: "Semarang",
-      website_url: "https://www.akpol.ac.id",
-      description: "Lembaga pendidikan perwira Polri.",
+      country: "Mesir",
+      website: "https://www.azhar.edu.eg",
+      description: "Universitas Islam tertua di dunia.",
     },
   ],
 };
 
 const normalizeUrl = (u: string) => {
-  const v = u.trim();
+  const v = String(u ?? "").trim();
   if (!v) return "";
   return /^https?:\/\//i.test(v) ? v : `https://${v.replace(/^\/+/, "")}`;
 };
 
-export default function UniversitiesJsonImport({ onImported }: { onImported: () => void }) {
+const dupKey = (name: string, city: string, country: string) =>
+  [name, city, country].map((s) => String(s ?? "").trim().toLowerCase()).join("|");
+
+export default function UniversitiesJsonImport({
+  existing,
+}: {
+  existing: { id: string; name: string; city: string | null; country: string }[];
+}) {
+  const qc = useQueryClient();
   const ref = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<Preview | null>(null);
+  const [dupMode, setDupMode] = useState<"skip" | "update" | "insert">("skip");
   const [busy, setBusy] = useState(false);
+
+  const existingMap = useMemo(() => {
+    const m = new Map<string, string>();
+    existing.forEach((e) => m.set(dupKey(e.name, e.city ?? "", e.country), e.id));
+    return m;
+  }, [existing]);
+
+  const stats = useMemo(() => {
+    const rows = preview?.rows ?? [];
+    return {
+      total: rows.length,
+      valid: rows.filter((r) => r.status === "valid").length,
+      duplicate: rows.filter((r) => r.status === "duplicate").length,
+      invalid: rows.filter((r) => r.status === "invalid").length,
+    };
+  }, [preview]);
 
   const handleFile = async (file: File) => {
     if (!file.name.toLowerCase().endsWith(".json") && file.type !== "application/json") {
@@ -95,80 +120,95 @@ export default function UniversitiesJsonImport({ onImported }: { onImported: () 
     } catch {
       return toast.error("File JSON tidak valid / rusak");
     }
-    const list = Array.isArray(json) ? json : json?.universities ?? json?.data;
+    const list = Array.isArray(json) ? json : json?.campuses ?? json?.universities ?? json?.data;
     if (!Array.isArray(list) || list.length === 0) {
-      return toast.error('Struktur JSON tidak sesuai — harus berupa array atau memiliki key "universities"');
+      return toast.error('Struktur JSON tidak sesuai — gunakan array pada key "campuses"');
     }
 
-    const valid: ParsedUniv[] = [];
-    const invalid: { row: number; name: string; reason: string }[] = [];
-
-    list.forEach((raw: any, i: number) => {
-      const row = i + 1;
+    const seen = new Set<string>();
+    const rows: Row[] = list.map((raw: any, i: number) => {
       const name = String(raw?.name ?? raw?.nama ?? "").trim();
-      const typeRaw = String(raw?.type ?? raw?.jenis ?? "").trim().toLowerCase();
-      const type = TYPE_ALIASES[typeRaw];
-      const website = normalizeUrl(String(raw?.website_url ?? raw?.website ?? raw?.url ?? ""));
-      const country = String(raw?.country ?? raw?.negara ?? (type === "luar_negeri" ? "" : "Indonesia")).trim();
+      const categoryRaw = String(raw?.category ?? raw?.kategori ?? raw?.type ?? raw?.jenis ?? "").trim();
+      const type = CATEGORY_ALIASES[categoryRaw.toLowerCase()] ?? null;
+      const city = String(raw?.city ?? raw?.kota ?? "").trim();
+      const country = String(raw?.country ?? raw?.negara ?? "").trim();
+      const website = normalizeUrl(raw?.website ?? raw?.website_url ?? raw?.url ?? "");
+      const description = String(raw?.description ?? raw?.deskripsi ?? "").trim() || null;
 
-      if (!name) return invalid.push({ row, name: "-", reason: "Nama kampus wajib diisi" });
+      const base = { no: i + 1, name, categoryRaw, type, city, country, website, description };
+      if (!name) return { ...base, status: "invalid" as const, reason: "Nama kampus wajib diisi" };
       if (!type)
-        return invalid.push({
-          row,
-          name,
-          reason: `Jenis tidak dikenal (${typeRaw || "kosong"}) — gunakan dalam_negeri / luar_negeri / kedinasan`,
-        });
-      if (!website) return invalid.push({ row, name, reason: "website_url wajib diisi" });
-      if (!country) return invalid.push({ row, name, reason: "Negara wajib diisi" });
+        return {
+          ...base,
+          status: "invalid" as const,
+          reason: `Kategori tidak terdaftar${categoryRaw ? ` (${categoryRaw})` : ""}`,
+        };
+      if (!city) return { ...base, status: "invalid" as const, reason: "Kota wajib diisi" };
+      if (!country) return { ...base, status: "invalid" as const, reason: "Negara wajib diisi" };
+      if (!website) return { ...base, status: "invalid" as const, reason: "Website wajib diisi" };
 
-      valid.push({
-        name,
-        type,
-        country,
-        website_url: website,
-        city: String(raw?.city ?? raw?.kota ?? "").trim() || null,
-        description: String(raw?.description ?? raw?.deskripsi ?? "").trim() || null,
-        logo_url: String(raw?.logo_url ?? raw?.logo ?? "").trim() || null,
-      });
+      const key = dupKey(name, city, country);
+      if (existingMap.has(key) || seen.has(key)) {
+        return { ...base, status: "duplicate" as const, reason: "Sudah ada" };
+      }
+      seen.add(key);
+      return { ...base, status: "valid" as const };
     });
 
-    const counts: Record<string, number> = {};
-    valid.forEach((v) => {
-      counts[TYPE_LABELS[v.type]] = (counts[TYPE_LABELS[v.type]] ?? 0) + 1;
-    });
-
-    if (valid.length === 0) {
-      toast.error("Tidak ada data kampus yang valid pada file ini");
-    }
-    setPreview({ fileName: file.name, valid, invalid, counts });
+    setPreview({ fileName: file.name, rows });
   };
 
   const doImport = async () => {
-    if (!preview?.valid.length) return;
+    if (!preview) return;
     setBusy(true);
     try {
-      const { data: existing } = await supabase.from("universities").select("name");
-      const existingNames = new Set((existing ?? []).map((e: any) => String(e.name).trim().toLowerCase()));
-
-      const seen = new Set<string>();
-      const rows = preview.valid.filter((v) => {
-        const key = v.name.trim().toLowerCase();
-        if (existingNames.has(key) || seen.has(key)) return false;
-        seen.add(key);
-        return true;
+      const toRow = (r: Row) => ({
+        name: r.name,
+        type: r.type as UnivType,
+        country: r.country,
+        city: r.city || null,
+        website_url: r.website,
+        description: r.description,
       });
 
-      const skipped = preview.valid.length - rows.length;
-      if (rows.length === 0) {
-        toast.info("Semua kampus pada file sudah ada di database");
-      } else {
-        const { error } = await supabase.from("universities").insert(rows);
-        if (error) throw error;
-        toast.success(`${rows.length} kampus berhasil diimpor${skipped ? ` — ${skipped} duplikat dilewati` : ""}`);
+      const news = preview.rows.filter((r) => r.status === "valid").map(toRow);
+      const dups = preview.rows.filter((r) => r.status === "duplicate");
+
+      let inserted = 0;
+      let updated = 0;
+      let skipped = dups.length;
+
+      if (dupMode === "insert") {
+        news.push(...dups.map(toRow));
+        skipped = 0;
       }
+
+      if (news.length) {
+        const { error } = await supabase.from("universities").insert(news);
+        if (error) throw error;
+        inserted = news.length;
+      }
+
+      if (dupMode === "update") {
+        skipped = 0;
+        for (const d of dups) {
+          const id = existingMap.get(dupKey(d.name, d.city, d.country));
+          if (!id) continue;
+          const { error } = await supabase.from("universities").update(toRow(d)).eq("id", id);
+          if (error) throw error;
+          updated++;
+        }
+      }
+
+      toast.success(
+        `Import berhasil — total ${stats.total}, berhasil ${inserted}${updated ? `, diperbarui ${updated}` : ""}${
+          skipped ? `, duplikat dilewati ${skipped}` : ""
+        }${stats.invalid ? `, tidak valid ${stats.invalid}` : ""}`
+      );
       setPreview(null);
       if (ref.current) ref.current.value = "";
-      onImported();
+      qc.invalidateQueries({ queryKey: ["admin-universities"] });
+      qc.invalidateQueries({ queryKey: ["universities-public"] });
     } catch (e: any) {
       toast.error(e?.message ?? "Gagal mengimpor data");
     } finally {
@@ -185,6 +225,9 @@ export default function UniversitiesJsonImport({ onImported }: { onImported: () 
     URL.revokeObjectURL(a.href);
   };
 
+  const importCount =
+    dupMode === "insert" ? stats.valid + stats.duplicate : dupMode === "update" ? stats.valid + stats.duplicate : stats.valid;
+
   return (
     <>
       <input
@@ -197,73 +240,81 @@ export default function UniversitiesJsonImport({ onImported }: { onImported: () 
           if (f) handleFile(f);
         }}
       />
-      <Button variant="outline" onClick={() => ref.current?.click()}>
+      <Button variant="outline" size="sm" onClick={() => ref.current?.click()}>
         <FileJson className="h-4 w-4 mr-1" /> Import JSON
       </Button>
-      <Button variant="ghost" onClick={downloadSample}>
+      <Button variant="ghost" size="sm" onClick={downloadSample}>
         <Download className="h-4 w-4 mr-1" /> Contoh JSON
       </Button>
 
       <Dialog open={!!preview} onOpenChange={(o) => !o && setPreview(null)}>
-        <DialogContent className="max-w-3xl">
+        <DialogContent className="max-w-[95vw] sm:max-w-3xl">
           <DialogHeader>
             <DialogTitle>Preview Import Kampus</DialogTitle>
           </DialogHeader>
           {preview && (
             <div className="space-y-4">
-              <div className="flex flex-wrap items-center gap-2 text-sm">
+              <div className="flex flex-wrap items-center gap-2 text-xs">
                 <Badge variant="secondary">{preview.fileName}</Badge>
-                <Badge>Valid: {preview.valid.length}</Badge>
-                {preview.invalid.length > 0 && (
-                  <Badge variant="destructive">Bermasalah: {preview.invalid.length}</Badge>
-                )}
-                {Object.entries(preview.counts).map(([k, v]) => (
-                  <Badge key={k} variant="outline">
-                    {k}: {v}
-                  </Badge>
-                ))}
+                <Badge variant="outline">Total: {stats.total}</Badge>
+                <Badge className="bg-primary/15 text-primary hover:bg-primary/15">Valid: {stats.valid}</Badge>
+                <Badge variant="outline">Sudah ada: {stats.duplicate}</Badge>
+                {stats.invalid > 0 && <Badge variant="destructive">Tidak valid: {stats.invalid}</Badge>}
+              </div>
+
+              <div>
+                <Label className="text-xs">Perlakuan data duplikat</Label>
+                <Select value={dupMode} onValueChange={(v) => setDupMode(v as typeof dupMode)}>
+                  <SelectTrigger className="mt-1 h-9">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="skip">Lewati duplikat (default)</SelectItem>
+                    <SelectItem value="update">Update data lama</SelectItem>
+                    <SelectItem value="insert">Import sebagai data baru</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="max-h-72 overflow-auto rounded-lg border">
-                <table className="w-full text-sm">
-                  <thead className="bg-muted/50 sticky top-0">
+                <table className="w-full text-xs">
+                  <thead className="bg-muted/60 sticky top-0">
                     <tr>
                       <th className="p-2 text-left">No</th>
-                      <th className="p-2 text-left">Nama</th>
-                      <th className="p-2 text-left">Jenis</th>
-                      <th className="p-2 text-left">Lokasi</th>
+                      <th className="p-2 text-left">Nama Kampus</th>
+                      <th className="p-2 text-left">Kategori</th>
+                      <th className="p-2 text-left">Kota</th>
+                      <th className="p-2 text-left">Negara</th>
                       <th className="p-2 text-left">Website</th>
+                      <th className="p-2 text-left">Status</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {preview.valid.map((u, i) => (
-                      <tr key={i} className="border-t">
-                        <td className="p-2">{i + 1}</td>
-                        <td className="p-2 font-medium">{u.name}</td>
-                        <td className="p-2">{TYPE_LABELS[u.type]}</td>
-                        <td className="p-2">{[u.city, u.country].filter(Boolean).join(", ")}</td>
-                        <td className="p-2 truncate max-w-[200px]">{u.website_url}</td>
+                    {preview.rows.map((r) => (
+                      <tr key={r.no} className="border-t">
+                        <td className="p-2">{r.no}</td>
+                        <td className="p-2 font-medium">{r.name || "-"}</td>
+                        <td className="p-2">{r.type ? TYPE_LABELS[r.type] : r.categoryRaw || "-"}</td>
+                        <td className="p-2">{r.city || "-"}</td>
+                        <td className="p-2">{r.country || "-"}</td>
+                        <td className="p-2 max-w-[160px] truncate">{r.website || "-"}</td>
+                        <td className="p-2">
+                          {r.status === "valid" ? (
+                            <span className="text-primary font-medium">Valid</span>
+                          ) : r.status === "duplicate" ? (
+                            <span className="text-amber-600 font-medium">Sudah Ada</span>
+                          ) : (
+                            <span className="text-destructive font-medium">{r.reason}</span>
+                          )}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
 
-              {preview.invalid.length > 0 && (
-                <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 space-y-1 max-h-40 overflow-auto">
-                  <p className="flex items-center gap-2 text-sm font-medium text-destructive">
-                    <AlertTriangle className="h-4 w-4" /> Baris yang dilewati
-                  </p>
-                  {preview.invalid.map((e, i) => (
-                    <p key={i} className="text-xs text-muted-foreground">
-                      Baris {e.row} ({e.name}): {e.reason}
-                    </p>
-                  ))}
-                </div>
-              )}
-
               <p className="text-xs text-muted-foreground">
-                Kampus dengan nama yang sudah ada di database akan dilewati (data lama tidak dihapus).
+                Data lama tidak dihapus. Baris tidak valid otomatis dilewati — perbaiki file JSON lalu import ulang.
               </p>
             </div>
           )}
@@ -271,8 +322,8 @@ export default function UniversitiesJsonImport({ onImported }: { onImported: () 
             <Button variant="ghost" onClick={() => setPreview(null)} disabled={busy}>
               Batal
             </Button>
-            <Button onClick={doImport} disabled={busy || !preview?.valid.length}>
-              {busy && <Loader2 className="h-4 w-4 mr-1 animate-spin" />} Import {preview?.valid.length ?? 0} Kampus
+            <Button onClick={doImport} disabled={busy || importCount === 0}>
+              {busy && <Loader2 className="h-4 w-4 mr-1 animate-spin" />} Import Data ({importCount})
             </Button>
           </DialogFooter>
         </DialogContent>
