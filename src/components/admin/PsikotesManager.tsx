@@ -12,6 +12,8 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Trash2, Pencil, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
+import PsikotesJsonImport from "@/components/admin/PsikotesJsonImport";
+
 
 type Opt = { text: string; score: number };
 const defaultOpts = (): Opt[] => [
@@ -133,13 +135,17 @@ export default function PsikotesManager() {
       </section>
 
       <section>
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
           <h3 className="font-heading font-bold">Tes Screening</h3>
-          <Button size="sm" onClick={() => {
-            if (!(cats ?? []).length) return toast.error("Buat kategori terlebih dahulu");
-            setTestDlg({ open: true });
-          }}><Plus className="h-4 w-4 mr-1" />Tes</Button>
+          <div className="flex flex-wrap gap-2">
+            <PsikotesJsonImport cats={(cats ?? []) as any} onImported={refresh} />
+            <Button size="sm" onClick={() => {
+              if (!(cats ?? []).length) return toast.error("Buat kategori terlebih dahulu");
+              setTestDlg({ open: true });
+            }}><Plus className="h-4 w-4 mr-1" />Tes</Button>
+          </div>
         </div>
+
         <div className="glass-card rounded-xl divide-y divide-border">
           {(tests ?? []).map((t: any) => (
             <div key={t.id} className="p-3 flex flex-wrap items-center justify-between gap-2">
