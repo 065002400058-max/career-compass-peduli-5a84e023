@@ -214,7 +214,7 @@ const AlumniCenter = () => {
   return (
     <>
       {/* Ringkasan */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-3 mb-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-2 md:gap-3 mb-4">
         <MiniCard label="Total Alumni" value={stats.total} icon={Users} onClick={() => { resetFilters(); }} />
         <MiniCard label="Tracer Terisi" value={stats.tracer} icon={ClipboardCheck} onClick={() => { resetFilters(); setFKerja("all"); setOnlyNoTracer(false); }} />
         <MiniCard label="Belum Tracer" value={stats.noTracer} icon={Calendar} active={onlyNoTracer} onClick={() => { resetFilters(); setOnlyNoTracer(true); }} />
@@ -239,7 +239,7 @@ const AlumniCenter = () => {
       </div>
 
       {/* Status pekerjaan + Universitas */}
-      <div className="grid md:grid-cols-2 gap-3 mb-4">
+      <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-3 mb-4">
         <div className="rounded-2xl bg-card border border-border p-4 shadow-sm space-y-2.5">
           <h3 className="font-heading font-semibold text-foreground text-sm mb-1">Status Pekerjaan Alumni</h3>
           {statusBreakdown.map((s) => (
