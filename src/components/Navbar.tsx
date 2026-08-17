@@ -147,6 +147,7 @@ const Navbar = () => {
 
   const extraLinks: Item[] = [
     { label: "Dashboard", path: "/admin", show: isAdmin },
+    { label: "Dashboard", path: "/dashboard", show: !!user && !isAdmin },
   ].filter((i) => i.show);
 
 
