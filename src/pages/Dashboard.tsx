@@ -1,6 +1,7 @@
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import SantriDashboard from "@/components/santri/SantriDashboard";
+import AlumniDashboard from "@/components/alumni/AlumniDashboard";
 
 const Dashboard = () => {
   const { user, loading, hasRole } = useAuth();
@@ -14,6 +15,7 @@ const Dashboard = () => {
   }
   if (!user) return <Navigate to="/auth" replace />;
   if (hasRole("admin")) return <Navigate to="/admin" replace />;
+  if (hasRole("alumni")) return <AlumniDashboard />;
 
   return <SantriDashboard />;
 };
