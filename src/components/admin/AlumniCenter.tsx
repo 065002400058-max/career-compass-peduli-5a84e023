@@ -13,6 +13,10 @@ import AlumniAddDialog from "@/components/AlumniAddDialog";
 import { exportToExcel, exportToPDF } from "@/lib/exportUtils";
 import { toast } from "sonner";
 import {
+  alumniStatus, alumniSummary, hasTracer, cleanVal, ALUMNI_NOT_FILLED, ALUMNI_STATUS_ORDER,
+} from "@/lib/alumniStatus";
+
+import {
   PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar as RBar, XAxis, YAxis, CartesianGrid,
   Tooltip, LabelList, AreaChart, Area,
 } from "recharts";
