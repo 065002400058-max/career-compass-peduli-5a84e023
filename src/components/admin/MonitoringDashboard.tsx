@@ -219,6 +219,7 @@ const StatCard = ({ icon: Icon, value, label, sub }: any) => (
 );
 
 const MonitoringDashboard = () => {
+  useAlumniRealtime();
   const { data, isLoading } = useMonitoringData();
   const [filter, setFilter] = useState<Filter>("all");
   const [q, setQ] = useState("");

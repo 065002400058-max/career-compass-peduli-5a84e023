@@ -14,6 +14,7 @@ import { useAlumniRealtime } from "@/hooks/useAlumniRealtime";
 } from "@/components/ui/table";
 
 const Alumni = () => {
+  useAlumniRealtime();
   const [search, setSearch] = useState("");
   const [yearFilter, setYearFilter] = useState("Semua");
 

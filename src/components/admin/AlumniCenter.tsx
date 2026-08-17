@@ -182,6 +182,7 @@ const Bar = ({ label, value, total }: { label: string; value: number; total: num
 };
 
 const AlumniCenter = () => {
+  useAlumniRealtime();
   const qc = useQueryClient();
   const [tab, setTab] = useState("dashboard");
   const [search, setSearch] = useState("");
