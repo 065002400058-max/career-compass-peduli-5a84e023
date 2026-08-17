@@ -90,6 +90,7 @@ export default function PsikotesManager() {
   const [testDlg, setTestDlg] = useState<{ open: boolean; row?: any }>({ open: false });
   const [qDlg, setQDlg] = useState<{ open: boolean; row?: any }>({ open: false });
   const [resDlg, setResDlg] = useState<{ open: boolean; row?: any }>({ open: false });
+  const [delAllDlg, setDelAllDlg] = useState<{ open: boolean; step: 1 | 2; confirmText: string }>({ open: false, step: 1, confirmText: "" });
 
   const del = async (table: "psikotes_categories" | "psikotes_tests" | "psikotes_questions" | "psikotes_results", id: string, msg: string) => {
     if (!confirm(msg)) return;
@@ -104,6 +105,30 @@ export default function PsikotesManager() {
     const { error } = await supabase.from("psikotes_tests").update({ is_active: !t.is_active }).eq("id", t.id);
     if (error) return toast.error(error.message);
     toast.success(!t.is_active ? "Tes diaktifkan" : "Tes dinonaktifkan");
+    refresh();
+  };
+
+  const deleteAll = async () => {
+    if (delAllDlg.confirmText !== "HAPUS") {
+      return toast.error("Ketik HAPUS dengan benar");
+    }
+    setDelAllDlg((s) => ({ ...s, step: 1, confirmText: "" }));
+    toast.loading("Menghapus semua data screening...", { id: "del-all-psi" });
+    const { error: errAttempts } = await supabase.from("psikotes_attempts").delete().neq("id", "");
+    if (errAttempts) { toast.dismiss("del-all-psi"); return toast.error(errAttempts.message); }
+    const { error: errResults } = await supabase.from("psikotes_results").delete().neq("id", "");
+    if (errResults) { toast.dismiss("del-all-psi"); return toast.error(errResults.message); }
+    const { error: errAnswers } = await supabase.from("psikotes_answers").delete().neq("id", "");
+    if (errAnswers) { toast.dismiss("del-all-psi"); return toast.error(errAnswers.message); }
+    const { error: errQuestions } = await supabase.from("psikotes_questions").delete().neq("id", "");
+    if (errQuestions) { toast.dismiss("del-all-psi"); return toast.error(errQuestions.message); }
+    const { error: errTests } = await supabase.from("psikotes_tests").delete().neq("id", "");
+    if (errTests) { toast.dismiss("del-all-psi"); return toast.error(errTests.message); }
+    const { error: errCats } = await supabase.from("psikotes_categories").delete().neq("id", "");
+    if (errCats) { toast.dismiss("del-all-psi"); return toast.error(errCats.message); }
+    toast.dismiss("del-all-psi");
+    toast.success("Semua data screening telah dihapus");
+    setSelectedTest(null);
     refresh();
   };
 
@@ -226,6 +251,20 @@ export default function PsikotesManager() {
         </>
       )}
 
+      <section className="pt-6 border-t border-destructive/20">
+        <div className="glass-card rounded-xl p-4 border-destructive/30">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <div>
+              <h3 className="font-heading font-bold text-destructive">Zona Berbahaya</h3>
+              <p className="text-xs text-muted-foreground mt-1">Hapus seluruh data Screening Mental & Konseling. Tindakan ini tidak dapat dibatalkan.</p>
+            </div>
+            <Button size="sm" variant="destructive" onClick={() => setDelAllDlg({ open: true, step: 1, confirmText: "" })}>
+              <Trash2 className="h-4 w-4 mr-1" /> Hapus Semua Data
+            </Button>
+          </div>
+        </div>
+      </section>
+
       <PsiCatDialog key={`c-${catDlg.row?.id ?? "new"}-${catDlg.open}`} state={catDlg} onClose={() => setCatDlg({ open: false })} onSaved={refresh} />
       <PsiTestDialog key={`t-${testDlg.row?.id ?? "new"}-${testDlg.open}`} state={testDlg} cats={cats ?? []} onClose={() => setTestDlg({ open: false })} onSaved={refresh} />
       {selectedTest && (
@@ -234,6 +273,43 @@ export default function PsikotesManager() {
           <PsiResultDialog key={`r-${resDlg.row?.id ?? "new"}-${resDlg.open}`} state={resDlg} testId={selectedTest.id} onClose={() => setResDlg({ open: false })} onSaved={refresh} />
         </>
       )}
+
+      <Dialog open={delAllDlg.open} onOpenChange={(o) => !o && setDelAllDlg({ open: false, step: 1, confirmText: "" })}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-destructive flex items-center gap-2">
+              <Trash2 className="h-5 w-5" /> Hapus Semua Data Screening
+            </DialogTitle>
+          </DialogHeader>
+          {delAllDlg.step === 1 ? (
+            <div className="space-y-4">
+              <div className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive space-y-2">
+                <p><b>Peringatan!</b> Tindakan ini akan menghapus seluruh data berikut secara permanen:</p>
+                <ul className="list-disc ml-5 space-y-1">
+                  <li>Semua kategori screening</li>
+                  <li>Semua tes dan pertanyaan</li>
+                  <li>Semua jawaban dan template hasil</li>
+                  <li>Semua riwayat attempt pengguna</li>
+                </ul>
+                <p>Data yang sudah dihapus <b>tidak dapat dikembalikan</b>.</p>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setDelAllDlg({ open: false, step: 1, confirmText: "" })}>Batal</Button>
+                <Button variant="destructive" onClick={() => setDelAllDlg({ open: true, step: 2, confirmText: "" })}>Lanjutkan</Button>
+              </DialogFooter>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">Untuk melanjutkan penghapusan, ketik <b>HAPUS</b> di bawah ini:</p>
+              <Input value={delAllDlg.confirmText} onChange={(e) => setDelAllDlg((s) => ({ ...s, confirmText: e.target.value }))} placeholder="Ketik HAPUS" />
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setDelAllDlg({ open: true, step: 1, confirmText: "" })}>Kembali</Button>
+                <Button variant="destructive" onClick={deleteAll} disabled={delAllDlg.confirmText !== "HAPUS"}>Ya, Hapus Semua</Button>
+              </DialogFooter>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
