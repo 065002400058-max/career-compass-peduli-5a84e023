@@ -15,6 +15,7 @@ import {
 import { toast } from "sonner";
 import { Briefcase, Loader2 } from "lucide-react";
 import { alumniStatus, hasTracer } from "@/lib/alumniStatus";
+import { ALUMNI_QUERY_KEYS } from "@/hooks/useAlumniRealtime";
 
 const STATUS = ["Bekerja", "Wirausaha", "Melanjutkan Studi", "Mencari Kerja"] as const;
 

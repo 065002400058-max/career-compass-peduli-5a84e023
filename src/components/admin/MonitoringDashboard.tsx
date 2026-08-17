@@ -13,6 +13,7 @@ import {
   PieChart, Pie, Cell, Legend, AreaChart, Area, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
 } from "recharts";
 import { Users, UserCircle, GraduationCap, HeartPulse, Brain, Search, FileSpreadsheet, FileDown, Activity, Target } from "lucide-react";
+import { useAlumniRealtime } from "@/hooks/useAlumniRealtime";
 
 const COLORS = ["#10B981", "#1E3A8A", "#3B82F6", "#8B5CF6", "#F59E0B", "#EF4444", "#06B6D4", "#94A3B8"];
 const fmtDate = (d?: string | null) => (d ? new Date(d).toLocaleDateString("id-ID") : "-");
