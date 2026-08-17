@@ -49,9 +49,9 @@ function pss10(total: number) {
     return {
       level: "Tingkat Stres Rendah",
       conclusion:
-        "Tingkat stres Anda saat ini berada pada kategori rendah. Ini menunjukkan bahwa secara umum Anda mampu menghadapi berbagai tekanan dengan cukup baik.",
+        "Tingkat stres Anda saat ini berada pada kategori rendah. Ini menunjukkan bahwa secara umum Anda cukup mampu menghadapi tekanan dalam keseharian.",
       recommendation:
-        "Pertahankan kebiasaan positif yang sudah Anda lakukan. Tetap luangkan waktu untuk beristirahat, melakukan aktivitas yang Anda sukai, menjaga pola tidur, dan tetap terhubung dengan orang-orang yang mendukung Anda.",
+        "Pertahankan kebiasaan positif yang sudah Anda lakukan. Tetap jaga pola tidur, waktu istirahat, aktivitas yang menyenangkan, dan hubungan dengan orang-orang yang mendukung Anda.",
     };
   if (total <= 26)
     return {
@@ -59,14 +59,14 @@ function pss10(total: number) {
       conclusion:
         "Tingkat stres Anda berada pada kategori sedang. Beberapa tekanan mungkin mulai memengaruhi keseharian Anda, sehingga penting untuk memberikan perhatian lebih pada kondisi diri.",
       recommendation:
-        "Cobalah mengatur waktu istirahat, melakukan aktivitas yang membuat Anda rileks, mengatur prioritas, dan berbicara dengan orang yang Anda percaya ketika merasa terbebani. Anda tidak harus menghadapi semuanya sendirian.",
+        "Cobalah mengatur waktu istirahat, menentukan prioritas, melakukan aktivitas yang membantu Anda rileks, dan berbicara dengan orang yang Anda percaya ketika merasa terbebani.",
     };
   return {
     level: "Tingkat Stres Tinggi",
     conclusion:
       "Tingkat stres Anda berada pada kategori tinggi. Hasil ini menunjukkan bahwa Anda mungkin sedang menghadapi tekanan yang cukup berat.",
     recommendation:
-      "Berikan ruang untuk diri sendiri dan jangan ragu mencari dukungan. Anda dapat berbicara dengan konselor atau tenaga profesional untuk membantu memahami kondisi dan menemukan langkah yang sesuai.",
+      "Berikan waktu untuk diri sendiri dan jangan ragu mencari dukungan. Anda dapat mempertimbangkan untuk berbicara dengan konselor atau tenaga profesional agar mendapatkan pendampingan yang sesuai.",
   };
 }
 
@@ -77,7 +77,7 @@ function brs(mean: number) {
       conclusion:
         "Hasil menunjukkan bahwa kemampuan Anda untuk bangkit dan pulih setelah menghadapi situasi sulit saat ini berada pada kategori resiliensi rendah.",
       recommendation:
-        "Ini bukan berarti Anda lemah. Setiap orang memiliki cara dan waktu yang berbeda dalam menghadapi kesulitan. Cobalah membangun dukungan dari orang-orang yang dipercaya, memberikan waktu untuk beristirahat, dan menghadapi masalah secara bertahap.",
+        "Ini bukan berarti Anda lemah. Setiap orang memiliki proses yang berbeda dalam menghadapi kesulitan. Cobalah membangun dukungan dari orang yang dipercaya dan menghadapi tantangan secara bertahap.",
     };
   if (mean <= 4.3)
     return {
@@ -85,14 +85,14 @@ function brs(mean: number) {
       conclusion:
         "Hasil menunjukkan bahwa kemampuan Anda untuk bangkit dan beradaptasi setelah menghadapi situasi sulit berada pada kategori normal.",
       recommendation:
-        "Pertahankan kemampuan positif yang sudah Anda miliki. Tetap jaga hubungan dengan orang-orang yang mendukung Anda, belajar dari pengalaman, dan berikan waktu bagi diri sendiri ketika menghadapi tantangan.",
+        "Pertahankan kemampuan positif yang sudah Anda miliki. Tetap belajar dari pengalaman, menjaga hubungan dengan orang-orang yang mendukung, dan memberikan waktu bagi diri sendiri ketika menghadapi tantangan.",
     };
   return {
     level: "Resiliensi Tinggi",
     conclusion:
-      "Hasil menunjukkan bahwa Anda memiliki kemampuan resiliensi yang tinggi dalam menghadapi dan bangkit dari situasi sulit.",
+      "Hasil menunjukkan bahwa Anda memiliki kemampuan resiliensi yang baik dalam menghadapi dan bangkit dari situasi sulit.",
     recommendation:
-      "Pertahankan kekuatan positif ini. Gunakan pengalaman yang Anda miliki untuk terus berkembang, tetap terbuka terhadap dukungan orang lain, dan jangan lupa memberikan waktu untuk diri sendiri ketika menghadapi tekanan.",
+      "Pertahankan kekuatan positif ini dan terus gunakan pengalaman yang Anda miliki untuk berkembang. Tetap terbuka terhadap dukungan dari orang lain ketika membutuhkannya.",
   };
 }
 
@@ -101,16 +101,16 @@ function srq20(total: number) {
     return {
       level: "Ada kemungkinan gejala cemas/depresi",
       conclusion:
-        "Hasil menunjukkan adanya kemungkinan gejala yang berkaitan dengan kecemasan atau depresi. Hasil ini bukan diagnosis, tetapi dapat menjadi tanda bahwa kondisi Anda perlu mendapatkan perhatian lebih.",
+        "Hasil screening menunjukkan adanya kemungkinan gejala yang berkaitan dengan kecemasan atau depresi. Hasil ini bukan diagnosis, tetapi dapat menjadi tanda bahwa kondisi Anda perlu mendapatkan perhatian lebih.",
       recommendation:
-        "Anda tidak perlu menghadapi semuanya sendirian. Pertimbangkan untuk berbicara dengan konselor atau tenaga profesional agar Anda mendapatkan dukungan dan pemahaman yang lebih sesuai dengan kondisi Anda.",
+        "Anda tidak perlu menghadapi semuanya sendirian. Pertimbangkan untuk berbicara dengan konselor atau tenaga profesional agar mendapatkan dukungan dan pemahaman yang lebih sesuai dengan kondisi Anda.",
     };
   return {
     level: "Tidak melewati batas interpretasi",
     conclusion:
       "Berdasarkan skor yang diperoleh, hasil Anda berada pada atau di bawah batas interpretasi yang digunakan dalam sistem ini.",
     recommendation:
-      "Terus jaga kesehatan mental dan keseimbangan aktivitas sehari-hari. Jika Anda tetap merasa tidak nyaman, terganggu, atau memiliki kekhawatiran tertentu, jangan ragu untuk berbicara dengan konselor.",
+      "Tetap jaga kesehatan mental dan keseimbangan aktivitas sehari-hari. Jika Anda memiliki keluhan atau kekhawatiran tertentu, jangan ragu untuk berbicara dengan konselor.",
   };
 }
 
