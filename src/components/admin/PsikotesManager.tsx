@@ -251,6 +251,20 @@ export default function PsikotesManager() {
         </>
       )}
 
+      <section className="pt-6 border-t border-destructive/20">
+        <div className="glass-card rounded-xl p-4 border-destructive/30">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <div>
+              <h3 className="font-heading font-bold text-destructive">Zona Berbahaya</h3>
+              <p className="text-xs text-muted-foreground mt-1">Hapus seluruh data Screening Mental & Konseling. Tindakan ini tidak dapat dibatalkan.</p>
+            </div>
+            <Button size="sm" variant="destructive" onClick={() => setDelAllDlg({ open: true, step: 1, confirmText: "" })}>
+              <Trash2 className="h-4 w-4 mr-1" /> Hapus Semua Data
+            </Button>
+          </div>
+        </div>
+      </section>
+
       <PsiCatDialog key={`c-${catDlg.row?.id ?? "new"}-${catDlg.open}`} state={catDlg} onClose={() => setCatDlg({ open: false })} onSaved={refresh} />
       <PsiTestDialog key={`t-${testDlg.row?.id ?? "new"}-${testDlg.open}`} state={testDlg} cats={cats ?? []} onClose={() => setTestDlg({ open: false })} onSaved={refresh} />
       {selectedTest && (
