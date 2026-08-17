@@ -13,6 +13,10 @@ import AlumniAddDialog from "@/components/AlumniAddDialog";
 import { exportToExcel, exportToPDF } from "@/lib/exportUtils";
 import { toast } from "sonner";
 import {
+  alumniStatus, alumniSummary, hasTracer, cleanVal, ALUMNI_NOT_FILLED, ALUMNI_STATUS_ORDER,
+} from "@/lib/alumniStatus";
+
+import {
   PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar as RBar, XAxis, YAxis, CartesianGrid,
   Tooltip, LabelList, AreaChart, Area,
 } from "recharts";
@@ -109,18 +113,18 @@ const HBarCard = ({ title, subtitle, data }: { title: string; subtitle: string; 
 
 
 export const EMPTY = "Belum diisi";
-const NO_TRACER = "Belum mengisi";
+const NO_TRACER = ALUMNI_NOT_FILLED;
 
-const val = (v: any) => (v === null || v === undefined || String(v).trim() === "" || String(v).trim() === "-" ? null : String(v).trim());
+const val = cleanVal;
 const show = (v: any, fallback = EMPTY) => val(v) ?? fallback;
 
 export type AlumniRow = Record<string, any>;
 
-export const hasTracer = (a: AlumniRow) =>
-  !!a.tracer_filled_at || !!(val(a.position) || val(a.company) || val(a.job_field) || val(a.further_education) || val(a.work_city));
+export { hasTracer };
 
-const workStatus = (a: AlumniRow) => (hasTracer(a) ? show(a.status, EMPTY) : NO_TRACER);
+const workStatus = (a: AlumniRow) => alumniStatus(a);
 const uniStatus = (a: AlumniRow) => val(a.university_status) ?? (val(a.university) ? "Belum diidentifikasi" : EMPTY);
+
 
 const uniqSorted = (rows: AlumniRow[], key: string) =>
   Array.from(new Set(rows.map((r) => val(r[key])).filter(Boolean) as string[])).sort((a, b) => a.localeCompare(b));
@@ -200,27 +204,18 @@ const AlumniCenter = () => {
 
   const rows: AlumniRow[] = alumni ?? [];
 
-  const stats = useMemo(() => {
-    const tracer = rows.filter(hasTracer).length;
-    const bekerja = rows.filter((a) => hasTracer(a) && /bekerja/i.test(a.status ?? "") && !/belum/i.test(a.status ?? "")).length;
-    return { total: rows.length, tracer, noTracer: rows.length - tracer, bekerja };
-  }, [rows]);
+  const summary = useMemo(() => alumniSummary(rows), [rows]);
 
-  const statusBreakdown = useMemo(() => {
-    const cats = ["Bekerja", "Belum Bekerja", "Wirausaha", "Melanjutkan Studi"];
-    const map = new Map(cats.map((c) => [c, 0]));
-    rows.forEach((a) => {
-      const s = (val(a.status) ?? "").toLowerCase();
-      const key =
-        /wirausaha|usaha|bisnis/.test(s) ? "Wirausaha"
-        : /studi|kuliah|lanjut/.test(s) ? "Melanjutkan Studi"
-        : /belum/.test(s) ? "Belum Bekerja"
-        : /kerja/.test(s) ? "Bekerja"
-        : null;
-      if (key) map.set(key, (map.get(key) ?? 0) + 1);
-    });
-    return cats.map((c) => ({ name: c, value: map.get(c) ?? 0 }));
-  }, [rows]);
+  const stats = useMemo(
+    () => ({ total: summary.total, tracer: summary.tracer, noTracer: summary.noTracer, bekerja: summary.bekerja }),
+    [summary],
+  );
+
+  const statusBreakdown = useMemo(
+    () => ALUMNI_STATUS_ORDER.map((name) => ({ name, value: summary.counts[name] })),
+    [summary],
+  );
+
 
   const uniInfo = useMemo(() => {
     const dalam = rows.filter((a) => /dalam/i.test(a.university_status ?? "")).length;
@@ -248,28 +243,25 @@ const AlumniCenter = () => {
   };
 
   const dash = useMemo(() => {
-    const bekerja = rows.filter((a) => /kerja|wirausaha/i.test(a.status ?? "") && !/belum/i.test(a.status ?? "")).length;
-    const lanjut = rows.filter((a) => /studi|kuliah|lanjut/i.test(a.status ?? "")).length;
-    const belum = rows.filter((a) => /belum/i.test(a.status ?? "")).length;
     const years = new Map<string, number>();
     rows.forEach((a) => {
       const y = val(a.graduation_year);
       if (y) years.set(y, (years.get(y) ?? 0) + 1);
     });
     return {
-      bekerja, lanjut, belum,
-      status: [
-        { name: "Bekerja", value: bekerja },
-        { name: "Melanjutkan Studi", value: lanjut },
-        { name: "Belum Bekerja", value: belum },
-      ],
+      bekerja: summary.bekerja,
+      lanjut: summary.lanjut,
+      belum: summary.belum,
+      belumMengisi: summary.belumMengisi,
+      status: statusBreakdown.filter((d) => d.value > 0),
       jobField: topN("job_field"),
       workCity: topN("work_city"),
       campus: topN("university"),
       companyType: topN("company_type", 4),
       angkatan: Array.from(years, ([name, value]) => ({ name, value })).sort((a, b) => a.name.localeCompare(b.name)),
     };
-  }, [rows]);
+  }, [rows, summary, statusBreakdown]);
+
 
   const pct = (n: number) => (stats.total ? ((n / stats.total) * 100).toFixed(1) : "0.0");
 
@@ -381,7 +373,7 @@ const AlumniCenter = () => {
           aria-label="Filter alumni"
         >
           <option value="all">Seluruh Alumni</option>
-          {Array.from(new Set(rows.map(workStatus))).sort().map((o) => (
+          {ALUMNI_STATUS_ORDER.map((o) => (
             <option key={o} value={o}>{o}</option>
           ))}
         </select>
@@ -391,13 +383,15 @@ const AlumniCenter = () => {
       {tab === "dashboard" && (
         <div className="space-y-3">
           {/* Statistic cards */}
-          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
             <StatCard label="Total Alumni" value={stats.total} note={`${rows.length} data terdaftar`} icon={Users} />
             <StatCard label="Alumni Bekerja" value={dash.bekerja} note={`${pct(dash.bekerja)}% dari total alumni`} noteClass="text-primary" icon={Briefcase} />
             <StatCard label="Alumni Melanjutkan" value={dash.lanjut} note={`${pct(dash.lanjut)}% dari total alumni`} noteClass="text-primary" icon={GraduationCap} />
             <StatCard label="Alumni Belum Bekerja" value={dash.belum} note={`${pct(dash.belum)}% dari total alumni`} icon={Users} />
+            <StatCard label="Belum Mengisi Tracer" value={dash.belumMengisi} note={`${pct(dash.belumMengisi)}% belum melapor`} icon={Target} />
             <StatCard label="Tingkat Respon Tracer Study" value={`${tracerPct}%`} note={`${stats.tracer} dari ${stats.total} alumni`} noteClass="text-primary" icon={Target} />
           </div>
+
 
           {/* Chart row 1 */}
           <div className="grid gap-3 lg:grid-cols-3">

@@ -10,6 +10,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Plus, Trash2, Pencil, Briefcase, Check, X } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import DeleteAllButton from "./DeleteAllButton";
+
 
 const empty = {
   title: "",
@@ -102,6 +104,13 @@ const JobsManager = () => {
       (j.location ?? "").toLowerCase().includes(search.toLowerCase()),
   );
 
+  const delAll = async () => {
+    await supabase.from("job_applications").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+    const { error } = await supabase.from("jobs").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+    if (error) throw error;
+    refresh();
+  };
+
   return (
     <div>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
@@ -111,10 +120,14 @@ const JobsManager = () => {
           onChange={(e) => setSearch(e.target.value)}
           className="sm:max-w-xs"
         />
-        <Button size="sm" onClick={() => { setEditing(null); setOpen(true); }}>
-          <Plus className="h-4 w-4 mr-1" />Tambah Lowongan
-        </Button>
+        <div className="flex items-center gap-2">
+          <DeleteAllButton label="lowongan" count={data.length} onDelete={delAll} />
+          <Button size="sm" onClick={() => { setEditing(null); setOpen(true); }}>
+            <Plus className="h-4 w-4 mr-1" />Tambah Lowongan
+          </Button>
+        </div>
       </div>
+
 
       <div className="glass-card rounded-xl divide-y divide-border">
         {isLoading ? (
