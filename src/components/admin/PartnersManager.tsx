@@ -8,6 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Plus, Trash2, Pencil, Building2 } from "lucide-react";
 import { toast } from "sonner";
+import DeleteAllButton from "./DeleteAllButton";
+
 
 const empty = {
   name: "",
