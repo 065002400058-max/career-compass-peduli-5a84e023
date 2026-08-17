@@ -10,6 +10,7 @@ import AdminBottomNav from "@/components/admin/AdminBottomNav";
 import CbtManager from "@/components/admin/CbtManager";
 import PsikotesManager from "@/components/admin/PsikotesManager";
 import ScreeningInsights from "@/components/admin/ScreeningInsights";
+import MonitoringDashboard from "@/components/admin/MonitoringDashboard";
 
 import UniversitiesManager from "@/components/admin/UniversitiesManager";
 import ScholarshipManager from "@/components/admin/ScholarshipManager";
@@ -24,6 +25,7 @@ import { toast } from "sonner";
 import { exportToExcel, exportToPDF } from "@/lib/exportUtils";
 
 const SERVICE_TABS = [
+  { value: "monitor", label: "Dashboard", icon: TrendingUp },
   { value: "jobs", label: "Validasi Lowongan", icon: Briefcase },
   { value: "partners", label: "Mitra", icon: Building2 },
   { value: "cbt", label: "Tes CBT", icon: Brain },
@@ -40,7 +42,7 @@ const Admin = () => {
   const { user, loading, hasRole } = useAuth();
   const navigate = useNavigate();
   const qc = useQueryClient();
-  const [tab, setTab] = useState("santri");
+  const [tab, setTab] = useState("monitor");
   const [alumniSearch, setAlumniSearch] = useState("");
   const [santriSearch, setSantriSearch] = useState("");
 
@@ -175,7 +177,7 @@ const Admin = () => {
             </span>
           </button>
           <button
-            onClick={() => navigate("/dashboard")}
+            onClick={() => setTab("monitor")}
             className="md:col-span-2 rounded-2xl bg-card border border-border p-5 text-left flex items-center gap-4 shadow-sm transition-colors hover:bg-accent/40"
           >
             <span className="h-11 w-11 rounded-xl bg-accent flex items-center justify-center shrink-0">
@@ -442,6 +444,7 @@ const Admin = () => {
           <TabsContent value="cbt" className="mt-0"><CbtManager /></TabsContent>
           <TabsContent value="psikotes" className="mt-0"><PsikotesManager /></TabsContent>
           <TabsContent value="screening" className="mt-0"><ScreeningInsights /></TabsContent>
+          <TabsContent value="monitor" className="mt-0"><MonitoringDashboard /></TabsContent>
 
           <TabsContent value="universities" className="mt-0"><UniversitiesManager /></TabsContent>
           <TabsContent value="scholarships" className="mt-0"><ScholarshipManager /></TabsContent>
