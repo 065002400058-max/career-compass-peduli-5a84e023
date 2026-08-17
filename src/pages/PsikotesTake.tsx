@@ -77,7 +77,11 @@ const PsikotesTake = () => {
   if (loading || isLoading || !data?.test) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Memuat...</div>;
 
   if (result) {
-    const variant = result.level === "Tinggi" ? "destructive" : result.level === "Sedang" ? "secondary" : "default";
+    const l = result.level.toLowerCase();
+    const variant = l.includes("tinggi") && !l.includes("resiliensi tinggi") ? "destructive"
+      : l.includes("kemungkinan gejala") ? "destructive"
+      : l.includes("rendah") && l.includes("resiliensi") ? "destructive"
+      : l.includes("sedang") ? "secondary" : "default";
     return (
       <div className="min-h-screen gradient-bg-subtle">
         <div className="container mx-auto section-padding max-w-2xl">
@@ -88,9 +92,15 @@ const PsikotesTake = () => {
               <p className="text-muted-foreground">{data.test.title}</p>
             </CardHeader>
             <CardContent className="space-y-5">
-              <div className="text-center">
-                <Badge variant={variant as any} className="text-base px-4 py-1">{result.level}</Badge>
-                <p className="text-sm text-muted-foreground mt-2">Skor Anda: <b>{result.score}</b></p>
+              <div className="grid sm:grid-cols-2 gap-3">
+                <div className="rounded-lg border border-border bg-card/60 p-4 text-center">
+                  <p className="text-xs text-muted-foreground mb-2">Kategori Hasil</p>
+                  <Badge variant={variant as any} className="text-sm px-3 py-1 whitespace-normal">{result.level}</Badge>
+                </div>
+                <div className="rounded-lg border border-border bg-card/60 p-4 text-center">
+                  <p className="text-xs text-muted-foreground mb-1">Skor Anda</p>
+                  <p className="font-heading text-3xl font-bold text-primary">{result.score}</p>
+                </div>
               </div>
               <div className="rounded-lg bg-muted/40 p-4">
                 <h4 className="font-heading font-semibold mb-1 text-sm">📋 Kesimpulan</h4>
@@ -100,6 +110,13 @@ const PsikotesTake = () => {
                 <h4 className="font-heading font-semibold mb-1 text-sm">💡 Saran & Konseling</h4>
                 <p className="text-sm text-foreground">{result.recommendation}</p>
               </div>
+              <div className="rounded-lg bg-accent/40 p-4 border border-border">
+                <h4 className="font-heading font-semibold mb-1 text-sm">🌱 Pesan Positif</h4>
+                <p className="text-sm text-muted-foreground">{POSITIVE_MESSAGE}</p>
+              </div>
+              <p className="flex items-start gap-2 text-xs text-muted-foreground">
+                <Info className="h-3.5 w-3.5 mt-0.5 shrink-0" /> {DISCLAIMER}
+              </p>
               <div className="flex gap-2">
                 <Button variant="outline" className="flex-1" onClick={() => navigate("/psikotes")}>Selesai</Button>
                 <Button className="flex-1" onClick={() => navigate("/chat")}>Tanya AI Konselor</Button>
@@ -110,6 +127,7 @@ const PsikotesTake = () => {
       </div>
     );
   }
+
 
   return (
     <div className="min-h-screen gradient-bg-subtle">
