@@ -243,7 +243,7 @@ const AlumniDashboard = () => {
           <StatCard icon={Briefcase} tone="purple" label="Alumni Bekerja" value={fmtNum(s.bekerja)} note={`${pct(s.bekerja, s.total)}% dari total alumni`} to="/alumni" />
           <StatCard icon={Building2} tone="blue" label="Alumni Lanjut Studi" value={fmtNum(s.lanjut)} note={`${pct(s.lanjut, s.total)}% dari total alumni`} to="/alumni" />
           <StatCard icon={BarChart3} tone="amber" label="Alumni Mencari Kerja" value={fmtNum(s.belum)} note={`${pct(s.belum, s.total)}% dari total alumni`} to="/alumni" />
-          <StatCard icon={Target} tone="green" label="Partisipasi Tracer Study" value={`${s.tracerRate}%`} note={`${fmtNum(s.tracer)} dari ${fmtNum(s.total)} alumni`} to="/tracer-study" />
+          <StatCard icon={Target} tone="green" label="Partisipasi Tracer Study" value={`${s.tracerRate}%`} note={`${fmtNum(s.tracer)} dari ${fmtNum(s.total)} alumni`} to="/tracer" />
           <Card className="flex flex-col p-4">
             <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
               <PencilLine className="h-[18px] w-[18px]" strokeWidth={1.8} />
@@ -253,7 +253,7 @@ const AlumniDashboard = () => {
               Pastikan data dirimu selalu terbaru untuk manfaat terbaik.
             </p>
             <Link
-              to="/tracer-study"
+              to="/tracer"
               className="mt-3 inline-flex items-center justify-center gap-1 rounded-md bg-emerald-50 px-3 py-1.5 text-[11px] font-medium text-emerald-700 hover:bg-emerald-100"
             >
               Update Pekerjaan
@@ -450,7 +450,7 @@ const AlumniDashboard = () => {
                     </div>
                   ))}
                 </div>
-                <Link to="/tracer-study" className="mt-3 flex items-center justify-center rounded-md bg-emerald-50 py-1.5 text-[11px] font-medium text-emerald-700 hover:bg-emerald-100">
+                <Link to="/tracer" className="mt-3 flex items-center justify-center rounded-md bg-emerald-50 py-1.5 text-[11px] font-medium text-emerald-700 hover:bg-emerald-100">
                   Lihat Semua Aktivitas
                 </Link>
               </Card>
@@ -502,7 +502,7 @@ const AlumniDashboard = () => {
                   </p>
                 </div>
               </div>
-              <Link to="/tracer-study" className="mt-3 flex items-center justify-center rounded-md bg-emerald-50 py-1.5 text-[11px] font-medium text-emerald-700 hover:bg-emerald-100">
+              <Link to="/tracer" className="mt-3 flex items-center justify-center rounded-md bg-emerald-50 py-1.5 text-[11px] font-medium text-emerald-700 hover:bg-emerald-100">
                 {meFilled ? "Lihat Riwayat Tracer Study" : "Isi Tracer Study"}
               </Link>
             </Card>
@@ -514,7 +514,7 @@ const AlumniDashboard = () => {
               <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
                 Pastikan informasi pekerjaan selalu terbaru agar terhubung dengan peluang terbaik untukmu.
               </p>
-              <Link to="/tracer-study" className="mt-3 flex items-center justify-center rounded-md bg-emerald-50 py-1.5 text-[11px] font-medium text-emerald-700 hover:bg-emerald-100">
+              <Link to="/tracer" className="mt-3 flex items-center justify-center rounded-md bg-emerald-50 py-1.5 text-[11px] font-medium text-emerald-700 hover:bg-emerald-100">
                 Perbarui Sekarang
               </Link>
             </Card>
