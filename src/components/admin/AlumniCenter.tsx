@@ -178,6 +178,7 @@ const Bar = ({ label, value, total }: { label: string; value: number; total: num
 
 const AlumniCenter = () => {
   const qc = useQueryClient();
+  const [tab, setTab] = useState("dashboard");
   const [search, setSearch] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [fAngkatan, setFAngkatan] = useState("all");
@@ -483,7 +484,7 @@ const AlumniCenter = () => {
               </CardBox>
             </div>
 
-            <div className="lg:col-span-2.5 lg:col-span-2">
+            <div className="lg:col-span-2">
               <CardBox title="Respon Tracer Study">
                 <ul className="text-[11.5px]">
                   {[
