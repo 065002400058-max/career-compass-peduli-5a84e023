@@ -129,7 +129,7 @@ const AlumniDashboard = () => {
       const { data, error } = await supabase
         .from("alumni")
         .select(
-          "id,name,graduation_year,status,position,company,job_field,university,university_status,faculty,work_city,work_province,further_education,target_university,tracer_filled_at,updated_at",
+          "id,name,graduation_year,origin,status,position,company,job_field,university,university_status,faculty,work_city,work_province,further_education,target_university,tracer_filled_at,updated_at",
         )
         .order("updated_at", { ascending: false })
         .limit(5000);
