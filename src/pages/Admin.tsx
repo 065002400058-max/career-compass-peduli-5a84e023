@@ -207,44 +207,67 @@ const Admin = () => {
     }
   };
 
+  const tool = (key: string) => TOOL_NAV.find((t) => t.key === key)!;
+
   const sidebar = (
     <AdminSidebar
-      main={MAIN_NAV}
-      tools={TOOL_NAV}
       active={view}
       onSelect={select}
-      toolsOpen={toolsOpen}
-      onToggleTools={() => setToolsOpen((o) => !o)}
+      onCollapse={() => { setSidebarOpen(false); setDrawer(false); }}
+      groups={[
+        { items: [MAIN_NAV[0]] },
+        {
+          label: "Data Utama",
+          items: [MAIN_NAV[1], MAIN_NAV[2], { key: "unidentified", label: "Belum Teridentifikasi", icon: UserCircle, badge: counts?.referrals }],
+        },
+        { label: "Layanan & Tes", items: [tool("screening"), tool("cbt"), tool("psikotes"), { key: "counseling", label: "Konseling", icon: HeartPulse }, tool("referrals")] },
+        { label: "Karier & Kemitraan", items: [tool("jobs"), tool("partners"), { key: "events", label: "Event Karier", icon: Award }, tool("universities"), tool("scholarships")] },
+        { label: "Laporan", items: [tool("reports")] },
+        { label: "Pengaturan", items: [{ key: "settings", label: "Pengaturan", icon: MoreHorizontal }] },
+      ]}
     />
   );
 
   return (
     <div className="min-h-screen bg-[hsl(var(--background))] flex w-full">
       {/* Desktop sidebar */}
-      <aside className="hidden lg:block w-[200px] shrink-0 border-r border-border sticky top-0 h-screen">{sidebar}</aside>
+      {sidebarOpen && (
+        <aside className="hidden lg:block w-[224px] shrink-0 border-r border-border sticky top-0 h-screen">{sidebar}</aside>
+      )}
 
       {/* Mobile drawer */}
       <Sheet open={drawer} onOpenChange={setDrawer}>
-        <SheetContent side="left" className="p-0 w-[220px]">{sidebar}</SheetContent>
+        <SheetContent side="left" className="p-0 w-[240px]">{sidebar}</SheetContent>
       </Sheet>
 
       <div className="flex-1 min-w-0 flex flex-col">
         {/* Top header */}
         <header className="h-[60px] bg-card border-b border-border flex items-center gap-3 px-3 md:px-5">
           <button
-            onClick={() => setDrawer(true)}
-            className="h-8 w-8 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground lg:hidden"
+            onClick={() => { if (window.innerWidth >= 1024) setSidebarOpen((o) => !o); else setDrawer(true); }}
+            className="h-8 w-8 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground"
             aria-label="Buka menu"
           >
             <Menu className="h-5 w-5" />
           </button>
-          <span className="font-heading text-sm md:text-base font-semibold text-foreground">Admin</span>
 
-          <div className="hidden md:flex items-center gap-4 mx-auto">
+          <div className="hidden xl:flex items-center gap-4 mx-auto">
             {HEADER_LOGOS.map((l) => (
               <img key={l.alt} src={l.src} alt={l.alt} className="h-7 w-auto object-contain" loading="lazy" />
             ))}
           </div>
+
+          <select
+            value={year}
+            onChange={(e) => setYear(e.target.value)}
+            className="ml-auto h-[38px] rounded-lg border border-border bg-card px-3 text-[12px] text-foreground"
+            aria-label="Tahun Ajaran"
+          >
+            {["2025/2026", "2024/2025", "2023/2024"].map((y) => (
+              <option key={y} value={y}>Tahun Ajaran {y}</option>
+            ))}
+          </select>
+
 
           <div className="ml-auto md:ml-0 flex items-center gap-2 md:gap-3">
             <button
