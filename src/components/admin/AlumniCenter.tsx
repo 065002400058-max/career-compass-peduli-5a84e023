@@ -373,7 +373,7 @@ const AlumniCenter = () => {
           aria-label="Filter alumni"
         >
           <option value="all">Seluruh Alumni</option>
-          {Array.from(new Set(rows.map(workStatus))).sort().map((o) => (
+          {ALUMNI_STATUS_ORDER.map((o) => (
             <option key={o} value={o}>{o}</option>
           ))}
         </select>
@@ -383,13 +383,15 @@ const AlumniCenter = () => {
       {tab === "dashboard" && (
         <div className="space-y-3">
           {/* Statistic cards */}
-          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
             <StatCard label="Total Alumni" value={stats.total} note={`${rows.length} data terdaftar`} icon={Users} />
             <StatCard label="Alumni Bekerja" value={dash.bekerja} note={`${pct(dash.bekerja)}% dari total alumni`} noteClass="text-primary" icon={Briefcase} />
             <StatCard label="Alumni Melanjutkan" value={dash.lanjut} note={`${pct(dash.lanjut)}% dari total alumni`} noteClass="text-primary" icon={GraduationCap} />
             <StatCard label="Alumni Belum Bekerja" value={dash.belum} note={`${pct(dash.belum)}% dari total alumni`} icon={Users} />
+            <StatCard label="Belum Mengisi Tracer" value={dash.belumMengisi} note={`${pct(dash.belumMengisi)}% belum melapor`} icon={Target} />
             <StatCard label="Tingkat Respon Tracer Study" value={`${tracerPct}%`} note={`${stats.tracer} dari ${stats.total} alumni`} noteClass="text-primary" icon={Target} />
           </div>
+
 
           {/* Chart row 1 */}
           <div className="grid gap-3 lg:grid-cols-3">
