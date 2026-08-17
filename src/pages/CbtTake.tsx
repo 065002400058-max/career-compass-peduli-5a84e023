@@ -117,7 +117,7 @@ const CbtTake = () => {
               </div>
               <div className="flex gap-2">
                 <Button variant="outline" className="flex-1" onClick={() => navigate("/cbt")}>Kembali ke Daftar</Button>
-                <Button className="flex-1" onClick={() => navigate("/dashboard")}>Dashboard</Button>
+                <Button className="flex-1" onClick={() => navigate("/cbt")}>Daftar Tes</Button>
               </div>
             </CardContent>
           </Card>
