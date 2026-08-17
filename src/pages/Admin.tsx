@@ -11,7 +11,6 @@ import {
   ChevronDown, ArrowRight, User as UserIcon,
 } from "lucide-react";
 import AdminSidebar, { AdminNavItem } from "@/components/admin/AdminSidebar";
-import AdminBottomNav from "@/components/admin/AdminBottomNav";
 import SantriCenter from "@/components/admin/SantriCenter";
 import AlumniCenter from "@/components/admin/AlumniCenter";
 import CbtManager from "@/components/admin/CbtManager";
@@ -86,7 +85,7 @@ const MENU_CARDS = [
 ];
 
 const Admin = () => {
-  const { user, loading, hasRole } = useAuth();
+  const { user, loading, hasRole, signOut } = useAuth();
   const navigate = useNavigate();
   const qc = useQueryClient();
   const [view, setView] = useState("dashboard");
@@ -248,12 +247,31 @@ const Admin = () => {
 
       {/* Mobile drawer */}
       <Sheet open={drawer} onOpenChange={setDrawer}>
-        <SheetContent side="left" className="p-0 w-[240px]">{sidebar}</SheetContent>
+        <SheetContent side="left" className="p-0 w-[86vw] max-w-[320px] flex flex-col">
+          <div className="flex-1 min-h-0">{sidebar}</div>
+          <div className="border-t border-border p-3 space-y-2 bg-card">
+            <div className="flex items-center gap-2">
+              <span className="h-8 w-8 rounded-md border border-border flex items-center justify-center text-muted-foreground">
+                <UserIcon className="h-4 w-4" />
+              </span>
+              <span className="leading-tight min-w-0">
+                <span className="block text-[13px] font-semibold text-foreground truncate">{user?.email?.split("@")[0] ?? "Admin"}</span>
+                <span className="block text-[11px] text-muted-foreground">Administrator</span>
+              </span>
+            </div>
+            <Button variant="outline" size="sm" className="w-full justify-start" onClick={() => { setDrawer(false); navigate("/profil"); }}>
+              <UserIcon className="h-4 w-4 mr-2" /> Profil Saya
+            </Button>
+            <Button variant="outline" size="sm" className="w-full justify-start" onClick={async () => { setDrawer(false); await signOut(); navigate("/"); }}>
+              Keluar
+            </Button>
+          </div>
+        </SheetContent>
       </Sheet>
 
       <div className="flex-1 min-w-0 flex flex-col">
         {/* Top header */}
-        <header className="h-[60px] bg-card border-b border-border flex items-center gap-3 px-3 md:px-5">
+        <header className="h-[56px] lg:h-[60px] bg-card border-b border-border flex items-center gap-3 px-3 md:px-5">
           <button
             onClick={() => { if (window.innerWidth >= 1024) setSidebarOpen((o) => !o); else setDrawer(true); }}
             className="h-8 w-8 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground"
@@ -271,7 +289,7 @@ const Admin = () => {
           <select
             value={year}
             onChange={(e) => setYear(e.target.value)}
-            className="ml-auto h-[38px] rounded-lg border border-border bg-card px-3 text-[12px] text-foreground"
+            className="ml-auto hidden sm:block h-[38px] rounded-lg border border-border bg-card px-3 text-[12px] text-foreground"
             aria-label="Tahun Ajaran"
           >
             {["2025/2026", "2024/2025", "2023/2024"].map((y) => (
@@ -310,7 +328,7 @@ const Admin = () => {
         {/* Green strip */}
         <div className="h-[5px] bg-primary" />
 
-        <main className="flex-1 px-4 md:px-6 lg:px-8 pb-24 lg:pb-10 bg-muted/20">
+        <main className="flex-1 px-4 md:px-6 lg:px-8 pb-8 lg:pb-10 bg-muted/20">
           {view !== "dashboard" && view !== "santri" && view !== "alumni" && (
             <div className="pt-5 pb-4 flex items-center gap-2">
               {activeItem && <activeItem.icon className="h-4 w-4 text-primary" />}
@@ -324,11 +342,6 @@ const Admin = () => {
         </main>
       </div>
 
-      <AdminBottomNav
-        active={view === "santri" ? "santri" : view === "dashboard" ? "beranda" : "layanan"}
-        onSantri={() => select("santri")}
-        onLayanan={() => select("tools")}
-      />
     </div>
   );
 };

@@ -770,7 +770,7 @@ const SantriCenter = () => {
       <button
         onClick={() => setTab("list")}
         aria-label="Tambah / kelola data santri"
-        className="fixed bottom-20 lg:bottom-6 right-5 h-[50px] w-[50px] rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center hover:brightness-110 z-30"
+        className="fixed bottom-[76px] lg:bottom-6 right-5 h-[50px] w-[50px] rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center hover:brightness-110 z-30"
       >
         <Plus className="h-5 w-5" />
       </button>
