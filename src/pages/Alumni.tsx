@@ -1,3 +1,4 @@
+import { useAlumniRealtime } from "@/hooks/useAlumniRealtime";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
@@ -13,6 +14,7 @@ import {
 } from "@/components/ui/table";
 
 const Alumni = () => {
+  useAlumniRealtime();
   const [search, setSearch] = useState("");
   const [yearFilter, setYearFilter] = useState("Semua");
 

@@ -15,6 +15,7 @@ import {
 import { toast } from "sonner";
 import { Briefcase, Loader2 } from "lucide-react";
 import { alumniStatus, hasTracer } from "@/lib/alumniStatus";
+import { ALUMNI_QUERY_KEYS } from "@/hooks/useAlumniRealtime";
 
 const STATUS = ["Bekerja", "Wirausaha", "Melanjutkan Studi", "Mencari Kerja"] as const;
 
@@ -91,9 +92,7 @@ const GraduateStatusCard = () => {
     setSaving(false);
     if (error) return toast.error(error.message);
     toast.success("Status berhasil diperbarui — data admin & alumni ikut ter-update ✨");
-    ["me-alumni", "my-alumni", "alumni-dashboard-agg", "admin-recent-alumni", "admin-counts"].forEach(
-      (k) => qc.invalidateQueries({ queryKey: [k] }),
-    );
+    ALUMNI_QUERY_KEYS.forEach((k) => qc.invalidateQueries({ queryKey: [k] }));
   };
 
   return (

@@ -14,11 +14,13 @@ import {
 } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
 import { alumniSummary, cleanVal } from "@/lib/alumniStatus";
+import { useAlumniRealtime } from "@/hooks/useAlumniRealtime";
 
 const COLORS = ["#059669", "#0ea5e9", "#8b5cf6", "#f59e0b", "#94a3b8"];
 
 /** Grafik agregat alumni (dipakai di dashboard santri & alumni). */
 const AlumniInsight = () => {
+  useAlumniRealtime();
   const { data: rows = [] } = useQuery({
     queryKey: ["alumni-dashboard-agg"],
     queryFn: async () => (await supabase.from("alumni").select("*")).data ?? [],
