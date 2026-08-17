@@ -18,10 +18,13 @@ export const POSITIVE_MESSAGE =
   "Terima kasih sudah meluangkan waktu untuk mengenali kondisi diri Anda. Memahami diri sendiri adalah salah satu langkah penting untuk berkembang.";
 
 export const DISCLAIMER =
-  "Hasil screening ini bukan diagnosis medis maupun psikologis, melainkan gambaran awal kondisi Anda saat ini.";
+  "Catatan: Hasil screening ini bukan diagnosis. Jika Anda merasa membutuhkan bantuan atau pendampingan lebih lanjut, silakan berkonsultasi dengan konselor.";
 
 /** Item BRS dengan skor berkebalikan (nomor urut soal) */
 export const BRS_REVERSE_ITEMS = [2, 4, 6];
+
+/** Item PSS-10 dengan skor berkebalikan (skala 0-4, reverse = 4 - skor) */
+export const PSS10_REVERSE_ITEMS = [4, 5, 7, 8];
 
 export function detectScreeningKind(testTitle?: string | null, categoryName?: string | null): ScreeningKind | null {
   const s = `${testTitle ?? ""} ${categoryName ?? ""}`.toLowerCase();
@@ -31,9 +34,13 @@ export function detectScreeningKind(testTitle?: string | null, categoryName?: st
   return null;
 }
 
-/** Skor per item setelah memperhitungkan reverse scoring (khusus BRS item 2, 4, 6). */
+/**
+ * Skor per item setelah memperhitungkan reverse scoring.
+ * BRS: item 2, 4, 6 → 6 - skor. PSS-10: item 4, 5, 7, 8 → 4 - skor.
+ */
 export function itemScore(kind: ScreeningKind | null, orderNumber: number, score: number): number {
   if (kind === "brs" && BRS_REVERSE_ITEMS.includes(orderNumber)) return 6 - score;
+  if (kind === "pss10" && PSS10_REVERSE_ITEMS.includes(orderNumber)) return 4 - score;
   return score;
 }
 
