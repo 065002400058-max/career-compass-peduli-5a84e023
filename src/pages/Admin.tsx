@@ -26,11 +26,13 @@ const SERVICE_TABS = [
   { value: "partners", label: "Mitra", icon: Building2 },
   { value: "cbt", label: "Tes CBT", icon: Brain },
   { value: "psikotes", label: "Psikotes", icon: HeartPulse },
+  { value: "screening", label: "Hasil Screening", icon: TrendingUp },
   { value: "universities", label: "Kampus", icon: GraduationCap },
   { value: "scholarships", label: "Beasiswa", icon: Award },
   { value: "referrals", label: "Rujukan", icon: Users },
   { value: "reports", label: "Laporan Pengguna", icon: FileDown },
 ];
+
 
 const Admin = () => {
   const { user, loading, hasRole } = useAuth();
