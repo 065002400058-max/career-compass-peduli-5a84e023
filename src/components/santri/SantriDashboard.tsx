@@ -528,6 +528,11 @@ const SantriDashboard = () => {
             </Card>
 
             {/* Catatan & Rekomendasi */}
+            {/* Status setelah lulus + grafik alumni */}
+            <GraduateStatusCard />
+            <AlumniInsight />
+
+            {/* Catatan & Rekomendasi */}
             <Card className="p-5">
               <h3 className="mb-3 font-heading text-[15px] font-semibold text-foreground">
                 Catatan &amp; Rekomendasi
