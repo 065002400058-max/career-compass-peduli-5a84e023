@@ -109,18 +109,18 @@ const HBarCard = ({ title, subtitle, data }: { title: string; subtitle: string; 
 
 
 export const EMPTY = "Belum diisi";
-const NO_TRACER = "Belum mengisi";
+const NO_TRACER = ALUMNI_NOT_FILLED;
 
-const val = (v: any) => (v === null || v === undefined || String(v).trim() === "" || String(v).trim() === "-" ? null : String(v).trim());
+const val = cleanVal;
 const show = (v: any, fallback = EMPTY) => val(v) ?? fallback;
 
 export type AlumniRow = Record<string, any>;
 
-export const hasTracer = (a: AlumniRow) =>
-  !!a.tracer_filled_at || !!(val(a.position) || val(a.company) || val(a.job_field) || val(a.further_education) || val(a.work_city));
+export { hasTracer };
 
-const workStatus = (a: AlumniRow) => (hasTracer(a) ? show(a.status, EMPTY) : NO_TRACER);
+const workStatus = (a: AlumniRow) => alumniStatus(a);
 const uniStatus = (a: AlumniRow) => val(a.university_status) ?? (val(a.university) ? "Belum diidentifikasi" : EMPTY);
+
 
 const uniqSorted = (rows: AlumniRow[], key: string) =>
   Array.from(new Set(rows.map((r) => val(r[key])).filter(Boolean) as string[])).sort((a, b) => a.localeCompare(b));
