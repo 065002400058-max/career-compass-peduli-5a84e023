@@ -24,6 +24,7 @@ import { toast } from "sonner";
 import { exportToExcel, exportToPDF } from "@/lib/exportUtils";
 
 const SERVICE_TABS = [
+  { value: "monitor", label: "Dashboard", icon: TrendingUp },
   { value: "jobs", label: "Validasi Lowongan", icon: Briefcase },
   { value: "partners", label: "Mitra", icon: Building2 },
   { value: "cbt", label: "Tes CBT", icon: Brain },
@@ -40,7 +41,7 @@ const Admin = () => {
   const { user, loading, hasRole } = useAuth();
   const navigate = useNavigate();
   const qc = useQueryClient();
-  const [tab, setTab] = useState("santri");
+  const [tab, setTab] = useState("monitor");
   const [alumniSearch, setAlumniSearch] = useState("");
   const [santriSearch, setSantriSearch] = useState("");
 
