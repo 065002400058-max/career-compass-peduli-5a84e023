@@ -45,6 +45,7 @@ const MAIN_NAV: AdminNavItem[] = [
 const TOOL_NAV: AdminNavItem[] = [
   { key: "jobs", label: "Lowongan Kerja", icon: Briefcase },
   { key: "partners", label: "Mitra", icon: Building2 },
+  { key: "events", label: "Event Karier", icon: Award },
   { key: "cbt", label: "Tes CBT", icon: Brain },
   { key: "psikotes", label: "Psikotes", icon: HeartPulse },
   { key: "screening", label: "Screening Mental", icon: TrendingUp },
@@ -53,6 +54,7 @@ const TOOL_NAV: AdminNavItem[] = [
   { key: "referrals", label: "Rujukan", icon: Users },
   { key: "reports", label: "Laporan Pengguna", icon: FileDown },
 ];
+
 
 
 const MENU_CARDS = [
