@@ -9,6 +9,8 @@ import AlumniAddDialog from "@/components/AlumniAddDialog";
 import AdminBottomNav from "@/components/admin/AdminBottomNav";
 import CbtManager from "@/components/admin/CbtManager";
 import PsikotesManager from "@/components/admin/PsikotesManager";
+import ScreeningInsights from "@/components/admin/ScreeningInsights";
+
 import UniversitiesManager from "@/components/admin/UniversitiesManager";
 import ScholarshipManager from "@/components/admin/ScholarshipManager";
 import ReferralManager from "@/components/admin/ReferralManager";
@@ -439,6 +441,8 @@ const Admin = () => {
 
           <TabsContent value="cbt" className="mt-0"><CbtManager /></TabsContent>
           <TabsContent value="psikotes" className="mt-0"><PsikotesManager /></TabsContent>
+          <TabsContent value="screening" className="mt-0"><ScreeningInsights /></TabsContent>
+
           <TabsContent value="universities" className="mt-0"><UniversitiesManager /></TabsContent>
           <TabsContent value="scholarships" className="mt-0"><ScholarshipManager /></TabsContent>
           <TabsContent value="referrals" className="mt-0"><ReferralManager /></TabsContent>
