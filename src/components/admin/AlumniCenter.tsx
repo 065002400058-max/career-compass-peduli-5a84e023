@@ -1,3 +1,4 @@
+import { useAlumniRealtime } from "@/hooks/useAlumniRealtime";
 import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,7 +22,6 @@ import {
   Tooltip, LabelList, AreaChart, Area,
 } from "recharts";
 import {
-import { useAlumniRealtime } from "@/hooks/useAlumniRealtime";
   Search, Users, Trash2, FileSpreadsheet, FileDown, SlidersHorizontal, ChevronRight,
   GraduationCap, Briefcase, Building2, MapPin, Globe2, ClipboardCheck, Pencil, X, Calendar,
   TrendingUp, FileJson, Target,
