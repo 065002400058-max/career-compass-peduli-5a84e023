@@ -86,6 +86,9 @@ const Admin = () => {
   const [view, setView] = useState("dashboard");
   const [toolsOpen, setToolsOpen] = useState(false);
   const [drawer, setDrawer] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [year, setYear] = useState("2025/2026");
+
 
   useEffect(() => {
     if (!loading && (!user || !hasRole("admin"))) navigate("/");
