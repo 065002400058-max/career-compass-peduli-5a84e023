@@ -98,14 +98,24 @@ const EventsManager = () => {
       (ev.type ?? "").toLowerCase().includes(search.toLowerCase()),
   );
 
+  const delAll = async () => {
+    const { error } = await supabase.from("events").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+    if (error) throw error;
+    refresh();
+  };
+
   return (
     <div>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
         <Input placeholder="Cari event..." value={search} onChange={(e) => setSearch(e.target.value)} className="sm:max-w-xs" />
-        <Button size="sm" onClick={() => { setEditing(null); setOpen(true); }}>
-          <Plus className="h-4 w-4 mr-1" />Tambah Event
-        </Button>
+        <div className="flex items-center gap-2">
+          <DeleteAllButton label="event" count={data.length} onDelete={delAll} />
+          <Button size="sm" onClick={() => { setEditing(null); setOpen(true); }}>
+            <Plus className="h-4 w-4 mr-1" />Tambah Event
+          </Button>
+        </div>
       </div>
+
 
       <div className="glass-card rounded-xl divide-y divide-border">
         {isLoading ? (
