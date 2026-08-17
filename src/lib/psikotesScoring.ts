@@ -15,7 +15,7 @@ export interface ScreeningOutcome {
 }
 
 export const POSITIVE_MESSAGE =
-  "Terima kasih sudah meluangkan waktu untuk mengenali kondisi diri Anda. Memahami diri sendiri adalah salah satu langkah penting untuk berkembang.";
+  "Terima kasih sudah meluangkan waktu untuk mengenali kondisi diri Anda. Memahami diri sendiri merupakan salah satu langkah penting untuk berkembang.";
 
 export const DISCLAIMER =
   "Catatan: Hasil screening ini bukan diagnosis. Jika Anda merasa membutuhkan bantuan atau pendampingan lebih lanjut, silakan berkonsultasi dengan konselor.";
