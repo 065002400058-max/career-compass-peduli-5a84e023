@@ -25,6 +25,7 @@ import TracerStudy from "./pages/TracerStudy";
 import Scholarships from "./pages/Scholarships";
 import Tentang from "./pages/Tentang";
 import Profile from "./pages/Profile";
+import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
