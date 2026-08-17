@@ -2,9 +2,7 @@ import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -15,7 +13,7 @@ import { exportToExcel, exportToPDF } from "@/lib/exportUtils";
 import { toast } from "sonner";
 import {
   Search, Users, Trash2, AlertTriangle, FileSpreadsheet, FileDown, Columns3, X,
-  GraduationCap, Briefcase, MapPin, Building2, UserCircle, Globe2, Home, TrendingUp,
+  GraduationCap, Briefcase, Building2, UserCircle, Globe2, Home, TrendingUp,
 } from "lucide-react";
 import {
   ResponsiveContainer, PieChart, Pie, Cell, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid,

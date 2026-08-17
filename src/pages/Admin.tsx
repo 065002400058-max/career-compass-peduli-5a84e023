@@ -11,6 +11,7 @@ import CbtManager from "@/components/admin/CbtManager";
 import PsikotesManager from "@/components/admin/PsikotesManager";
 import ScreeningInsights from "@/components/admin/ScreeningInsights";
 import MonitoringDashboard from "@/components/admin/MonitoringDashboard";
+import AlumniCenter from "@/components/admin/AlumniCenter";
 
 import UniversitiesManager from "@/components/admin/UniversitiesManager";
 import ScholarshipManager from "@/components/admin/ScholarshipManager";
