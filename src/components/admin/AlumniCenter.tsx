@@ -425,6 +425,7 @@ const AlumniCenter = () => {
             <StatCard label="Tingkat Respon Tracer Study" value={`${tracerPct}%`} note={`${stats.tracer} dari ${stats.total} alumni`} noteClass="text-primary" icon={Target} />
 
 
+
           </div>
 
 
