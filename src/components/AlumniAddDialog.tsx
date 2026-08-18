@@ -42,6 +42,8 @@ const AlumniAddDialog = () => {
       university: form.university || null,
       position: form.position || null,
       status: "bekerja",
+      graduation_status: "bekerja",
+      employment_status: "bekerja",
     });
     setLoading(false);
     if (error) {

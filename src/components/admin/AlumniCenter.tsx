@@ -321,7 +321,12 @@ const AlumniCenter = () => {
     });
     if (!payload.name) return toast.error("Nama wajib diisi");
     if (!payload.graduation_year) return toast.error("Angkatan wajib diisi");
-    if (!payload.status) payload.status = detail.status ?? "Belum Bekerja";
+    if (!payload.status) payload.status = detail.status ?? "belum mengisi tracer";
+    
+    // Sync with production columns
+    payload.graduation_status = payload.status;
+    payload.employment_status = payload.status;
+
     const { error } = await supabase.from("alumni").update(payload).eq("id", detail.id);
     if (error) return toast.error(error.message);
     toast.success("Data alumni diperbarui");
@@ -389,7 +394,7 @@ const AlumniCenter = () => {
             <StatCard label="Total Alumni" value={stats.total} note={`${rows.length} data terdaftar`} icon={Users} />
             <StatCard label="Alumni Bekerja" value={dash.bekerja} note={`${pct(dash.bekerja)}% dari total alumni`} noteClass="text-primary" icon={Briefcase} />
             <StatCard label="Alumni Melanjutkan" value={dash.lanjut} note={`${pct(dash.lanjut)}% dari total alumni`} noteClass="text-primary" icon={GraduationCap} />
-            <StatCard label="Alumni Belum Bekerja" value={dash.belum} note={`${pct(dash.belum)}% dari total alumni`} icon={Users} />
+            <StatCard label="Alumni Mencari Kerja" value={dash.belum} note={`${pct(dash.belum)}% dari total alumni`} icon={Users} />
             <StatCard label="Belum Mengisi Tracer" value={dash.belumMengisi} note={`${pct(dash.belumMengisi)}% belum melapor`} icon={Target} />
             <StatCard label="Tingkat Respon Tracer Study" value={`${tracerPct}%`} note={`${stats.tracer} dari ${stats.total} alumni`} noteClass="text-primary" icon={Target} />
           </div>
