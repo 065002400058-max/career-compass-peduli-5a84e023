@@ -328,7 +328,12 @@ const AlumniCenter = () => {
     FIELDS.forEach(({ key, type }) => {
       const v = form[key];
       payload[key] = type === "number" ? (v ? parseInt(String(v), 10) : null) : (val(v) ?? null);
+      
+      // Sync old columns
+      if (key === "full_name") payload.name = payload[key];
+      if (key === "student_id") payload.nim = payload[key];
     });
+
     if (!payload.full_name && !payload.name) return toast.error("Nama wajib diisi");
     if (!payload.graduation_year) return toast.error("Angkatan wajib diisi");
 
