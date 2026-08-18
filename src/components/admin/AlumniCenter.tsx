@@ -419,10 +419,11 @@ const AlumniCenter = () => {
           <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
             <StatCard label="Total Alumni" value={stats.total} note={`${rows.length} data terdaftar`} icon={Users} />
             <StatCard label="Alumni Bekerja" value={stats.bekerja} note={`${pct(stats.bekerja)}% dari total alumni`} noteClass="text-primary" icon={Briefcase} />
-            <StatCard label="Alumni Berwirausaha" value={stats.wirausaha} note={`${pct(stats.wirausaha)}% dari total alumni`} noteClass="text-primary" icon={TrendingUp} />
             <StatCard label="Alumni Melanjutkan" value={stats.melanjutkan} note={`${pct(stats.melanjutkan)}% dari total alumni`} noteClass="text-primary" icon={GraduationCap} />
+            <StatCard label="Alumni Belum Bekerja" value={dash.belum} note={`${pct(dash.belum)}% dari total alumni`} icon={Users} />
             <StatCard label="Belum Mengisi Tracer" value={stats.noTracer} note={`${pct(stats.noTracer)}% belum melapor`} icon={Target} />
-            <StatCard label="Respon Tracer" value={`${tracerPct}%`} note={`${stats.tracer} dari ${stats.total} alumni`} noteClass="text-primary" icon={ClipboardCheck} />
+            <StatCard label="Tingkat Respon Tracer Study" value={`${tracerPct}%`} note={`${stats.tracer} dari ${stats.total} alumni`} noteClass="text-primary" icon={Target} />
+
 
           </div>
 
