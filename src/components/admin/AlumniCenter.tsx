@@ -14,7 +14,7 @@ import AlumniAddDialog from "@/components/AlumniAddDialog";
 import { exportToExcel, exportToPDF } from "@/lib/exportUtils";
 import { toast } from "sonner";
 import {
-  alumniStatus, alumniSummary, hasTracer, cleanVal, ALUMNI_NOT_FILLED, ALUMNI_STATUS_ORDER,
+  alumniStatus, alumniSummary, hasTracer, cleanVal, ALUMNI_NOT_FILLED, ALUMNI_STATUS_ORDER, getStatusLabel,
 } from "@/lib/alumniStatus";
 
 import {
@@ -26,6 +26,7 @@ import {
   GraduationCap, Briefcase, Building2, MapPin, Globe2, ClipboardCheck, Pencil, X, Calendar,
   TrendingUp, FileJson, Target,
 } from "lucide-react";
+
 
 const DONUT_COLORS = ["#16A34A", "#3B82F6", "#8B5CF6", "#FACC15", "#F97316", "#EF4444", "#9CA3AF"];
 
@@ -133,7 +134,8 @@ const uniqSorted = (rows: AlumniRow[], key: string) =>
 const initials = (n?: string) => (n || "A").split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
 
 const FIELDS: { key: string; label: string; type?: string }[] = [
-  { key: "name", label: "Nama" },
+  { key: "full_name", label: "Nama Lengkap" },
+  { key: "student_id", label: "NIM/ID Santri" },
   { key: "gender", label: "Jenis Kelamin" },
   { key: "graduation_year", label: "Angkatan", type: "number" },
   { key: "origin", label: "Asal" },
@@ -147,6 +149,7 @@ const FIELDS: { key: string; label: string; type?: string }[] = [
   { key: "position", label: "Jabatan" },
   { key: "work_city", label: "Lokasi Kerja" },
 ];
+
 
 /* ---------- summary card (same style as existing admin cards) ---------- */
 const MiniCard = ({ label, value, icon: Icon, onClick, active }: any) => (
@@ -214,9 +217,13 @@ const AlumniCenter = () => {
   );
 
   const statusBreakdown = useMemo(
-    () => ALUMNI_STATUS_ORDER.map((name) => ({ name, value: summary.counts[name] })),
+    () => ALUMNI_STATUS_ORDER.map((name) => ({ 
+      name: getStatusLabel(name), 
+      value: summary.counts[name as any] || 0 
+    })),
     [summary],
   );
+
 
 
   const uniInfo = useMemo(() => {
@@ -283,27 +290,30 @@ const AlumniCenter = () => {
       if (fUniStatus !== "all" && uniStatus(a) !== fUniStatus) return false;
       if (fKerja !== "all" && workStatus(a) !== fKerja) return false;
       if (!q) return true;
-      return [a.name, a.graduation_year, a.origin, a.major, a.university, a.status, a.position, a.company, a.job_field, a.education_level]
+      return [a.full_name, a.name, a.graduation_year, a.origin, a.major, a.university, a.status, a.position, a.company, a.job_field, a.education_level]
         .some((v: any) => String(v ?? "").toLowerCase().includes(q));
+
     });
   }, [rows, search, onlyNoTracer, fAngkatan, fGender, fJenjang, fUniversitas, fUniStatus, fKerja]);
 
   const exportRows = filtered.map((a) => ({
-    Nama: show(a.name, ""),
-    "Jenis Kelamin": show(a.gender, ""),
-    Angkatan: a.graduation_year ?? "",
-    Asal: show(a.origin, ""),
-    "Jenjang Pendidikan": show(a.education_level, ""),
-    Jurusan: show(a.major, ""),
-    Universitas: show(a.university, ""),
-    "Status Universitas": show(a.university_status, ""),
-    "Status Pekerjaan": show(a.status, ""),
-    "Bidang Pekerjaan": show(a.job_field, ""),
-    Perusahaan: show(a.company, ""),
-    Jabatan: show(a.position, ""),
-    "Lokasi Kerja": show(a.work_city, ""),
-    Tracer: hasTracer(a) ? "Sudah" : "Belum",
+    full_name: show(a.full_name || a.name, ""),
+    student_id: show(a.student_id || a.nim, ""),
+    gender: show(a.gender, ""),
+    graduation_year: a.graduation_year ?? "",
+    origin: show(a.origin, ""),
+    education_level: show(a.education_level, ""),
+    major: show(a.major, ""),
+    university: show(a.university, ""),
+    university_status: show(a.university_status, ""),
+    status: getStatusLabel(alumniStatus(a)),
+    job_field: show(a.job_field, ""),
+    company: show(a.company, ""),
+    position: show(a.position, ""),
+    work_city: show(a.work_city, ""),
+    created_at: a.created_at ? new Date(a.created_at).toLocaleDateString("id-ID") : "",
   }));
+
 
   const resetFilters = () => {
     setSearch(""); setFAngkatan("all"); setFGender("all"); setFJenjang("all");
@@ -319,8 +329,9 @@ const AlumniCenter = () => {
       const v = form[key];
       payload[key] = type === "number" ? (v ? parseInt(String(v), 10) : null) : (val(v) ?? null);
     });
-    if (!payload.name) return toast.error("Nama wajib diisi");
+    if (!payload.full_name && !payload.name) return toast.error("Nama wajib diisi");
     if (!payload.graduation_year) return toast.error("Angkatan wajib diisi");
+
     if (!payload.status) payload.status = detail.status ?? "belum mengisi tracer";
     
     // Sync with production columns
@@ -630,11 +641,11 @@ const AlumniCenter = () => {
               className="rounded-2xl bg-card border border-border shadow-sm p-4 flex items-start gap-3 transition-colors hover:bg-accent/30 cursor-pointer active:scale-[0.99]"
             >
               <div className="h-10 w-10 rounded-full bg-accent flex items-center justify-center font-heading font-bold text-primary text-sm shrink-0">
-                {initials(a.name)}
+                {initials(a.full_name || a.name)}
               </div>
               <div className="min-w-0 flex-1 space-y-1.5">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h4 className="font-heading font-semibold text-foreground text-sm">{show(a.name, "(Tanpa Nama)")}</h4>
+                  <h4 className="font-heading font-semibold text-foreground text-sm">{show(a.full_name || a.name, "(Tanpa Nama)")}</h4>
                   {val(a.gender) && <Badge variant="outline" className="text-[10px] rounded-full">{a.gender}</Badge>}
                 </div>
                 <div className="flex items-center gap-2 flex-wrap">
@@ -702,7 +713,7 @@ const AlumniCenter = () => {
       <Sheet open={!!detail} onOpenChange={(o) => { if (!o) { setDetail(null); setEditing(false); } }}>
         <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
           <SheetHeader>
-            <SheetTitle className="font-heading">{show(detail?.name, "Detail Alumni")}</SheetTitle>
+            <SheetTitle className="font-heading">{show(detail?.full_name || detail?.name, "Detail Alumni")}</SheetTitle>
           </SheetHeader>
           {detail && (
             <div className="mt-4 space-y-5">
@@ -727,7 +738,7 @@ const AlumniCenter = () => {
                         <AlertDialogHeader>
                           <AlertDialogTitle>Hapus alumni ini?</AlertDialogTitle>
                           <AlertDialogDescription>
-                            Data alumni <strong>{show(detail.name, "-")}</strong> akan dihapus permanen dan tidak dapat dikembalikan.
+                            Data alumni <strong>{show(detail.full_name || detail.name, "-")}</strong> akan dihapus permanen dan tidak dapat dikembalikan.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
@@ -760,7 +771,7 @@ const AlumniCenter = () => {
                     <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Profil</h4>
                     <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
                       {[
-                        ["Nama", show(detail.name)],
+                        ["Nama", show(detail.full_name || detail.name)],
                         ["Jenis Kelamin", show(detail.gender)],
                         ["Angkatan", detail.graduation_year ?? EMPTY],
                         ["Asal", show(detail.origin)],

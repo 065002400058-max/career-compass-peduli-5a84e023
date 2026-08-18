@@ -35,8 +35,14 @@ const parseCSV = (text: string): string[][] => {
 // Map various header spellings to canonical keys
 const headerMap: Record<string, string> = {
   "no": "no",
-  "nama": "name",
-  "name": "name",
+  "nama lengkap": "full_name",
+  "nama": "full_name",
+  "name": "full_name",
+  "full name": "full_name",
+  "nim": "student_id",
+  "id santri": "student_id",
+  "student id": "student_id",
+  "student_id": "student_id",
   "jenis kelamin": "gender",
   "gender": "gender",
   "jk": "gender",
@@ -57,6 +63,7 @@ const headerMap: Record<string, string> = {
   "position": "position",
 };
 
+
 const AlumniCsvImport = () => {
   const ref = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
@@ -69,15 +76,17 @@ const AlumniCsvImport = () => {
       const rows = parseCSV(text);
       if (rows.length < 2) throw new Error("CSV kosong");
       const headers = rows[0].map((h) => headerMap[h.trim().toLowerCase()] || h.trim().toLowerCase());
-      if (!headers.includes("name")) throw new Error("Kolom 'Nama' wajib ada");
+      if (!headers.includes("full_name")) throw new Error("Kolom 'Nama Lengkap' wajib ada");
       if (!headers.includes("graduation_year")) throw new Error("Kolom 'Angkatan' wajib ada");
+
 
       const records = rows.slice(1).map((r) => {
         const obj: any = {};
         headers.forEach((h, i) => { obj[h] = r[i]?.trim() ?? ""; });
         const year = parseInt(obj.graduation_year, 10);
         return {
-          name: obj.name,
+          full_name: obj.full_name,
+          student_id: obj.student_id || null,
           gender: obj.gender || null,
           graduation_year: year,
           origin: obj.origin || null,
@@ -85,11 +94,12 @@ const AlumniCsvImport = () => {
           major: obj.major || null,
           university: obj.university || null,
           position: obj.position || null,
-          status: "bekerja",
-          graduation_status: "bekerja",
-          employment_status: "bekerja",
+          status: "belum_mengisi_tracer",
+          graduation_status: "belum_mengisi_tracer",
+          employment_status: "belum_mengisi_tracer",
         };
-      }).filter((r) => r.name && !isNaN(r.graduation_year));
+      }).filter((r) => r.full_name && !isNaN(r.graduation_year));
+
 
       if (records.length === 0) throw new Error("Tidak ada baris valid");
 
@@ -108,7 +118,7 @@ const AlumniCsvImport = () => {
   };
 
   const downloadTemplate = () => {
-    const csv = "No,Nama,Jenis Kelamin,Angkatan,Asal,Jenjang Pendidikan,Jurusan,Universitas,Pekerjaan\n1,Ahmad Fauzi,Laki-laki,2022,Bandung,S1,Teknik Informatika,Universitas Indonesia,Software Engineer\n";
+    const csv = "No,Nama Lengkap,NIM,Jenis Kelamin,Angkatan,Asal,Jenjang Pendidikan,Jurusan,Universitas,Pekerjaan\n1,Ahmad Fauzi,12345,Laki-laki,2022,Bandung,S1,Teknik Informatika,Universitas Indonesia,Software Engineer\n";
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
