@@ -37,7 +37,9 @@ const AlumniAddDialog = () => {
     setLoading(true);
     const { error } = await supabase.from("alumni").insert({
       full_name: form.full_name,
+      name: form.full_name, // Sync old column for compatibility
       student_id: form.student_id || null,
+      nim: form.student_id || null, // Sync old column
       gender: form.gender || null,
       graduation_year: parseInt(form.graduation_year, 10),
       origin: form.origin || null,
@@ -45,10 +47,11 @@ const AlumniAddDialog = () => {
       major: form.major || null,
       university: form.university || null,
       position: form.position || null,
-      status: "bekerja",
-      graduation_status: "bekerja",
-      employment_status: "bekerja",
+      status: "belum_mengisi_tracer",
+      graduation_status: "belum_mengisi_tracer",
+      employment_status: "belum_mengisi_tracer",
     });
+
 
     setLoading(false);
     if (error) {

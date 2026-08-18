@@ -86,7 +86,9 @@ const AlumniCsvImport = () => {
         const year = parseInt(obj.graduation_year, 10);
         return {
           full_name: obj.full_name,
+          name: obj.full_name, // Sync old column
           student_id: obj.student_id || null,
+          nim: obj.student_id || null, // Sync old column
           gender: obj.gender || null,
           graduation_year: year,
           origin: obj.origin || null,
@@ -99,6 +101,7 @@ const AlumniCsvImport = () => {
           employment_status: "belum_mengisi_tracer",
         };
       }).filter((r) => r.full_name && !isNaN(r.graduation_year));
+
 
 
       if (records.length === 0) throw new Error("Tidak ada baris valid");
