@@ -143,7 +143,7 @@ const Navbar = () => {
   ];
 
   // Admin mengelola semua modul dari Dashboard, jadi menu publik disederhanakan.
-  const groups: Group[] = isAdmin ? [] : publicGroups;
+  const groups: Group[] = publicGroups;
 
   const extraLinks: Item[] = [
     { label: "Dashboard", path: "/admin", show: isAdmin },
