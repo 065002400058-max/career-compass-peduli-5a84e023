@@ -286,10 +286,22 @@ const Profile = () => {
             <TabsTrigger value="data">
               <UserIcon className="h-4 w-4 mr-1.5" /> Data Diri
             </TabsTrigger>
+            {!roles.includes("admin") && (
+              <TabsTrigger value="status">
+                <UserIcon className="h-4 w-4 mr-1.5" /> Status Lulus
+              </TabsTrigger>
+            )}
             <TabsTrigger value="akun">
               <Lock className="h-4 w-4 mr-1.5" /> Keamanan Akun
             </TabsTrigger>
           </TabsList>
+
+          {!roles.includes("admin") && (
+            <TabsContent value="status">
+              <GraduateStatusCard />
+            </TabsContent>
+          )}
+
 
           <TabsContent value="data">
             <Card className="glass-card">
