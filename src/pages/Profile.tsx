@@ -84,7 +84,7 @@ const Profile = () => {
       const { data, error } = await supabase
         .from("profiles")
         .select("*")
-        .eq("user_id", user.id)
+        .eq("id", user.id)
         .maybeSingle();
       if (error) toast.error(`Gagal memuat profil: ${error.message}`);
       if (data) {
@@ -131,7 +131,7 @@ const Profile = () => {
     }
     setSaving(true);
     const payload = {
-      user_id: user.id,
+      id: user.id,
       full_name: form.full_name.trim(),
       phone: form.phone || null,
       gender: form.gender || null,
@@ -150,7 +150,7 @@ const Profile = () => {
     };
     const { error } = await supabase
       .from("profiles")
-      .upsert(payload, { onConflict: "user_id" });
+      .upsert(payload, { onConflict: "id" });
     setSaving(false);
     if (error) toast.error(`Gagal menyimpan: ${error.message}`);
     else toast.success("Profil berhasil diperbarui");
@@ -176,7 +176,7 @@ const Profile = () => {
     const { error } = await supabase
       .from("profiles")
       .update({ avatar_url: path })
-      .eq("user_id", user.id);
+      .eq("id", user.id);
     setUploading(false);
     if (error) {
       toast.error(`Gagal simpan foto: ${error.message}`);
@@ -193,7 +193,7 @@ const Profile = () => {
     const { error } = await supabase
       .from("profiles")
       .update({ avatar_url: null })
-      .eq("user_id", user.id);
+      .eq("id", user.id);
     if (error) return toast.error(error.message);
     setAvatarPath(null);
     toast.success("Foto profil dihapus");
