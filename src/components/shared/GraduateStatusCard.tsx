@@ -39,7 +39,7 @@ const GraduateStatusCard = () => {
   const { data: profile } = useQuery({
     queryKey: ["me-profile", uid],
     queryFn: async () =>
-      (await supabase.from("profiles").select("*").eq("user_id", uid!).maybeSingle()).data,
+      (await supabase.from("profiles").select("*").eq("id", uid!).maybeSingle()).data,
     enabled: !!uid,
   });
 
