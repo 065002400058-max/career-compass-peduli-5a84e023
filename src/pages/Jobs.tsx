@@ -53,7 +53,7 @@ const Jobs = () => {
 
   const filtered = jobs.filter((j: any) => {
     const matchSearch = j.title.toLowerCase().includes(search.toLowerCase()) || j.company.toLowerCase().includes(search.toLowerCase());
-    const matchType = selType === "Semua" || j.type === selType;
+    const matchType = selType === "Semua" || j.employment_type === selType;
     const matchLoc = selLoc === "Semua" || j.location === selLoc;
     return matchSearch && matchType && matchLoc;
   });
@@ -118,7 +118,7 @@ const Jobs = () => {
                     <div className="flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
                         <h3 className="font-heading font-semibold text-lg text-foreground">{job.title}</h3>
-                        <Badge variant="secondary" className="text-xs">{job.type}</Badge>
+                        <Badge variant="secondary" className="text-xs">{job.employment_type}</Badge>
                         {isAdmin && <Badge variant={job.status === "approved" ? "default" : "outline"} className="text-xs">{job.status}</Badge>}
                       </div>
                       <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground flex-wrap">
