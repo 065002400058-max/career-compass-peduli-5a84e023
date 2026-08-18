@@ -14,8 +14,17 @@ const Dashboard = () => {
     );
   }
   if (!user) return <Navigate to="/auth" replace />;
-  if (hasRole("admin")) return <Navigate to="/admin" replace />;
+  if (hasRole("admin")) return (
+    <div className="space-y-6">
+      <SantriDashboard />
+      <div className="container mx-auto px-4">
+        <div className="h-px bg-border w-full" />
+      </div>
+      <AlumniDashboard />
+    </div>
+  );
   if (hasRole("alumni")) return <AlumniDashboard />;
+
 
   return <SantriDashboard />;
 };

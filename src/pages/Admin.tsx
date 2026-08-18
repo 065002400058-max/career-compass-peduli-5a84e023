@@ -228,13 +228,14 @@ const Admin = () => {
         { items: [MAIN_NAV[0]] },
         {
           label: "Data Utama",
-          items: [MAIN_NAV[1], MAIN_NAV[2], { key: "unidentified", label: "Belum Teridentifikasi", icon: UserCircle, badge: counts?.referrals }],
+          items: [MAIN_NAV[1], MAIN_NAV[2]],
         },
         { label: "Layanan & Tes", items: [tool("screening"), tool("cbt"), tool("psikotes"), { key: "counseling", label: "Konseling", icon: HeartPulse }, tool("referrals")] },
         { label: "Karier & Kemitraan", items: [tool("jobs"), tool("partners"), tool("events"), tool("universities"), tool("scholarships")] },
         { label: "Laporan", items: [tool("reports")] },
         { label: "Pengaturan", items: [{ key: "settings", label: "Pengaturan", icon: MoreHorizontal }] },
       ]}
+
     />
   );
 

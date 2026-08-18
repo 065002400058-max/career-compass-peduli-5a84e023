@@ -28,7 +28,7 @@ import {
 } from "lucide-react";
 
 
-const DONUT_COLORS = ["#16A34A", "#3B82F6", "#8B5CF6", "#FACC15", "#F97316", "#EF4444", "#9CA3AF"];
+const DONUT_COLORS = ["#16A34A", "#3B82F6", "#8B5CF6", "#F59E0B", "#F97316", "#EF4444", "#9CA3AF"];
 
 const CardBox = ({ title, subtitle, right, children, className = "" }: any) => (
   <div className={`rounded-xl border border-border bg-card p-4 shadow-[0_1px_2px_rgba(0,0,0,0.03)] ${className}`}>
@@ -268,7 +268,7 @@ const AlumniCenter = () => {
     return {
       bekerja: summary.bekerja,
       lanjut: summary.lanjut,
-      belum: summary.belum,
+      belum: summary.counts['mencari_kerja'] || 0,
       belumMengisi: summary.belumMengisi,
       status: statusBreakdown.filter((d) => d.value > 0),
       jobField: topN("job_field"),
@@ -277,6 +277,7 @@ const AlumniCenter = () => {
       companyType: topN("company_type", 4),
       angkatan: Array.from(years, ([name, value]) => ({ name, value })).sort((a, b) => a.name.localeCompare(b.name)),
     };
+
   }, [rows, summary, statusBreakdown]);
 
 
@@ -418,10 +419,12 @@ const AlumniCenter = () => {
           <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
             <StatCard label="Total Alumni" value={stats.total} note={`${rows.length} data terdaftar`} icon={Users} />
             <StatCard label="Alumni Bekerja" value={stats.bekerja} note={`${pct(stats.bekerja)}% dari total alumni`} noteClass="text-primary" icon={Briefcase} />
-            <StatCard label="Alumni Berwirausaha" value={stats.wirausaha} note={`${pct(stats.wirausaha)}% dari total alumni`} noteClass="text-primary" icon={TrendingUp} />
             <StatCard label="Alumni Melanjutkan" value={stats.melanjutkan} note={`${pct(stats.melanjutkan)}% dari total alumni`} noteClass="text-primary" icon={GraduationCap} />
+            <StatCard label="Alumni Belum Bekerja" value={dash.belum} note={`${pct(dash.belum)}% dari total alumni`} icon={Users} />
             <StatCard label="Belum Mengisi Tracer" value={stats.noTracer} note={`${pct(stats.noTracer)}% belum melapor`} icon={Target} />
-            <StatCard label="Respon Tracer" value={`${tracerPct}%`} note={`${stats.tracer} dari ${stats.total} alumni`} noteClass="text-primary" icon={ClipboardCheck} />
+            <StatCard label="Tingkat Respon Tracer Study" value={`${tracerPct}%`} note={`${stats.tracer} dari ${stats.total} alumni`} noteClass="text-primary" icon={ClipboardCheck} />
+
+
 
           </div>
 
@@ -459,7 +462,7 @@ const AlumniCenter = () => {
                 )}
               </div>
             </CardBox>
-            <DonutCard title="Jenis Perusahaan / Instansi" subtitle="Tempat kerja alumni berdasarkan jenis instansi" data={dash.companyType} />
+            <HBarCard title="Jenis Perusahaan / Instansi" subtitle="Tempat kerja alumni berdasarkan jenis instansi" data={dash.companyType} />
           </div>
 
           {/* Bottom grid */}
