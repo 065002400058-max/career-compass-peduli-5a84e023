@@ -674,7 +674,7 @@ const AlumniCenter = () => {
                   <span className="flex items-center gap-1.5"><GraduationCap className="h-3.5 w-3.5" /> {show(a.education_level)}{val(a.major) ? ` · ${a.major}` : ""}</span>
                   {val(a.university) && <span className="flex items-center gap-1.5"><Building2 className="h-3.5 w-3.5" /> {a.university}</span>}
                   <span className="flex items-center gap-1.5"><Globe2 className="h-3.5 w-3.5" /> {uniStatus(a)}</span>
-                  <span className="flex items-center gap-1.5"><Briefcase className="h-3.5 w-3.5" /> {workStatus(a)}{val(a.company) ? ` — ${a.company}` : ""}</span>
+                  <span className="flex items-center gap-1.5"><Briefcase className="h-3.5 w-3.5" /> {getStatusLabel(alumniStatus(a))}{val(a.company) ? ` — ${a.company}` : ""}</span>
                 </div>
               </div>
               <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 mt-1" />
