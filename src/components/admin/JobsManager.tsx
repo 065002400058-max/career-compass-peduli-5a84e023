@@ -65,7 +65,7 @@ const JobsManager = () => {
       title: form.title.trim(),
       company: form.company.trim(),
       location: form.location.trim(),
-      type: form.type || "Full-time",
+      employment_type: form.type || "Full-time",
       salary: form.salary?.trim() || null,
       description: form.description?.trim() || null,
       status: form.status || "approved",
@@ -145,7 +145,7 @@ const JobsManager = () => {
                   <h4 className="font-semibold text-sm truncate">{j.title}</h4>
                   <Badge variant={j.status === "approved" ? "default" : "outline"} className="text-[10px]">{j.status}</Badge>
                 </div>
-                <p className="text-xs text-muted-foreground truncate">{j.company} · {j.location} · {j.type}{j.salary ? ` · ${j.salary}` : ""}</p>
+                <p className="text-xs text-muted-foreground truncate">{j.company} · {j.location} · {j.employment_type}{j.salary ? ` · ${j.salary}` : ""}</p>
               </div>
               <div className="flex items-center gap-1 shrink-0">
                 {j.status !== "approved" && (
