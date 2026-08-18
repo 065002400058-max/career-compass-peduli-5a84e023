@@ -28,7 +28,7 @@ import {
 } from "lucide-react";
 
 
-const DONUT_COLORS = ["#16A34A", "#3B82F6", "#8B5CF6", "#FACC15", "#F97316", "#EF4444", "#9CA3AF"];
+const DONUT_COLORS = ["#16A34A", "#3B82F6", "#8B5CF6", "#F59E0B", "#F97316", "#EF4444", "#9CA3AF"];
 
 const CardBox = ({ title, subtitle, right, children, className = "" }: any) => (
   <div className={`rounded-xl border border-border bg-card p-4 shadow-[0_1px_2px_rgba(0,0,0,0.03)] ${className}`}>
