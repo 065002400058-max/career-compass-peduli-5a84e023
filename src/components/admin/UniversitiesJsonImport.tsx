@@ -164,10 +164,10 @@ export default function UniversitiesJsonImport({
     try {
       const toRow = (r: Row) => ({
         name: r.name,
-        type: r.type as UnivType,
+        category: r.type as UnivType,
         country: r.country,
         city: r.city || null,
-        website_url: r.website,
+        website: r.website,
         description: r.description,
       });
 

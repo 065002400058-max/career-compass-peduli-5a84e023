@@ -42,8 +42,8 @@ type Univ = {
   id: string;
   name: string;
   country: string;
-  type: UnivType;
-  website_url: string;
+  category: UnivType;
+  website: string;
   description: string | null;
   city: string | null;
   logo_url: string | null;
@@ -63,7 +63,7 @@ export default function UniversitiesManager() {
   const { data: items } = useQuery({
     queryKey: ["admin-universities"],
     queryFn: async () =>
-      ((await supabase.from("universities").select("*").order("type").order("name")).data ?? []) as Univ[],
+      ((await supabase.from("universities").select("*").order("category").order("name")).data ?? []) as Univ[],
   });
 
   const refresh = () => {
@@ -74,11 +74,11 @@ export default function UniversitiesManager() {
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase();
     return (items ?? [])
-      .filter((u) => (tab === "all" ? true : u.type === tab))
+      .filter((u) => (tab === "all" ? true : u.category === tab))
       .filter((u) =>
         !term
           ? true
-          : [u.name, u.city, u.country, TYPE_LABELS[u.type], u.description]
+          : [u.name, u.city, u.country, TYPE_LABELS[u.category], u.description]
               .filter(Boolean)
               .join(" ")
               .toLowerCase()
@@ -89,10 +89,10 @@ export default function UniversitiesManager() {
   const exportRows = filtered.map((u, i) => ({
     No: i + 1,
     "Nama Kampus": u.name,
-    Kategori: TYPE_LABELS[u.type],
+    Kategori: TYPE_LABELS[u.category],
     Kota: u.city ?? "",
     Negara: u.country,
-    Website: u.website_url,
+    Website: u.website,
     Deskripsi: u.description ?? "",
   }));
 
@@ -101,10 +101,10 @@ export default function UniversitiesManager() {
     const payload = {
       campuses: filtered.map((u) => ({
         name: u.name,
-        category: TYPE_LABELS[u.type],
+        category: TYPE_LABELS[u.category],
         city: u.city ?? "",
         country: u.country,
-        website: u.website_url,
+        website: u.website,
         description: u.description ?? "",
       })),
     };
@@ -224,7 +224,7 @@ export default function UniversitiesManager() {
                 <div className="flex-1 min-w-0">
                   <p className="font-heading font-semibold text-sm line-clamp-2">{u.name}</p>
                   <Badge variant="secondary" className="mt-1 text-[10px]">
-                    {TYPE_LABELS[u.type]}
+                    {TYPE_LABELS[u.category]}
                   </Badge>
                 </div>
               </div>
@@ -234,12 +234,12 @@ export default function UniversitiesManager() {
                   {u.country}
                 </p>
                 <a
-                  href={u.website_url}
+                  href={u.website}
                   target="_blank"
                   rel="noreferrer"
                   className="flex items-center gap-1 text-primary truncate hover:underline"
                 >
-                  <Globe2 className="h-3 w-3 shrink-0" /> {u.website_url.replace(/^https?:\/\//, "")}
+                  <Globe2 className="h-3 w-3 shrink-0" /> {u.website.replace(/^https?:\/\//, "")}
                 </a>
               </div>
               {u.description && <p className="text-xs text-muted-foreground mt-2 line-clamp-2">{u.description}</p>}
@@ -303,7 +303,7 @@ export default function UniversitiesManager() {
             <div className="space-y-2 text-sm">
               <p>
                 <span className="text-muted-foreground">Kategori: </span>
-                {TYPE_LABELS[viewing.type]}
+                {TYPE_LABELS[viewing.category]}
               </p>
               <p>
                 <span className="text-muted-foreground">Lokasi: </span>
@@ -312,8 +312,8 @@ export default function UniversitiesManager() {
               </p>
               <p className="break-all">
                 <span className="text-muted-foreground">Website: </span>
-                <a href={viewing.website_url} target="_blank" rel="noreferrer" className="text-primary hover:underline">
-                  {viewing.website_url}
+                <a href={viewing.website} target="_blank" rel="noreferrer" className="text-primary hover:underline">
+                  {viewing.website}
                 </a>
               </p>
               <p>
@@ -324,7 +324,7 @@ export default function UniversitiesManager() {
           )}
           <DialogFooter>
             <Button variant="outline" asChild>
-              <a href={viewing?.website_url} target="_blank" rel="noreferrer">
+              <a href={viewing?.website} target="_blank" rel="noreferrer">
                 <ExternalLink className="h-4 w-4 mr-1" /> Kunjungi Website
               </a>
             </Button>
@@ -407,7 +407,7 @@ function UnivDialog({
 }) {
   const [name, setName] = useState("");
   const [country, setCountry] = useState("Indonesia");
-  const [type, setType] = useState<UnivType>("dalam_negeri");
+  const [category, setCategory] = useState<UnivType>("dalam_negeri");
   const [website, setWebsite] = useState("");
   const [desc, setDesc] = useState("");
   const [city, setCity] = useState("");
@@ -419,15 +419,15 @@ function UnivDialog({
     if (editing) {
       setName(editing.name);
       setCountry(editing.country);
-      setType(editing.type);
-      setWebsite(editing.website_url);
+      setCategory(editing.category);
+      setWebsite(editing.website);
       setDesc(editing.description ?? "");
       setCity(editing.city ?? "");
       setLogo(editing.logo_url ?? "");
     } else {
       setName("");
       setCountry("Indonesia");
-      setType("dalam_negeri");
+      setCategory("dalam_negeri");
       setWebsite("");
       setDesc("");
       setCity("");
@@ -445,8 +445,8 @@ function UnivDialog({
     const payload = {
       name: name.trim(),
       country: country.trim(),
-      type,
-      website_url: url,
+      category,
+      website: url,
       description: desc.trim() || null,
       city: city.trim() || null,
       logo_url: logo.trim() || null,
@@ -477,7 +477,7 @@ function UnivDialog({
           </div>
           <div>
             <Label>Kategori *</Label>
-            <Select value={type} onValueChange={(v) => setType(v as UnivType)}>
+            <Select value={category} onValueChange={(v) => setCategory(v as UnivType)}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>

@@ -19,22 +19,32 @@ export type Database = {
           company: string | null
           company_type: string | null
           created_at: string
+          current_company: string | null
+          current_field: string | null
+          current_location: string | null
+          current_position: string | null
           education_level: string | null
+          employment_status: string | null
           faculty: string | null
           further_education: string | null
           gender: string | null
+          graduation_status: string | null
           graduation_year: number
           id: string
           job_field: string | null
+          linkedin_url: string | null
           location: string | null
           major: string | null
           name: string
+          nim: string | null
           origin: string | null
           position: string | null
+          profile_id: string | null
           status: string
           target_university: string | null
           tracer_filled_at: string | null
           university: string | null
+          university_id: string | null
           university_status: string | null
           updated_at: string
           user_id: string | null
@@ -47,22 +57,32 @@ export type Database = {
           company?: string | null
           company_type?: string | null
           created_at?: string
+          current_company?: string | null
+          current_field?: string | null
+          current_location?: string | null
+          current_position?: string | null
           education_level?: string | null
+          employment_status?: string | null
           faculty?: string | null
           further_education?: string | null
           gender?: string | null
+          graduation_status?: string | null
           graduation_year: number
           id?: string
           job_field?: string | null
+          linkedin_url?: string | null
           location?: string | null
           major?: string | null
           name: string
+          nim?: string | null
           origin?: string | null
           position?: string | null
+          profile_id?: string | null
           status?: string
           target_university?: string | null
           tracer_filled_at?: string | null
           university?: string | null
+          university_id?: string | null
           university_status?: string | null
           updated_at?: string
           user_id?: string | null
@@ -75,22 +95,32 @@ export type Database = {
           company?: string | null
           company_type?: string | null
           created_at?: string
+          current_company?: string | null
+          current_field?: string | null
+          current_location?: string | null
+          current_position?: string | null
           education_level?: string | null
+          employment_status?: string | null
           faculty?: string | null
           further_education?: string | null
           gender?: string | null
+          graduation_status?: string | null
           graduation_year?: number
           id?: string
           job_field?: string | null
+          linkedin_url?: string | null
           location?: string | null
           major?: string | null
           name?: string
+          nim?: string | null
           origin?: string | null
           position?: string | null
+          profile_id?: string | null
           status?: string
           target_university?: string | null
           tracer_filled_at?: string | null
           university?: string | null
+          university_id?: string | null
           university_status?: string | null
           updated_at?: string
           user_id?: string | null
@@ -99,7 +129,118 @@ export type Database = {
           work_province?: string | null
           year_graduated?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "alumni_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "alumni_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "universities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      alumni_education: {
+        Row: {
+          alumni_id: string | null
+          created_at: string | null
+          degree: string | null
+          end_year: number | null
+          id: string
+          major: string | null
+          start_year: number | null
+          university_id: string | null
+        }
+        Insert: {
+          alumni_id?: string | null
+          created_at?: string | null
+          degree?: string | null
+          end_year?: number | null
+          id?: string
+          major?: string | null
+          start_year?: number | null
+          university_id?: string | null
+        }
+        Update: {
+          alumni_id?: string | null
+          created_at?: string | null
+          degree?: string | null
+          end_year?: number | null
+          id?: string
+          major?: string | null
+          start_year?: number | null
+          university_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alumni_education_alumni_id_fkey"
+            columns: ["alumni_id"]
+            isOneToOne: false
+            referencedRelation: "alumni"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "alumni_education_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "universities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      alumni_employment: {
+        Row: {
+          alumni_id: string | null
+          company_id: string | null
+          created_at: string | null
+          employment_type: string | null
+          end_date: string | null
+          id: string
+          position: string | null
+          start_date: string | null
+        }
+        Insert: {
+          alumni_id?: string | null
+          company_id?: string | null
+          created_at?: string | null
+          employment_type?: string | null
+          end_date?: string | null
+          id?: string
+          position?: string | null
+          start_date?: string | null
+        }
+        Update: {
+          alumni_id?: string | null
+          company_id?: string | null
+          created_at?: string | null
+          employment_type?: string | null
+          end_date?: string | null
+          id?: string
+          position?: string | null
+          start_date?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alumni_employment_alumni_id_fkey"
+            columns: ["alumni_id"]
+            isOneToOne: false
+            referencedRelation: "alumni"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "alumni_employment_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       alumni_stories: {
         Row: {
@@ -136,6 +277,57 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      career_updates: {
+        Row: {
+          alumni_id: string | null
+          company_id: string | null
+          created_at: string | null
+          employment_status: string | null
+          end_date: string | null
+          id: string
+          position: string | null
+          start_date: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          alumni_id?: string | null
+          company_id?: string | null
+          created_at?: string | null
+          employment_status?: string | null
+          end_date?: string | null
+          id?: string
+          position?: string | null
+          start_date?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          alumni_id?: string | null
+          company_id?: string | null
+          created_at?: string | null
+          employment_status?: string | null
+          end_date?: string | null
+          id?: string
+          position?: string | null
+          start_date?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "career_updates_alumni_id_fkey"
+            columns: ["alumni_id"]
+            isOneToOne: false
+            referencedRelation: "alumni"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "career_updates_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       cbt_answers: {
         Row: {
@@ -333,6 +525,45 @@ export type Database = {
           },
         ]
       }
+      cbt_results: {
+        Row: {
+          alumni_id: string | null
+          cbt_test_id: string | null
+          completed_at: string | null
+          id: string
+          score: number | null
+        }
+        Insert: {
+          alumni_id?: string | null
+          cbt_test_id?: string | null
+          completed_at?: string | null
+          id?: string
+          score?: number | null
+        }
+        Update: {
+          alumni_id?: string | null
+          cbt_test_id?: string | null
+          completed_at?: string | null
+          id?: string
+          score?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cbt_results_alumni_id_fkey"
+            columns: ["alumni_id"]
+            isOneToOne: false
+            referencedRelation: "alumni"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cbt_results_cbt_test_id_fkey"
+            columns: ["cbt_test_id"]
+            isOneToOne: false
+            referencedRelation: "cbt_tests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cbt_tests: {
         Row: {
           category_id: string
@@ -441,6 +672,89 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      companies: {
+        Row: {
+          city: string | null
+          country: string | null
+          created_at: string | null
+          description: string | null
+          id: string
+          industry: string | null
+          logo_url: string | null
+          name: string
+          updated_at: string | null
+          website: string | null
+        }
+        Insert: {
+          city?: string | null
+          country?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          industry?: string | null
+          logo_url?: string | null
+          name: string
+          updated_at?: string | null
+          website?: string | null
+        }
+        Update: {
+          city?: string | null
+          country?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          industry?: string | null
+          logo_url?: string | null
+          name?: string
+          updated_at?: string | null
+          website?: string | null
+        }
+        Relationships: []
+      }
+      counseling: {
+        Row: {
+          alumni_id: string | null
+          counselor_name: string | null
+          created_at: string | null
+          id: string
+          notes: string | null
+          schedule: string | null
+          status: string | null
+          topic: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          alumni_id?: string | null
+          counselor_name?: string | null
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          schedule?: string | null
+          status?: string | null
+          topic?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          alumni_id?: string | null
+          counselor_name?: string | null
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          schedule?: string | null
+          status?: string | null
+          topic?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "counseling_alumni_id_fkey"
+            columns: ["alumni_id"]
+            isOneToOne: false
+            referencedRelation: "alumni"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       counseling_referrals: {
         Row: {
@@ -573,44 +887,102 @@ export type Database = {
       jobs: {
         Row: {
           company: string
+          company_id: string | null
           created_at: string
+          deadline: string | null
           description: string | null
+          employment_type: string
           id: string
           location: string
           posted_by: string | null
           salary: string | null
+          salary_max: number | null
+          salary_min: number | null
           status: string
           title: string
-          type: string
           updated_at: string
         }
         Insert: {
           company: string
+          company_id?: string | null
           created_at?: string
+          deadline?: string | null
           description?: string | null
+          employment_type?: string
           id?: string
           location: string
           posted_by?: string | null
           salary?: string | null
+          salary_max?: number | null
+          salary_min?: number | null
           status?: string
           title: string
-          type?: string
           updated_at?: string
         }
         Update: {
           company?: string
+          company_id?: string | null
           created_at?: string
+          deadline?: string | null
           description?: string | null
+          employment_type?: string
           id?: string
           location?: string
           posted_by?: string | null
           salary?: string | null
+          salary_max?: number | null
+          salary_min?: number | null
           status?: string
           title?: string
-          type?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "jobs_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_read: boolean | null
+          message: string | null
+          profile_id: string | null
+          title: string
+          type: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message?: string | null
+          profile_id?: string | null
+          title: string
+          type?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message?: string | null
+          profile_id?: string | null
+          title?: string
+          type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       partners: {
         Row: {
@@ -663,6 +1035,7 @@ export type Database = {
           company: string | null
           created_at: string
           education_level: string | null
+          email: string | null
           full_name: string
           gender: string | null
           graduation_year: number | null
@@ -671,6 +1044,7 @@ export type Database = {
           origin: string | null
           phone: string | null
           position: string | null
+          role: Database["public"]["Enums"]["app_role"] | null
           school_origin: string | null
           university: string | null
           updated_at: string
@@ -684,6 +1058,7 @@ export type Database = {
           company?: string | null
           created_at?: string
           education_level?: string | null
+          email?: string | null
           full_name?: string
           gender?: string | null
           graduation_year?: number | null
@@ -692,6 +1067,7 @@ export type Database = {
           origin?: string | null
           phone?: string | null
           position?: string | null
+          role?: Database["public"]["Enums"]["app_role"] | null
           school_origin?: string | null
           university?: string | null
           updated_at?: string
@@ -705,6 +1081,7 @@ export type Database = {
           company?: string | null
           created_at?: string
           education_level?: string | null
+          email?: string | null
           full_name?: string
           gender?: string | null
           graduation_year?: number | null
@@ -713,6 +1090,7 @@ export type Database = {
           origin?: string | null
           phone?: string | null
           position?: string | null
+          role?: Database["public"]["Enums"]["app_role"] | null
           school_origin?: string | null
           university?: string | null
           updated_at?: string
@@ -934,6 +1312,78 @@ export type Database = {
           },
         ]
       }
+      psychotest_results: {
+        Row: {
+          alumni_id: string | null
+          completed_at: string | null
+          id: string
+          psychotest_id: string | null
+          result: string | null
+          score: number | null
+        }
+        Insert: {
+          alumni_id?: string | null
+          completed_at?: string | null
+          id?: string
+          psychotest_id?: string | null
+          result?: string | null
+          score?: number | null
+        }
+        Update: {
+          alumni_id?: string | null
+          completed_at?: string | null
+          id?: string
+          psychotest_id?: string | null
+          result?: string | null
+          score?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "psychotest_results_alumni_id_fkey"
+            columns: ["alumni_id"]
+            isOneToOne: false
+            referencedRelation: "alumni"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "psychotest_results_psychotest_id_fkey"
+            columns: ["psychotest_id"]
+            isOneToOne: false
+            referencedRelation: "psychotests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      psychotests: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          duration_minutes: number | null
+          id: string
+          status: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          duration_minutes?: number | null
+          id?: string
+          status?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          duration_minutes?: number | null
+          id?: string
+          status?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       scholarships: {
         Row: {
           amount: string | null
@@ -984,6 +1434,7 @@ export type Database = {
       }
       universities: {
         Row: {
+          category: Database["public"]["Enums"]["university_type"]
           city: string | null
           country: string
           created_at: string
@@ -991,11 +1442,12 @@ export type Database = {
           id: string
           logo_url: string | null
           name: string
-          type: Database["public"]["Enums"]["university_type"]
+          status: string | null
           updated_at: string
-          website_url: string
+          website: string
         }
         Insert: {
+          category?: Database["public"]["Enums"]["university_type"]
           city?: string | null
           country?: string
           created_at?: string
@@ -1003,11 +1455,12 @@ export type Database = {
           id?: string
           logo_url?: string | null
           name: string
-          type?: Database["public"]["Enums"]["university_type"]
+          status?: string | null
           updated_at?: string
-          website_url: string
+          website: string
         }
         Update: {
+          category?: Database["public"]["Enums"]["university_type"]
           city?: string | null
           country?: string
           created_at?: string
@@ -1015,9 +1468,9 @@ export type Database = {
           id?: string
           logo_url?: string | null
           name?: string
-          type?: Database["public"]["Enums"]["university_type"]
+          status?: string | null
           updated_at?: string
-          website_url?: string
+          website?: string
         }
         Relationships: []
       }

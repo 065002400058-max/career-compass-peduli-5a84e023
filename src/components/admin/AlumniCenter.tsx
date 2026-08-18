@@ -124,7 +124,7 @@ export type AlumniRow = Record<string, any>;
 export { hasTracer };
 
 const workStatus = (a: AlumniRow) => alumniStatus(a);
-const uniStatus = (a: AlumniRow) => val(a.university_status) ?? (val(a.university) ? "Belum diidentifikasi" : EMPTY);
+const uniStatus = (a: AlumniRow) => val(a.university_status) ?? (val(a.university) ? "belum diidentifikasi" : EMPTY);
 
 
 const uniqSorted = (rows: AlumniRow[], key: string) =>
@@ -321,7 +321,12 @@ const AlumniCenter = () => {
     });
     if (!payload.name) return toast.error("Nama wajib diisi");
     if (!payload.graduation_year) return toast.error("Angkatan wajib diisi");
-    if (!payload.status) payload.status = detail.status ?? "Belum Bekerja";
+    if (!payload.status) payload.status = detail.status ?? "belum mengisi tracer";
+    
+    // Sync with production columns
+    payload.graduation_status = payload.status;
+    payload.employment_status = payload.status;
+
     const { error } = await supabase.from("alumni").update(payload).eq("id", detail.id);
     if (error) return toast.error(error.message);
     toast.success("Data alumni diperbarui");
@@ -389,7 +394,7 @@ const AlumniCenter = () => {
             <StatCard label="Total Alumni" value={stats.total} note={`${rows.length} data terdaftar`} icon={Users} />
             <StatCard label="Alumni Bekerja" value={dash.bekerja} note={`${pct(dash.bekerja)}% dari total alumni`} noteClass="text-primary" icon={Briefcase} />
             <StatCard label="Alumni Melanjutkan" value={dash.lanjut} note={`${pct(dash.lanjut)}% dari total alumni`} noteClass="text-primary" icon={GraduationCap} />
-            <StatCard label="Alumni Belum Bekerja" value={dash.belum} note={`${pct(dash.belum)}% dari total alumni`} icon={Users} />
+            <StatCard label="Alumni Mencari Kerja" value={dash.belum} note={`${pct(dash.belum)}% dari total alumni`} icon={Users} />
             <StatCard label="Belum Mengisi Tracer" value={dash.belumMengisi} note={`${pct(dash.belumMengisi)}% belum melapor`} icon={Target} />
             <StatCard label="Tingkat Respon Tracer Study" value={`${tracerPct}%`} note={`${stats.tracer} dari ${stats.total} alumni`} noteClass="text-primary" icon={Target} />
           </div>
@@ -635,7 +640,7 @@ const AlumniCenter = () => {
                 <div className="flex items-center gap-2 flex-wrap">
                   <Badge className="text-[10px] rounded-full">Alumni</Badge>
                   {a.created_at && <Badge variant="outline" className="text-[10px] rounded-full">Daftar: {new Date(a.created_at).toLocaleDateString("id-ID")}</Badge>}
-                  {!hasTracer(a) && <Badge variant="outline" className="text-[10px] rounded-full text-destructive border-destructive/30">{NO_TRACER}</Badge>}
+                  {!hasTracer(a) && <Badge variant="outline" className="text-[10px] rounded-full text-destructive border-destructive/30">belum mengisi tracer</Badge>}
                 </div>
                 <div className="grid sm:grid-cols-2 gap-x-4 gap-y-1 text-xs text-muted-foreground">
                   <span className="flex items-center gap-1.5"><Calendar className="h-3.5 w-3.5" /> Angkatan {a.graduation_year ?? EMPTY}</span>
@@ -776,7 +781,7 @@ const AlumniCenter = () => {
                     <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Pekerjaan</h4>
                     <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
                       {[
-                        ["Status Pekerjaan", workStatus(detail)],
+                        ["Status Pekerjaan", workStatus(detail).charAt(0).toUpperCase() + workStatus(detail).slice(1)],
                         ["Bidang Pekerjaan", show(detail.job_field)],
                         ["Perusahaan / Instansi", show(detail.company)],
                         ["Jabatan", show(detail.position)],
@@ -795,7 +800,7 @@ const AlumniCenter = () => {
                     <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
                       <div>
                         <dt className="text-[11px] text-muted-foreground">Status Pengisian</dt>
-                        <dd className="text-foreground">{hasTracer(detail) ? "Sudah mengisi" : NO_TRACER}</dd>
+                        <dd className="text-foreground">{hasTracer(detail) ? "Sudah mengisi" : "Belum mengisi tracer"}</dd>
                       </div>
                       <div>
                         <dt className="text-[11px] text-muted-foreground">Tanggal Pengisian</dt>

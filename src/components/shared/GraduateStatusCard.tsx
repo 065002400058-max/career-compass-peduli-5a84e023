@@ -17,7 +17,7 @@ import { Briefcase, Loader2 } from "lucide-react";
 import { alumniStatus, hasTracer } from "@/lib/alumniStatus";
 import { ALUMNI_QUERY_KEYS } from "@/hooks/useAlumniRealtime";
 
-const STATUS = ["Bekerja", "Wirausaha", "Melanjutkan Studi", "Mencari Kerja"] as const;
+const STATUS = ["bekerja", "wirausaha", "melanjutkan studi", "mencari kerja"] as const;
 
 /** Kartu update status setelah lulus — tersimpan ke data alumni sehingga
  *  dashboard admin & alumni langsung ter-update. */
@@ -27,7 +27,7 @@ const GraduateStatusCard = () => {
   const qc = useQueryClient();
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState<any>({
-    status: "Melanjutkan Studi",
+    status: "melanjutkan studi",
     position: "",
     company: "",
     job_field: "",
@@ -53,7 +53,7 @@ const GraduateStatusCard = () => {
   useEffect(() => {
     if (mine) {
       setForm({
-        status: mine.status ?? "Melanjutkan Studi",
+        status: mine.status ?? "melanjutkan studi",
         position: mine.position ?? "",
         company: mine.company ?? "",
         job_field: mine.job_field ?? "",
@@ -64,8 +64,8 @@ const GraduateStatusCard = () => {
     }
   }, [mine]);
 
-  const working = form.status === "Bekerja" || form.status === "Wirausaha";
-  const studying = form.status === "Melanjutkan Studi";
+  const working = form.status === "bekerja" || form.status === "wirausaha";
+  const studying = form.status === "melanjutkan studi";
 
   const save = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,6 +78,8 @@ const GraduateStatusCard = () => {
       origin: profile?.origin ?? null,
       education_level: profile?.education_level ?? null,
       graduation_year: Number(form.graduation_year) || new Date().getFullYear(),
+      graduation_status: form.status,
+      employment_status: form.status,
       status: form.status,
       position: working ? form.position || null : null,
       company: working ? form.company || null : null,

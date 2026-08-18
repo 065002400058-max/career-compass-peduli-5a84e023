@@ -19,7 +19,7 @@ const TracerStudy = () => {
   const [form, setForm] = useState<any>({
     name: "", gender: "", graduation_year: new Date().getFullYear(),
     origin: "", education_level: "", major: "", university: "",
-    position: "", company: "", location: "", status: "Mencari Kerja",
+    position: "", company: "", location: "", status: "mencari kerja",
   });
 
   useEffect(() => { if (!loading && !user) navigate("/auth"); }, [loading, user, navigate]);
@@ -39,7 +39,15 @@ const TracerStudy = () => {
     e.preventDefault();
     if (!user) return;
     setSaving(true);
-    const payload = { ...form, user_id: user.id, graduation_year: Number(form.graduation_year) || new Date().getFullYear(), year_graduated: form.year_graduated ? Number(form.year_graduated) : null, tracer_filled_at: new Date().toISOString() };
+    const payload = { 
+      ...form, 
+      user_id: user.id, 
+      graduation_year: Number(form.graduation_year) || new Date().getFullYear(), 
+      year_graduated: form.year_graduated ? Number(form.year_graduated) : null, 
+      tracer_filled_at: new Date().toISOString(),
+      graduation_status: form.status,
+      employment_status: form.status
+    };
     const { error } = existing
       ? await supabase.from("alumni").update(payload).eq("id", existing.id)
       : await supabase.from("alumni").insert(payload);
@@ -93,10 +101,10 @@ const TracerStudy = () => {
               <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Bekerja">Bekerja</SelectItem>
-                  <SelectItem value="Kuliah">Kuliah</SelectItem>
-                  <SelectItem value="Wirausaha">Wirausaha</SelectItem>
-                  <SelectItem value="Mencari Kerja">Mencari Kerja</SelectItem>
+                  <SelectItem value="bekerja">Bekerja</SelectItem>
+                  <SelectItem value="kuliah">Kuliah</SelectItem>
+                  <SelectItem value="wirausaha">Wirausaha</SelectItem>
+                  <SelectItem value="mencari kerja">Mencari Kerja</SelectItem>
                 </SelectContent>
               </Select>
             </div>

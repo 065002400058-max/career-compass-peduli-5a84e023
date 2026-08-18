@@ -110,10 +110,10 @@ const topN = (rows: any[], key: string, n = 6) => {
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  Bekerja: "#059669",
-  "Melanjutkan Studi": "#3b82f6",
-  "Belum Bekerja": "#f59e0b",
-  Wirausaha: "#f43f5e",
+  bekerja: "#059669",
+  "melanjutkan studi": "#3b82f6",
+  "mencari kerja": "#f59e0b",
+  wirausaha: "#f43f5e",
   [ALUMNI_NOT_FILLED]: "#cbd5e1",
 };
 
@@ -130,7 +130,7 @@ const AlumniDashboard = () => {
       const { data, error } = await supabase
         .from("alumni")
         .select(
-          "id,name,graduation_year,origin,status,position,company,job_field,university,university_status,faculty,work_city,work_province,further_education,target_university,tracer_filled_at,updated_at",
+          "id,name,graduation_year,origin,status,graduation_status,employment_status,position,company,job_field,university,university_status,faculty,work_city,work_province,further_education,target_university,tracer_filled_at,updated_at",
         )
         .order("updated_at", { ascending: false })
         .limit(5000);
