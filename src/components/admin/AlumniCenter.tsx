@@ -397,7 +397,8 @@ const AlumniCenter = () => {
         >
           <option value="all">Seluruh Alumni</option>
           {ALUMNI_STATUS_ORDER.map((o) => (
-            <option key={o} value={o}>{o}</option>
+            <option key={o} value={o}>{getStatusLabel(o)}</option>
+
           ))}
         </select>
       </div>
