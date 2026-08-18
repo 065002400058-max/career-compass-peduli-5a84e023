@@ -22,7 +22,7 @@ const STATUS = ["bekerja", "wirausaha", "melanjutkan studi", "mencari kerja"] as
 /** Kartu update status setelah lulus — tersimpan ke data alumni sehingga
  *  dashboard admin & alumni langsung ter-update. */
 const GraduateStatusCard = () => {
-  const { user } = useAuth();
+  const { user, refreshRoles } = useAuth();
   const uid = user?.id;
   const qc = useQueryClient();
   const [saving, setSaving] = useState(false);
@@ -71,31 +71,28 @@ const GraduateStatusCard = () => {
     e.preventDefault();
     if (!uid) return;
     setSaving(true);
-    const payload: any = {
-      user_id: uid,
-      name: profile?.full_name || user?.email || "Alumni",
-      gender: profile?.gender ?? null,
-      origin: profile?.origin ?? null,
-      education_level: profile?.education_level ?? null,
-      graduation_year: Number(form.graduation_year) || new Date().getFullYear(),
-      graduation_status: form.status,
-      employment_status: form.status,
-      status: form.status,
-      position: working ? form.position || null : null,
-      company: working ? form.company || null : null,
-      job_field: working ? form.job_field || null : null,
-      university: studying ? form.university || null : mine?.university ?? null,
-      major: studying ? form.major || null : mine?.major ?? null,
-      tracer_filled_at: new Date().toISOString(),
-    };
-    const { error } = mine
-      ? await supabase.from("alumni").update(payload).eq("id", mine.id)
-      : await supabase.from("alumni").insert(payload);
+    // Satu pintu di server: menautkan / membuat data alumni tanpa duplikat,
+    // sekaligus menaikkan peran santri -> alumni.
+    const { error } = await supabase.rpc("submit_graduate_status", {
+      _status: form.status,
+      _graduation_year: Number(form.graduation_year) || new Date().getFullYear(),
+      _position: working ? form.position || null : null,
+      _company: working ? form.company || null : null,
+      _job_field: working ? form.job_field || null : null,
+      _university: studying ? form.university || null : null,
+      _major: studying ? form.major || null : null,
+    });
     setSaving(false);
     if (error) return toast.error(error.message);
     toast.success("Status berhasil diperbarui — data admin & alumni ikut ter-update ✨");
     ALUMNI_QUERY_KEYS.forEach((k) => qc.invalidateQueries({ queryKey: [k] }));
+    qc.invalidateQueries({ queryKey: ["me-alumni"] });
+    qc.invalidateQueries({ queryKey: ["me-profile"] });
+    qc.invalidateQueries({ queryKey: ["my-role"] });
+    qc.invalidateQueries({ queryKey: ["user-role"] });
+    await refreshRoles();
   };
+
 
   return (
     <div className="rounded-xl border border-border bg-card p-5 shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
