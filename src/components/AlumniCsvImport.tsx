@@ -85,7 +85,7 @@ const AlumniCsvImport = () => {
           major: obj.major || null,
           university: obj.university || null,
           position: obj.position || null,
-          status: "Bekerja",
+          status: "bekerja",
         };
       }).filter((r) => r.name && !isNaN(r.graduation_year));
 

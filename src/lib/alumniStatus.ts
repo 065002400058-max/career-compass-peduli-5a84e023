@@ -5,14 +5,14 @@
 
 export type AlumniRecord = Record<string, any>;
 
-export const ALUMNI_NOT_FILLED = "Belum Mengisi Tracer";
+export const ALUMNI_NOT_FILLED = "belum mengisi tracer";
 export const ALUMNI_EMPTY = "Belum diisi";
 
 export const ALUMNI_STATUS_ORDER = [
-  "Bekerja",
-  "Wirausaha",
-  "Melanjutkan Studi",
-  "Belum Bekerja",
+  "bekerja",
+  "wirausaha",
+  "melanjutkan studi",
+  "mencari kerja",
   ALUMNI_NOT_FILLED,
 ] as const;
 
@@ -55,11 +55,11 @@ export const alumniStatus = (a: AlumniRecord): AlumniStatus => {
   const study = studyData(a);
 
   if (career) {
-    if (/wirausaha|usaha|bisnis|freelance|entrepreneur/.test(raw)) return "Wirausaha";
-    return "Bekerja";
+    if (/wirausaha|usaha|bisnis|freelance|entrepreneur/.test(raw)) return "wirausaha";
+    return "bekerja";
   }
-  if (study) return "Melanjutkan Studi";
-  if (a?.tracer_filled_at) return "Belum Bekerja";
+  if (study) return "melanjutkan studi";
+  if (a?.tracer_filled_at) return "mencari kerja";
   return ALUMNI_NOT_FILLED;
 };
 
@@ -73,11 +73,11 @@ export const alumniSummary = (rows: AlumniRecord[]) => {
   return {
     total: rows.length,
     counts,
-    bekerja: counts["Bekerja"] + counts["Wirausaha"],
-    kerjaSaja: counts["Bekerja"],
-    wirausaha: counts["Wirausaha"],
-    lanjut: counts["Melanjutkan Studi"],
-    belum: counts["Belum Bekerja"],
+    bekerja: counts["bekerja"] + counts["wirausaha"],
+    kerjaSaja: counts["bekerja"],
+    wirausaha: counts["wirausaha"],
+    lanjut: counts["melanjutkan studi"],
+    belum: counts["mencari kerja"],
     belumMengisi: counts[ALUMNI_NOT_FILLED],
     tracer,
     noTracer: rows.length - tracer,
