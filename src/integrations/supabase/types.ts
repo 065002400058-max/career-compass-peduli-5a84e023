@@ -1501,6 +1501,22 @@ export type Database = {
         }
         Returns: boolean
       }
+      link_or_create_alumni: {
+        Args: { _full_name: string; _md?: Json; _user_id: string }
+        Returns: string
+      }
+      submit_graduate_status: {
+        Args: {
+          _company?: string
+          _graduation_year?: number
+          _job_field?: string
+          _major?: string
+          _position?: string
+          _status: string
+          _university?: string
+        }
+        Returns: string
+      }
     }
     Enums: {
       app_role: "admin" | "alumni" | "mitra" | "santri"
