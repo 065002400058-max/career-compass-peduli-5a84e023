@@ -169,7 +169,7 @@ const SantriCenter = () => {
       const santriIds = new Set((roles ?? []).filter((r: any) => r.role === "santri").map((r: any) => r.user_id));
       const ids = Array.from(santriIds);
       const [profs, psi, cbt, ref] = await Promise.all([
-        ids.length ? supabase.from("profiles").select("*").in("user_id", ids).order("created_at", { ascending: false }) : Promise.resolve({ data: [] } as any),
+        ids.length ? supabase.from("profiles").select("*").in("id", ids).order("created_at", { ascending: false }) : Promise.resolve({ data: [] } as any),
         supabase.from("psikotes_attempts").select("user_id, level, test_id, completed_at"),
         supabase.from("cbt_attempts").select("user_id, percentage, completed_at"),
         supabase.from("counseling_referrals").select("user_id, level, status, created_at"),
