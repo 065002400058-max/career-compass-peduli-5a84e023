@@ -307,17 +307,18 @@ const SantriCenter = () => {
   const uniq = (key: string) => Array.from(new Set(rows.map((r) => val(r[key])).filter(Boolean) as string[])).sort();
 
   const exportRows = filtered.map((r) => ({
-    Nama: show(r.full_name, ""),
-    "Jenis Kelamin": show(r.gender, ""),
-    Angkatan: r.graduation_year ?? "",
-    Asal: show(r.origin, ""),
-    Jenjang: show(r.education_level, ""),
-    "Sekolah/Pesantren": show(r.school_origin, ""),
-    Screening: screeningUsers.has(r.user_id) ? "Sudah" : "Belum",
-    CBT: cbtUsers.has(r.user_id) ? "Sudah" : "Belum",
-    Psikotes: psikotesUsers.has(r.user_id) ? "Sudah" : "Belum",
-    Konseling: refUsers.has(r.user_id) ? "Sudah" : "Belum",
+    full_name: show(r.full_name, ""),
+    gender: show(r.gender, ""),
+    graduation_year: r.graduation_year ?? "",
+    origin: show(r.origin, ""),
+    education_level: show(r.education_level, ""),
+    school_origin: show(r.school_origin, ""),
+    screening_status: screeningUsers.has(r.user_id) ? "Sudah" : "Belum",
+    cbt_status: cbtUsers.has(r.user_id) ? "Sudah" : "Belum",
+    psikotes_status: psikotesUsers.has(r.user_id) ? "Sudah" : "Belum",
+    counseling_status: refUsers.has(r.user_id) ? "Sudah" : "Belum",
   }));
+
 
   const openDetail = (r: any) => { setDetail(r); setEditing(false); setForm({ ...r }); };
 

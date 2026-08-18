@@ -26,6 +26,7 @@ export type Database = {
           education_level: string | null
           employment_status: string | null
           faculty: string | null
+          full_name: string
           further_education: string | null
           gender: string | null
           graduation_status: string | null
@@ -41,6 +42,7 @@ export type Database = {
           position: string | null
           profile_id: string | null
           status: string
+          student_id: string | null
           target_university: string | null
           tracer_filled_at: string | null
           university: string | null
@@ -64,6 +66,7 @@ export type Database = {
           education_level?: string | null
           employment_status?: string | null
           faculty?: string | null
+          full_name: string
           further_education?: string | null
           gender?: string | null
           graduation_status?: string | null
@@ -79,6 +82,7 @@ export type Database = {
           position?: string | null
           profile_id?: string | null
           status?: string
+          student_id?: string | null
           target_university?: string | null
           tracer_filled_at?: string | null
           university?: string | null
@@ -102,6 +106,7 @@ export type Database = {
           education_level?: string | null
           employment_status?: string | null
           faculty?: string | null
+          full_name?: string
           further_education?: string | null
           gender?: string | null
           graduation_status?: string | null
@@ -117,6 +122,7 @@ export type Database = {
           position?: string | null
           profile_id?: string | null
           status?: string
+          student_id?: string | null
           target_university?: string | null
           tracer_filled_at?: string | null
           university?: string | null
@@ -950,34 +956,34 @@ export type Database = {
         Row: {
           created_at: string | null
           id: string
-          is_read: boolean | null
           message: string | null
-          profile_id: string | null
+          read: boolean | null
           title: string
           type: string | null
+          user_id: string | null
         }
         Insert: {
           created_at?: string | null
           id?: string
-          is_read?: boolean | null
           message?: string | null
-          profile_id?: string | null
+          read?: boolean | null
           title: string
           type?: string | null
+          user_id?: string | null
         }
         Update: {
           created_at?: string | null
           id?: string
-          is_read?: boolean | null
           message?: string | null
-          profile_id?: string | null
+          read?: boolean | null
           title?: string
           type?: string | null
+          user_id?: string | null
         }
         Relationships: [
           {
             foreignKeyName: "notifications_profile_id_fkey"
-            columns: ["profile_id"]
+            columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]

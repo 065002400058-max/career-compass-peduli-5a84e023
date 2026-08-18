@@ -13,7 +13,8 @@ const AlumniAddDialog = () => {
   const [loading, setLoading] = useState(false);
   const qc = useQueryClient();
   const [form, setForm] = useState({
-    name: "",
+    full_name: "",
+    student_id: "",
     gender: "Laki-laki",
     graduation_year: new Date().getFullYear().toString(),
     origin: "",
@@ -23,17 +24,22 @@ const AlumniAddDialog = () => {
     position: "",
   });
 
+
   const set = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }));
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.name || !form.graduation_year) {
-      toast.error("Nama dan angkatan wajib diisi");
+    if (!form.full_name || !form.graduation_year) {
+      toast.error("Nama Lengkap dan angkatan wajib diisi");
+
       return;
     }
     setLoading(true);
     const { error } = await supabase.from("alumni").insert({
-      name: form.name,
+      full_name: form.full_name,
+      name: form.full_name, // Sync old column for compatibility
+      student_id: form.student_id || null,
+      nim: form.student_id || null, // Sync old column
       gender: form.gender || null,
       graduation_year: parseInt(form.graduation_year, 10),
       origin: form.origin || null,
@@ -41,10 +47,12 @@ const AlumniAddDialog = () => {
       major: form.major || null,
       university: form.university || null,
       position: form.position || null,
-      status: "bekerja",
-      graduation_status: "bekerja",
-      employment_status: "bekerja",
+      status: "belum_mengisi_tracer",
+      graduation_status: "belum_mengisi_tracer",
+      employment_status: "belum_mengisi_tracer",
     });
+
+
     setLoading(false);
     if (error) {
       toast.error(error.message);
@@ -54,7 +62,7 @@ const AlumniAddDialog = () => {
     qc.invalidateQueries({ queryKey: ["alumni"] });
     qc.invalidateQueries({ queryKey: ["admin-recent-alumni"] });
     qc.invalidateQueries({ queryKey: ["admin-counts"] });
-    setForm({ name: "", gender: "Laki-laki", graduation_year: new Date().getFullYear().toString(), origin: "", education_level: "S1", major: "", university: "", position: "" });
+    setForm({ full_name: "", student_id: "", gender: "Laki-laki", graduation_year: new Date().getFullYear().toString(), origin: "", education_level: "S1", major: "", university: "", position: "" });
     setOpen(false);
   };
 
@@ -71,8 +79,13 @@ const AlumniAddDialog = () => {
         </DialogHeader>
         <form onSubmit={submit} className="space-y-3">
           <div className="space-y-1.5">
-            <Label htmlFor="name">Nama *</Label>
-            <Input id="name" value={form.name} onChange={(e) => set("name", e.target.value)} required />
+            <Label htmlFor="full_name">Nama Lengkap *</Label>
+            <Input id="full_name" value={form.full_name} onChange={(e) => set("full_name", e.target.value)} required />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="student_id">NIM / ID Santri</Label>
+            <Input id="student_id" value={form.student_id} onChange={(e) => set("student_id", e.target.value)} />
+
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
