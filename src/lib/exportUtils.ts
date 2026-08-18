@@ -29,6 +29,15 @@ const HEADER_MAP: Record<string, string> = {
   current_city: "Kota Domisili",
   work_city: "Kota Kerja",
   created_at: "Tanggal Dibuat",
+  school_origin: "Sekolah/Pesantren",
+  university_status: "Dalam/Luar Negeri",
+  graduation_status: "Status Kelulusan",
+  screening_status: "Skrining",
+  cbt_status: "CBT",
+  psikotes_status: "Psikotes",
+  counseling_status: "Konseling",
+  test_title: "Nama Tes",
+
   
   // Jobs
   title: "Judul",
