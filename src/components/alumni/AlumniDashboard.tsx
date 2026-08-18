@@ -143,7 +143,7 @@ const AlumniDashboard = () => {
     queryKey: ["me-profile", uid],
     enabled: !!uid,
     queryFn: async () =>
-      (await supabase.from("profiles").select("*").eq("user_id", uid!).maybeSingle()).data,
+      (await supabase.from("profiles").select("*").eq("id", uid!).maybeSingle()).data,
   });
 
   const { data: myAlumni } = useQuery({

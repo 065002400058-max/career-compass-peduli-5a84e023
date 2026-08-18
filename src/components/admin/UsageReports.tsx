@@ -23,12 +23,18 @@ function useReport(kind: "cbt" | "psikotes") {
       if (rows.length === 0) return [];
       const userIds = [...new Set(rows.map((r: any) => r.user_id))];
       const testIds = [...new Set(rows.map((r: any) => r.test_id))];
-      const [{ data: profs }, { data: tests }, { data: roles }] = await Promise.all([
-        supabase.from("profiles").select("user_id, full_name, phone, email, education_level, school_origin, university, major").in("user_id", userIds),
+      
+      const [profsRes, testsRes, rolesRes] = await Promise.all([
+        supabase.from("profiles").select("id, full_name, phone, email, education_level, school_origin, university, major").in("id", userIds),
         supabase.from(kind === "cbt" ? "cbt_tests" : "psikotes_tests").select("id, title").in("id", testIds),
         supabase.from("user_roles").select("user_id, role").in("user_id", userIds),
       ]);
-      const pMap = new Map((profs ?? []).map((p: any) => [p.user_id, p]));
+
+      const profs = profsRes.data;
+      const tests = testsRes.data;
+      const roles = rolesRes.data;
+
+      const pMap = new Map((profs ?? []).map((p: any) => [p.id, p]));
       const tMap = new Map((tests ?? []).map((t: any) => [t.id, t.title]));
       const rMap = new Map((roles ?? []).map((r: any) => [r.user_id, r.role]));
       return rows.map((r: any) => {
