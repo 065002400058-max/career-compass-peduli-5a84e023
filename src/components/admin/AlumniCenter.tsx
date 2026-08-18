@@ -212,7 +212,15 @@ const AlumniCenter = () => {
   const summary = useMemo(() => alumniSummary(rows), [rows]);
 
   const stats = useMemo(
-    () => ({ total: summary.total, tracer: summary.tracer, noTracer: summary.noTracer, bekerja: summary.bekerja }),
+    () => ({ 
+      total: summary.total, 
+      tracer: summary.tracer, 
+      noTracer: summary.noTracer, 
+      bekerja: summary.bekerja,
+      wirausaha: summary.counts['wirausaha'] || 0,
+      melanjutkan: summary.counts['melanjutkan_studi'] || 0
+    }),
+
     [summary],
   );
 
