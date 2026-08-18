@@ -422,7 +422,7 @@ const AlumniCenter = () => {
             <StatCard label="Alumni Melanjutkan" value={stats.melanjutkan} note={`${pct(stats.melanjutkan)}% dari total alumni`} noteClass="text-primary" icon={GraduationCap} />
             <StatCard label="Alumni Belum Bekerja" value={dash.belum} note={`${pct(dash.belum)}% dari total alumni`} icon={Users} />
             <StatCard label="Belum Mengisi Tracer" value={stats.noTracer} note={`${pct(stats.noTracer)}% belum melapor`} icon={Target} />
-            <StatCard label="Tingkat Respon Tracer Study" value={`${tracerPct}%`} note={`${stats.tracer} dari ${stats.total} alumni`} noteClass="text-primary" icon={Target} />
+            <StatCard label="Tingkat Respon Tracer Study" value={`${tracerPct}%`} note={`${stats.tracer} dari ${stats.total} alumni`} noteClass="text-primary" icon={ClipboardCheck} />
 
 
 
