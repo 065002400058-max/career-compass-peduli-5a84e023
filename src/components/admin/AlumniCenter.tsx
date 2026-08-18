@@ -288,7 +288,7 @@ const AlumniCenter = () => {
       if (fJenjang !== "all" && val(a.education_level) !== fJenjang) return false;
       if (fUniversitas !== "all" && val(a.university) !== fUniversitas) return false;
       if (fUniStatus !== "all" && uniStatus(a) !== fUniStatus) return false;
-      if (fKerja !== "all" && workStatus(a) !== fKerja) return false;
+      if (fKerja !== "all" && alumniStatus(a) !== fKerja) return false;
       if (!q) return true;
       return [a.full_name, a.name, a.graduation_year, a.origin, a.major, a.university, a.status, a.position, a.company, a.job_field, a.education_level]
         .some((v: any) => String(v ?? "").toLowerCase().includes(q));
