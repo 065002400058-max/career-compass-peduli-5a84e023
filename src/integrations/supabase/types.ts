@@ -1048,7 +1048,6 @@ export type Database = {
           school_origin: string | null
           university: string | null
           updated_at: string
-          user_id: string
         }
         Insert: {
           address?: string | null
@@ -1071,7 +1070,6 @@ export type Database = {
           school_origin?: string | null
           university?: string | null
           updated_at?: string
-          user_id: string
         }
         Update: {
           address?: string | null
@@ -1094,7 +1092,6 @@ export type Database = {
           school_origin?: string | null
           university?: string | null
           updated_at?: string
-          user_id?: string
         }
         Relationships: []
       }
