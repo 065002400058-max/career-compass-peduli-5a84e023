@@ -273,12 +273,11 @@ const AlumniCenter = () => {
       status: statusBreakdown.filter((d) => d.value > 0),
       jobField: topN("job_field"),
       workCity: topN("work_city"),
-      companyType: topN("company_type", 4),
-
       campus: topN("university"),
       companyType: topN("company_type", 4),
       angkatan: Array.from(years, ([name, value]) => ({ name, value })).sort((a, b) => a.name.localeCompare(b.name)),
     };
+
   }, [rows, summary, statusBreakdown]);
 
 
