@@ -807,7 +807,7 @@ const AlumniCenter = () => {
                     <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Pekerjaan</h4>
                     <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
                       {[
-                        ["Status Pekerjaan", workStatus(detail).charAt(0).toUpperCase() + workStatus(detail).slice(1)],
+                        ["Status Pekerjaan", getStatusLabel(alumniStatus(detail))],
                         ["Bidang Pekerjaan", show(detail.job_field)],
                         ["Perusahaan / Instansi", show(detail.company)],
                         ["Jabatan", show(detail.position)],
