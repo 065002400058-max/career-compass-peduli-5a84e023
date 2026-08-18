@@ -461,7 +461,7 @@ const AlumniCenter = () => {
                 )}
               </div>
             </CardBox>
-            <DonutCard title="Jenis Perusahaan / Instansi" subtitle="Tempat kerja alumni berdasarkan jenis instansi" data={dash.companyType} />
+            <HBarCard title="Jenis Perusahaan / Instansi" subtitle="Tempat kerja alumni berdasarkan jenis instansi" data={dash.companyType} />
           </div>
 
           {/* Bottom grid */}
