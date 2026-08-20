@@ -28,20 +28,22 @@ const Index = () => {
   const { data: counts } = useQuery({
     queryKey: ["home-stats"],
     queryFn: async () => {
-      const [alumni, jobs, partners, scholarships] = await Promise.all([
-        supabase.from("alumni").select("id", { count: "exact", head: true }),
+      // Agregat aman (tanpa data pribadi) agar tetap tampil untuk pengunjung
+      const { data: stats } = await supabase.rpc("public_stats");
+      const [jobs, scholarships] = await Promise.all([
         supabase.from("jobs").select("id", { count: "exact", head: true }).eq("status", "approved"),
-        supabase.from("partners").select("id", { count: "exact", head: true }),
         supabase.from("scholarships").select("id", { count: "exact", head: true }).eq("is_active", true),
       ]);
+      const s = (stats ?? {}) as Record<string, number>;
       return {
-        alumni: alumni.count ?? 0,
-        jobs: jobs.count ?? 0,
-        partners: partners.count ?? 0,
+        alumni: s.alumni ?? 0,
+        jobs: jobs.count ?? s.jobs ?? 0,
+        partners: s.partners ?? 0,
         scholarships: scholarships.count ?? 0,
       };
     },
   });
+
 
 
 
