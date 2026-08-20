@@ -127,13 +127,7 @@ const AlumniDashboard = () => {
   const { data: rows = [], dataUpdatedAt } = useQuery({
     queryKey: ["alumni-dashboard-agg"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("alumni")
-        .select(
-          "id,name,graduation_year,origin,status,graduation_status,employment_status,position,company,job_field,university,university_status,faculty,work_city,work_province,further_education,target_university,tracer_filled_at,updated_at",
-        )
-        .order("updated_at", { ascending: false })
-        .limit(5000);
+      const { data, error } = await supabase.rpc("alumni_directory");
       if (error) throw error;
       return data ?? [];
     },
