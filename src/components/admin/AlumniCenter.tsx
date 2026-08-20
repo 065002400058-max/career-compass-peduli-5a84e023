@@ -142,6 +142,7 @@ const FIELDS: { key: string; label: string; type?: string }[] = [
   { key: "full_name", label: "Nama Lengkap" },
   { key: "student_id", label: "NIM/ID Santri" },
   { key: "gender", label: "Jenis Kelamin" },
+  { key: "phone", label: "Nomor Handphone (WhatsApp)" },
   { key: "graduation_year", label: "Angkatan", type: "number" },
   { key: "origin", label: "Asal" },
   { key: "education_level", label: "Jenjang Pendidikan" },
