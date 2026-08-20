@@ -1,9 +1,11 @@
-import { User, UserRound } from "lucide-react";
 import { cn } from "@/lib/utils";
+import maleAvatar from "@/assets/avatar-male.png";
+import femaleAvatar from "@/assets/avatar-female.png";
 
 type Props = {
   gender?: string | null;
   className?: string;
+  /** Dipertahankan untuk kompatibilitas pemanggilan lama. */
   iconClassName?: string;
 };
 
@@ -12,22 +14,25 @@ const isFemale = (g?: string | null) => {
   return v.startsWith("p") || v.startsWith("f") || v === "wanita" || v === "female";
 };
 
-/** Ikon profil orang berdasarkan jenis kelamin (laki-laki / perempuan). */
-const GenderAvatar = ({ gender, className, iconClassName }: Props) => {
+/** Foto profil (ilustrasi) berdasarkan jenis kelamin: laki-laki / perempuan. */
+const GenderAvatar = ({ gender, className }: Props) => {
   const female = isFemale(gender);
-  const Icon = female ? UserRound : User;
   return (
     <div
-      aria-label={female ? "Foto profil perempuan" : "Foto profil laki-laki"}
       className={cn(
-        "rounded-full flex items-center justify-center shrink-0 border",
-        female
-          ? "bg-pink-500/10 text-pink-600 border-pink-500/20"
-          : "bg-primary/10 text-primary border-primary/20",
+        "rounded-full overflow-hidden shrink-0 border bg-muted",
+        female ? "border-pink-500/30" : "border-primary/30",
         className ?? "h-10 w-10",
       )}
     >
-      <Icon className={cn(iconClassName ?? "h-5 w-5")} strokeWidth={2.2} />
+      <img
+        src={female ? femaleAvatar : maleAvatar}
+        alt={female ? "Foto profil alumni perempuan" : "Foto profil alumni laki-laki"}
+        loading="lazy"
+        width={512}
+        height={512}
+        className="h-full w-full object-cover"
+      />
     </div>
   );
 };
