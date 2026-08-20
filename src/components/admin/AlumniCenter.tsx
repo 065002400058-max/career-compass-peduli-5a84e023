@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import AlumniCsvImport from "@/components/AlumniCsvImport";
 import AlumniAddDialog from "@/components/AlumniAddDialog";
+import GenderAvatar from "@/components/shared/GenderAvatar";
 import { exportToExcel, exportToPDF } from "@/lib/exportUtils";
 import { toast } from "sonner";
 import {
