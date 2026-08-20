@@ -25,22 +25,9 @@ import JobsManager from "@/components/admin/JobsManager";
 import PartnersManager from "@/components/admin/PartnersManager";
 import EventsManager from "@/components/admin/EventsManager";
 import AiHistoryViewer from "@/components/admin/AiHistoryViewer";
+import CounselingManager from "@/components/admin/CounselingManager";
+import AdminSettings from "@/components/admin/AdminSettings";
 
-
-import duLogo from "@/assets/du-logo-t.png.asset.json";
-import yayasanLogo from "@/assets/yayasan-logo-t.png.asset.json";
-import trisaktiLogo from "@/assets/trisakti-logo-t.png.asset.json";
-import diktiLogo from "@/assets/dikti-logo-t.png.asset.json";
-import tutwuriLogo from "@/assets/tutwuri-logo-t.png.asset.json";
-import { assetUrl } from "@/lib/assetUrl";
-
-const HEADER_LOGOS = [
-  { src: assetUrl(duLogo.url), alt: "Pesantren Daarul 'Uluum Lido" },
-  { src: assetUrl(yayasanLogo.url), alt: "Yayasan Salsabila Lido" },
-  { src: assetUrl(trisaktiLogo.url), alt: "Universitas Trisakti" },
-  { src: assetUrl(diktiLogo.url), alt: "Diktisaintek Berdampak" },
-  { src: assetUrl(tutwuriLogo.url), alt: "Tut Wuri Handayani" },
-];
 
 const MAIN_NAV: AdminNavItem[] = [
   { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -127,11 +114,9 @@ const Admin = () => {
 
   const ALIAS: Record<string, string> = {
     tools: "jobs",
-    counseling: "referrals",
     unidentified: "alumni",
-    
-    settings: "reports",
   };
+
 
   const select = (key: string) => {
     const target = ALIAS[key] ?? key;
@@ -146,7 +131,12 @@ const Admin = () => {
     qc.invalidateQueries({ queryKey: ["admin-pending-jobs"] });
   };
 
-  const activeItem = [...MAIN_NAV, ...TOOL_NAV].find((i) => i.key === view);
+  const EXTRA_NAV: AdminNavItem[] = [
+    { key: "counseling", label: "Konseling", icon: HeartPulse },
+    { key: "settings", label: "Pengaturan", icon: MoreHorizontal },
+  ];
+  const activeItem = [...MAIN_NAV, ...TOOL_NAV, ...EXTRA_NAV].find((i) => i.key === view);
+
 
   const Dashboard = () => (
     <div className="pt-8 md:pt-10 pb-6">
@@ -221,6 +211,9 @@ const Admin = () => {
       case "reports": return <UsageReports />;
       case "invitations": return <InvitationsManager />;
       case "ai-history": return <AiHistoryViewer />;
+      case "counseling": return <CounselingManager />;
+      case "settings": return <AdminSettings onNavigate={select} />;
+
 
       default: return null;
     }
@@ -292,11 +285,10 @@ const Admin = () => {
             <Menu className="h-5 w-5" />
           </button>
 
-          <div className="hidden xl:flex items-center gap-4 mx-auto">
-            {HEADER_LOGOS.map((l) => (
-              <img key={l.alt} src={l.src} alt={l.alt} className="h-7 w-auto object-contain" loading="lazy" />
-            ))}
-          </div>
+          <span className="font-heading text-[14px] md:text-[15px] font-semibold text-foreground truncate">
+            Career Center <span className="text-primary">PEDULI</span>
+          </span>
+
 
           <select
             value={year}

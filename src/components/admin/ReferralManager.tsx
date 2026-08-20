@@ -14,6 +14,7 @@ const ReferralManager = () => {
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("semua");
+  const [levelFilter, setLevelFilter] = useState("semua");
   const [editing, setEditing] = useState<any>(null);
   const [form, setForm] = useState<any>({ level: "Ringan", status: "pending", reason: "", notes: "" });
   const [busy, setBusy] = useState(false);
@@ -82,12 +83,17 @@ const ReferralManager = () => {
     const matchSearch =
       (r.user_name ?? "").toLowerCase().includes(s) || (r.reason ?? "").toLowerCase().includes(s);
     const matchStatus = statusFilter === "semua" || r.status === statusFilter;
-    return matchSearch && matchStatus;
+    const matchLevel = levelFilter === "semua" || (r.level ?? "").toLowerCase() === levelFilter;
+    return matchSearch && matchStatus && matchLevel;
   });
+
+  const perluProses = data.filter(
+    (r: any) => (r.level ?? "").toLowerCase() === "tinggi" && r.status === "pending",
+  ).length;
 
   return (
     <div>
-      <div className="flex flex-col sm:flex-row gap-2 mb-3">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-3">
         <Input placeholder="Cari nama / alasan..." value={search} onChange={(e) => setSearch(e.target.value)} className="sm:max-w-xs" />
         <select
           className="h-10 rounded-md border border-input bg-background px-3 text-sm"
@@ -96,7 +102,19 @@ const ReferralManager = () => {
         >
           {["semua", "pending", "diproses", "selesai"].map((s) => <option key={s} value={s}>{s}</option>)}
         </select>
+        <select
+          className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+          value={levelFilter}
+          onChange={(e) => setLevelFilter(e.target.value)}
+          aria-label="Filter level"
+        >
+          {["semua", "tinggi", "sedang", "ringan"].map((s) => <option key={s} value={s}>Level: {s}</option>)}
+        </select>
+        <Badge variant={perluProses > 0 ? "destructive" : "secondary"} className="sm:ml-auto">
+          {perluProses} level tinggi perlu diproses
+        </Badge>
       </div>
+
 
       <div className="glass-card rounded-xl divide-y divide-border">
         {isLoading ? (
@@ -121,12 +139,23 @@ const ReferralManager = () => {
                 <p className="text-[10px] text-muted-foreground mt-1">{new Date(r.created_at).toLocaleString("id-ID")}</p>
               </div>
               <div className="flex flex-wrap gap-2 shrink-0">
-                {r.status === "pending" && (
-                  <Button size="sm" onClick={() => setStatus(r.id, "diproses")}><Clock className="h-3.5 w-3.5 mr-1" />Proses</Button>
+                {(r.level ?? "").toLowerCase() === "tinggi" ? (
+                  <>
+                    {r.status === "pending" && (
+                      <Button size="sm" onClick={() => setStatus(r.id, "diproses")}><Clock className="h-3.5 w-3.5 mr-1" />Proses</Button>
+                    )}
+                    {r.status !== "selesai" && (
+                      <Button size="sm" variant="outline" onClick={() => setStatus(r.id, "selesai")}><CheckCircle className="h-3.5 w-3.5 mr-1" />Selesai</Button>
+                    )}
+                  </>
+                ) : (
+                  r.status !== "selesai" && (
+                    <Button size="sm" variant="outline" onClick={() => setStatus(r.id, "selesai")}>
+                      <CheckCircle className="h-3.5 w-3.5 mr-1" />Cukup Dipantau
+                    </Button>
+                  )
                 )}
-                {r.status !== "selesai" && (
-                  <Button size="sm" variant="outline" onClick={() => setStatus(r.id, "selesai")}><CheckCircle className="h-3.5 w-3.5 mr-1" />Selesai</Button>
-                )}
+
                 <Button size="icon" variant="ghost" onClick={() => setEditing(r)}><Pencil className="h-4 w-4" /></Button>
                 <Button size="icon" variant="ghost" className="text-destructive" onClick={() => del(r)}><Trash2 className="h-4 w-4" /></Button>
               </div>

@@ -86,35 +86,36 @@ const Ring = ({ pct, size = 78, stroke = 8, color = "#16A34A", label, sub }: any
 const ServiceCard = ({ title, icon: Icon, done, total, footer, color = "#16A34A" }: any) => {
   const pct = total ? (done / total) * 100 : 0;
   return (
-    <div className="rounded-xl border border-border bg-card p-4 shadow-[0_1px_2px_rgba(0,0,0,0.03)] flex flex-col h-full">
-      <div className="flex items-center gap-2 mb-3">
-        <span className="h-7 w-7 rounded-[8px] bg-accent/70 flex items-center justify-center">
+    <div className="rounded-xl border border-border bg-card p-4 shadow-[0_1px_2px_rgba(0,0,0,0.03)] flex flex-col h-full min-w-0 overflow-hidden">
+      <div className="flex items-center gap-2 mb-3 min-w-0">
+        <span className="h-7 w-7 rounded-[8px] bg-accent/70 flex items-center justify-center shrink-0">
           <Icon className="h-[15px] w-[15px] text-primary" strokeWidth={1.8} />
         </span>
-        <h3 className="font-heading text-[13px] font-semibold text-foreground">{title}</h3>
+        <h3 className="font-heading text-[13px] font-semibold text-foreground truncate">{title}</h3>
       </div>
-      <div className="flex items-center gap-3 flex-1">
-        <Ring pct={pct} label={`${pctS(done, total)}%`} color={color} />
+      <div className="flex items-center gap-3 flex-1 min-w-0">
+        <Ring pct={pct} size={64} stroke={7} label={`${pctS(done, total)}%`} color={color} />
         <ul className="space-y-1.5 text-[11px] min-w-0 flex-1">
-          <li className="flex items-center gap-1.5">
+          <li className="flex items-center gap-1.5 min-w-0">
             <span className="h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
-            <span className="text-muted-foreground">Sudah</span>
+            <span className="text-muted-foreground truncate">Sudah</span>
             <span className="ml-auto font-semibold text-foreground tabular-nums">{done}</span>
           </li>
-          <li className="flex items-center gap-1.5">
+          <li className="flex items-center gap-1.5 min-w-0">
             <span className="h-1.5 w-1.5 rounded-full bg-red-500 shrink-0" />
-            <span className="text-muted-foreground">Belum</span>
+            <span className="text-muted-foreground truncate">Belum</span>
             <span className="ml-auto font-semibold text-foreground tabular-nums">{Math.max(total - done, 0)}</span>
           </li>
         </ul>
       </div>
-      <div className="flex items-center justify-between gap-2 pt-3 mt-3 border-t border-border text-[10.5px] text-muted-foreground">
-        <span>Total {total} santri</span>
-        <span className="text-right">{footer}</span>
+      <div className="pt-3 mt-3 border-t border-border text-[10.5px] text-muted-foreground leading-snug">
+        <p className="truncate">Total {total} santri</p>
+        <p className="truncate">{footer}</p>
       </div>
     </div>
   );
 };
+
 
 const YesNo = ({ ok }: { ok: boolean }) => (
   <Badge variant={ok ? "default" : "outline"} className="rounded-sm text-[10px] font-medium">{ok ? "Sudah" : "Belum"}</Badge>
