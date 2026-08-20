@@ -19,6 +19,7 @@ const empty = {
   description: "",
   organizer: "",
   capacity: "",
+  image_url: "",
 };
 
 const toLocalInput = (iso: string) => {
@@ -73,6 +74,7 @@ const EventsManager = () => {
       description: form.description?.trim() || null,
       organizer: form.organizer?.trim() || null,
       capacity: form.capacity ? Number(form.capacity) : null,
+      image_url: form.image_url?.trim() || null,
     };
     const { error } = editing
       ? await supabase.from("events").update(payload).eq("id", editing.id)
@@ -163,6 +165,7 @@ const EventsManager = () => {
               <div><Label>Kapasitas</Label><Input type="number" min={1} value={form.capacity ?? ""} onChange={(e) => setForm({ ...form, capacity: e.target.value })} /></div>
             </div>
             <div><Label>Deskripsi</Label><Textarea rows={3} value={form.description ?? ""} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
+            <div><Label>URL Gambar (opsional)</Label><Input type="url" placeholder="https://..." value={form.image_url ?? ""} onChange={(e) => setForm({ ...form, image_url: e.target.value })} /></div>
             <Button type="submit" className="w-full" disabled={busy}>{busy ? "Menyimpan..." : "Simpan"}</Button>
           </form>
         </DialogContent>

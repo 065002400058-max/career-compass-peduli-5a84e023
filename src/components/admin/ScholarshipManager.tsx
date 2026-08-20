@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Plus, Trash2, Award, Pencil } from "lucide-react";
 import { toast } from "sonner";
 
-const empty = { name: "", provider: "", type: "S1", country: "Indonesia", amount: "", deadline: "", description: "", requirements: "", url: "" };
+const empty = { name: "", provider: "", type: "S1", country: "Indonesia", amount: "", deadline: "", description: "", requirements: "", url: "", image_url: "" };
 
 const ScholarshipManager = () => {
   const qc = useQueryClient();
@@ -53,6 +53,7 @@ const ScholarshipManager = () => {
       description: form.description || null,
       requirements: form.requirements || null,
       url: form.url || null,
+      image_url: form.image_url?.trim() || null,
     };
     const { error } = editing
       ? await supabase.from("scholarships").update(payload).eq("id", editing.id)
@@ -120,6 +121,7 @@ const ScholarshipManager = () => {
             </div>
             <div><Label>Deskripsi</Label><Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
             <div><Label>Persyaratan</Label><Textarea value={form.requirements} onChange={(e) => setForm({ ...form, requirements: e.target.value })} /></div>
+            <div><Label>URL Gambar (opsional)</Label><Input type="url" placeholder="https://..." value={form.image_url ?? ""} onChange={(e) => setForm({ ...form, image_url: e.target.value })} /></div>
             <Button type="submit" className="w-full" disabled={busy}>{busy ? "Menyimpan..." : "Simpan"}</Button>
           </form>
         </DialogContent>

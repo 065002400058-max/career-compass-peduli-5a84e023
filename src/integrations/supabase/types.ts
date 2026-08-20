@@ -877,6 +877,7 @@ export type Database = {
           date: string
           description: string | null
           id: string
+          image_url: string | null
           location: string
           organizer: string | null
           title: string
@@ -889,6 +890,7 @@ export type Database = {
           date: string
           description?: string | null
           id?: string
+          image_url?: string | null
           location?: string
           organizer?: string | null
           title: string
@@ -901,6 +903,7 @@ export type Database = {
           date?: string
           description?: string | null
           id?: string
+          image_url?: string | null
           location?: string
           organizer?: string | null
           title?: string
@@ -1563,6 +1566,7 @@ export type Database = {
           deadline: string | null
           description: string | null
           id: string
+          image_url: string | null
           is_active: boolean
           name: string
           provider: string
@@ -1578,6 +1582,7 @@ export type Database = {
           deadline?: string | null
           description?: string | null
           id?: string
+          image_url?: string | null
           is_active?: boolean
           name: string
           provider: string
@@ -1593,6 +1598,7 @@ export type Database = {
           deadline?: string | null
           description?: string | null
           id?: string
+          image_url?: string | null
           is_active?: boolean
           name?: string
           provider?: string
