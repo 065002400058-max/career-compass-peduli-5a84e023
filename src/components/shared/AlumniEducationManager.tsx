@@ -191,13 +191,13 @@ const AlumniEducationManager = ({ alumniId, canEdit = true, title = "Riwayat Pen
           </div>
           <div className="space-y-1.5 sm:col-span-2">
             <Label className="text-xs">Nama Perguruan Tinggi</Label>
-            <Input className="rounded-xl h-9 bg-card" value={form.university_name}
+            <Input className="rounded-xl h-9 bg-card" aria-label="Nama Perguruan Tinggi" value={form.university_name}
               onChange={(e) => setForm((p) => ({ ...p, university_name: e.target.value }))}
               placeholder="Contoh: UIN Syarif Hidayatullah Jakarta" />
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs">Program Studi</Label>
-            <Input className="rounded-xl h-9 bg-card" value={form.major}
+            <Input className="rounded-xl h-9 bg-card" aria-label="Program Studi" value={form.major}
               onChange={(e) => setForm((p) => ({ ...p, major: e.target.value }))} />
           </div>
           <div className="space-y-1.5">
@@ -211,22 +211,22 @@ const AlumniEducationManager = ({ alumniId, canEdit = true, title = "Riwayat Pen
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs">Kota Kampus</Label>
-            <Input className="rounded-xl h-9 bg-card" value={form.city}
+            <Input className="rounded-xl h-9 bg-card" aria-label="Kota Kampus" value={form.city}
               onChange={(e) => setForm((p) => ({ ...p, city: e.target.value }))} />
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs">Provinsi / Negara</Label>
-            <Input className="rounded-xl h-9 bg-card" value={form.province}
+            <Input className="rounded-xl h-9 bg-card" aria-label="Provinsi atau Negara" value={form.province}
               onChange={(e) => setForm((p) => ({ ...p, province: e.target.value }))} />
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs">Tahun Masuk</Label>
-            <Input type="number" className="rounded-xl h-9 bg-card" value={form.start_year}
+            <Input type="number" className="rounded-xl h-9 bg-card" aria-label="Tahun Masuk" value={form.start_year}
               onChange={(e) => setForm((p) => ({ ...p, start_year: e.target.value }))} />
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs">Tahun Lulus</Label>
-            <Input type="number" className="rounded-xl h-9 bg-card" value={form.end_year}
+            <Input type="number" className="rounded-xl h-9 bg-card" aria-label="Tahun Lulus" value={form.end_year}
               onChange={(e) => setForm((p) => ({ ...p, end_year: e.target.value }))} />
           </div>
           <div className="sm:col-span-2 flex gap-2">
