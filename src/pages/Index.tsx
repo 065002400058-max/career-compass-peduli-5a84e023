@@ -53,7 +53,7 @@ const Index = () => {
         cta: (
           <div className="flex flex-wrap gap-3 mt-8 animate-fade-up-delay-2">
             <Button size="lg" asChild className="gradient-bg border-0 hover:opacity-90">
-              <Link to="/auth">Daftar Sekarang <ArrowRight className="ml-2 h-4 w-4" /></Link>
+              <Link to="/auth">Masuk ke Akun <ArrowRight className="ml-2 h-4 w-4" /></Link>
             </Button>
             <Button variant="outline" size="lg" asChild className="border-primary/50 hover:bg-accent">
               <Link to="/jobs">Lihat Lowongan</Link>
@@ -306,7 +306,7 @@ const Index = () => {
                 </p>
                 <div className="flex flex-wrap gap-3 justify-center mt-8">
                   <Button size="lg" variant="secondary" asChild>
-                    <Link to="/auth">Daftar Sekarang</Link>
+                    <Link to="/auth">Masuk ke Akun</Link>
                   </Button>
                   <Button size="lg" variant="outline" className="bg-transparent border-primary-foreground/40 text-primary-foreground hover:bg-primary-foreground/15 hover:text-primary-foreground" asChild>
                     <Link to="/jobs">Lihat Lowongan</Link>
