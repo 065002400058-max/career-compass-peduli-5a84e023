@@ -197,6 +197,11 @@ const AlumniCenter = () => {
   const [fUniversitas, setFUniversitas] = useState("all");
   const [fUniStatus, setFUniStatus] = useState("all");
   const [fKerja, setFKerja] = useState("all");
+  const [fEduLevel, setFEduLevel] = useState("all");
+  const [fEduType, setFEduType] = useState("all");
+  const [fEduKampus, setFEduKampus] = useState("all");
+  const [fEduProdi, setFEduProdi] = useState("all");
+  const [fEduLulus, setFEduLulus] = useState("all");
   const [onlyNoTracer, setOnlyNoTracer] = useState(false);
   const [detail, setDetail] = useState<AlumniRow | null>(null);
   const [editing, setEditing] = useState(false);
@@ -207,6 +212,40 @@ const AlumniCenter = () => {
     queryFn: async () =>
       (await supabase.from("alumni").select("*").order("graduation_year", { ascending: false })).data ?? [],
   });
+
+  const { data: eduRows = [] } = useQuery({
+    queryKey: ["admin-alumni-education"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("alumni_education").select("*");
+      if (error) throw error;
+      return (data ?? []) as AlumniRow[];
+    },
+  });
+
+  const eduByAlumni = useMemo(() => {
+    const m = new Map<string, AlumniRow[]>();
+    eduRows.forEach((e) => {
+      if (!e.alumni_id) return;
+      m.set(e.alumni_id, [...(m.get(e.alumni_id) ?? []), e]);
+    });
+    return m;
+  }, [eduRows]);
+
+  const eduFilterActive = [fEduLevel, fEduType, fEduKampus, fEduProdi, fEduLulus].some((v) => v !== "all");
+
+  const matchEdu = (a: AlumniRow) => {
+    if (!eduFilterActive) return true;
+    const list = eduByAlumni.get(a.id) ?? [];
+    return list.some((e) => {
+      const lvl = String(e.level ?? e.degree ?? "").toLowerCase();
+      if (fEduLevel !== "all" && lvl !== fEduLevel) return false;
+      if (fEduType !== "all" && String(e.university_type ?? "").toLowerCase() !== fEduType) return false;
+      if (fEduKampus !== "all" && (e.university_name ?? "") !== fEduKampus) return false;
+      if (fEduProdi !== "all" && (e.major ?? "") !== fEduProdi) return false;
+      if (fEduLulus !== "all" && String(e.end_year ?? "") !== fEduLulus) return false;
+      return true;
+    });
+  };
 
   const rows: AlumniRow[] = alumni ?? [];
 
