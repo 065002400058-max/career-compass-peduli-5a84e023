@@ -103,14 +103,22 @@ const AlumniCsvImport = () => {
       const records = rows.slice(1).map((r) => {
         const obj: any = {};
         headers.forEach((h, i) => { obj[h] = r[i]?.trim() ?? ""; });
-        const year = parseInt(obj.graduation_year, 10);
+        let year = parseInt(obj.graduation_year, 10);
+        if (!isNaN(year) && year < 100) year = 2000 + year; // "26" -> 2026
+        const g = (obj.gender || "").trim().toLowerCase();
+        const gender = ["l", "lk", "laki", "laki-laki", "pria", "male", "m"].includes(g)
+          ? "Laki-laki"
+          : ["p", "pr", "perempuan", "wanita", "female", "f"].includes(g)
+            ? "Perempuan"
+            : obj.gender || null;
         return {
           full_name: obj.full_name,
           name: obj.full_name, // Sync old column
           student_id: obj.student_id || null,
           nim: obj.student_id || null, // Sync old column
-          gender: obj.gender || null,
+          gender,
           graduation_year: year,
+
           origin: obj.origin || null,
           education_level: obj.education_level || null,
           major: obj.major || null,
