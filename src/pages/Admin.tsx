@@ -206,6 +206,9 @@ const Admin = () => {
       case "reports": return <UsageReports />;
       case "invitations": return <InvitationsManager />;
       case "ai-history": return <AiHistoryViewer />;
+      case "counseling": return <CounselingManager />;
+      case "settings": return <AdminSettings onNavigate={select} />;
+
 
       default: return null;
     }
