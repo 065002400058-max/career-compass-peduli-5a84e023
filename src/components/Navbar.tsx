@@ -152,28 +152,65 @@ const Navbar = () => {
 
   return (
     <header className="sticky top-0 z-50">
-      {/* ---------- Row 1: Branding ---------- */}
-      <div className="bg-background/95 backdrop-blur-xl">
-        {/* Desktop / tablet */}
-        <div className="hidden md:grid container mx-auto grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 lg:gap-4 px-4 py-3 overflow-hidden">
-          <div className="flex items-center min-w-0">
-            {!loading && user && (
-              <Link to="/profil" className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted min-w-0 hover:bg-accent transition-colors">
-                <User className="h-4 w-4 text-muted-foreground shrink-0" />
-                <span className="text-xs lg:text-sm text-foreground/80 truncate max-w-[100px] lg:max-w-[160px]">
-                  {user.user_metadata?.full_name || user.email}
-                </span>
-                <Badge className="text-[10px] px-2 py-0 shrink-0">{roleLabel}</Badge>
+      {/* ---------- Desktop / tablet header ---------- */}
+      <div className="hidden md:block bg-background/95 backdrop-blur-xl border-b border-border/60">
+        <div className="container mx-auto px-4 h-[72px] flex items-center justify-between gap-4">
+          {/* Brand */}
+          <Link to="/" className="shrink-0">
+            <span className="font-heading font-bold text-xl text-foreground">
+              Career Center <span className="text-primary">PEDULI</span>
+            </span>
+          </Link>
+
+          {/* Navigation */}
+          <nav className="flex items-center justify-center gap-1 lg:gap-6">
+            <Link to="/" className={navItemCls(location.pathname === "/")}>
+              Beranda
+              {location.pathname === "/" && (
+                <span className="absolute left-3 right-3 -bottom-px h-0.5 rounded-full bg-primary" />
+              )}
+            </Link>
+            {groups.map((g) => {
+              const active = g.items.some(
+                (i) => location.pathname === i.path.split("#")[0]
+              );
+              return (
+                <DropdownMenu key={g.label}>
+                  <DropdownMenuTrigger className={`${navItemCls(active)} flex items-center gap-1`}>
+                    {g.label}
+                    <ChevronDown className="h-3.5 w-3.5" />
+                    {active && (
+                      <span className="absolute left-3 right-3 -bottom-px h-0.5 rounded-full bg-primary" />
+                    )}
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="center" className="bg-popover z-50">
+                    {g.items.map((i) => (
+                      <DropdownMenuItem key={i.path} asChild>
+                        <Link to={i.path} className="cursor-pointer w-full">
+                          {i.label}
+                        </Link>
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              );
+            })}
+            {extraLinks.map((i) => (
+              <Link
+                key={i.path}
+                to={i.path}
+                className={navItemCls(location.pathname === i.path)}
+              >
+                {i.label}
+                {location.pathname === i.path && (
+                  <span className="absolute left-3 right-3 -bottom-px h-0.5 rounded-full bg-primary" />
+                )}
               </Link>
-            )}
-          </div>
+            ))}
+          </nav>
 
-          <div aria-hidden className="min-w-0" />
-
-
-
-
-          <div className="flex items-center justify-end gap-2">
+          {/* Auth */}
+          <div className="flex items-center justify-end gap-2 shrink-0">
             {!loading && user && (
               <Button variant="ghost" size="sm" asChild>
                 <Link to="/profil">
@@ -182,83 +219,33 @@ const Navbar = () => {
                 </Link>
               </Button>
             )}
-            <AuthActions />
+            <AuthActions showRegister />
           </div>
-        </div>
-
-        {/* Mobile compact header */}
-        <div className="md:hidden h-[56px] px-3 flex items-center gap-2 border-b border-border/60">
-          <button
-            aria-label="Buka menu"
-            className="h-9 w-9 -ml-1 flex items-center justify-center text-foreground shrink-0"
-            onClick={() => setOpen(true)}
-          >
-            <Menu size={22} />
-          </button>
-          <Link to="/" className="flex items-center gap-2 min-w-0 flex-1">
-            <img src={assetUrl(duLogo.url)} alt="Career Center PEDULI" className="h-8 w-8 object-contain shrink-0" loading="lazy" />
-            <span className="font-heading font-bold text-[15px] leading-tight text-foreground truncate">
-              Career Center <span className="text-primary">PEDULI</span>
-            </span>
-          </Link>
-          {!loading && user ? (
-            <Link to="/profil" aria-label="Profil Saya" className="h-9 w-9 rounded-full bg-muted flex items-center justify-center shrink-0">
-              <User className="h-4 w-4 text-muted-foreground" />
-            </Link>
-          ) : (
-            <Button size="sm" className="shrink-0" onClick={() => navigate("/auth")}>Masuk</Button>
-          )}
         </div>
       </div>
 
-      {/* ---------- Row 2: Navigation (desktop/tablet) ---------- */}
-      <nav className="hidden md:block bg-background border-t border-border/60">
-        <div className="container mx-auto flex items-center justify-center gap-1 lg:gap-6 px-4">
-          <Link to="/" className={navItemCls(location.pathname === "/")}>
-            Beranda
-            {location.pathname === "/" && (
-              <span className="absolute left-3 right-3 -bottom-px h-0.5 rounded-full bg-primary" />
-            )}
+      {/* ---------- Mobile compact header ---------- */}
+      <div className="md:hidden h-[56px] px-3 flex items-center gap-2 border-b border-border/60 bg-background/95 backdrop-blur-xl">
+        <button
+          aria-label="Buka menu"
+          className="h-9 w-9 -ml-1 flex items-center justify-center text-foreground shrink-0"
+          onClick={() => setOpen(true)}
+        >
+          <Menu size={22} />
+        </button>
+        <Link to="/" className="flex items-center min-w-0 flex-1">
+          <span className="font-heading font-bold text-[15px] leading-tight text-foreground truncate">
+            Career Center <span className="text-primary">PEDULI</span>
+          </span>
+        </Link>
+        {!loading && user ? (
+          <Link to="/profil" aria-label="Profil Saya" className="h-9 w-9 rounded-full bg-muted flex items-center justify-center shrink-0">
+            <User className="h-4 w-4 text-muted-foreground" />
           </Link>
-          {groups.map((g) => {
-            const active = g.items.some(
-              (i) => location.pathname === i.path.split("#")[0]
-            );
-            return (
-              <DropdownMenu key={g.label}>
-                <DropdownMenuTrigger className={`${navItemCls(active)} flex items-center gap-1`}>
-                  {g.label}
-                  <ChevronDown className="h-3.5 w-3.5" />
-                  {active && (
-                    <span className="absolute left-3 right-3 -bottom-px h-0.5 rounded-full bg-primary" />
-                  )}
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="center" className="bg-popover z-50">
-                  {g.items.map((i) => (
-                    <DropdownMenuItem key={i.path} asChild>
-                      <Link to={i.path} className="cursor-pointer w-full">
-                        {i.label}
-                      </Link>
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            );
-          })}
-          {extraLinks.map((i) => (
-            <Link
-              key={i.path}
-              to={i.path}
-              className={navItemCls(location.pathname === i.path)}
-            >
-              {i.label}
-              {location.pathname === i.path && (
-                <span className="absolute left-3 right-3 -bottom-px h-0.5 rounded-full bg-primary" />
-              )}
-            </Link>
-          ))}
-        </div>
-      </nav>
+        ) : (
+          <Button size="sm" className="shrink-0" onClick={() => navigate("/auth")}>Masuk</Button>
+        )}
+      </div>
 
       {/* ---------- Mobile drawer ---------- */}
       <Sheet open={open} onOpenChange={setOpen}>
