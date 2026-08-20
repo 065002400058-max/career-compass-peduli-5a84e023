@@ -279,11 +279,10 @@ const Admin = () => {
             <Menu className="h-5 w-5" />
           </button>
 
-          <div className="hidden xl:flex items-center gap-4 mx-auto">
-            {HEADER_LOGOS.map((l) => (
-              <img key={l.alt} src={l.src} alt={l.alt} className="h-7 w-auto object-contain" loading="lazy" />
-            ))}
-          </div>
+          <span className="font-heading text-[14px] md:text-[15px] font-semibold text-foreground truncate">
+            Career Center <span className="text-primary">PEDULI</span>
+          </span>
+
 
           <select
             value={year}
