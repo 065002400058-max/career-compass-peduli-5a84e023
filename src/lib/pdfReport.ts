@@ -228,7 +228,7 @@ const drawSummaryCards = (
   if (!cards.length) return y;
   const perRow = Math.min(4, cards.length);
   const gap = 5;
-  const cardW = (pageW - margin * 2 - gap * (perRow - 1)) / perRow;
+  const cardW = Math.min((pageW - margin * 2 - gap * (perRow - 1)) / perRow, 62);
   const cardH = 22;
   cards.slice(0, 8).forEach((c, i) => {
     const row = Math.floor(i / perRow);
