@@ -35,17 +35,6 @@ type Group = { label: string; items: Item[]; icon: typeof Home };
 
 
 
-const BrandText = ({ compact = false }: { compact?: boolean }) => (
-  <div className={compact ? "text-center" : "text-left"}>
-    <p
-      className={`font-heading font-bold leading-tight text-foreground ${
-        compact ? "text-base" : "text-lg lg:text-xl"
-      }`}
-    >
-      Career Center <span className="text-primary">PEDULI</span>
-    </p>
-  </div>
-);
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
@@ -172,12 +161,8 @@ const Navbar = () => {
             )}
           </div>
 
-          <Link
-            to="/"
-            className="flex items-center justify-center gap-3 lg:gap-5 min-w-0 flex-wrap"
-          >
-            <BrandText />
-          </Link>
+          <div aria-hidden className="min-w-0" />
+
 
 
 
