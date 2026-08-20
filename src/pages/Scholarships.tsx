@@ -1,9 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Award, Calendar, ExternalLink, Search } from "lucide-react";
+import { Award, Calendar, ExternalLink, Search, GraduationCap } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
+import { assetUrl } from "@/lib/assetUrl";
+import { scholarshipImages } from "@/lib/defaultImages";
 
 const Scholarships = () => {
   const [q, setQ] = useState("");

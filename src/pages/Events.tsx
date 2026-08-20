@@ -10,6 +10,8 @@ import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import EventsManager from "@/components/admin/EventsManager";
 import { toast } from "sonner";
+import { assetUrl } from "@/lib/assetUrl";
+import { eventImages } from "@/lib/defaultImages";
 
 
 const typeColor: Record<string, string> = {
