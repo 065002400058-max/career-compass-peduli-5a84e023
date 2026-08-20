@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { decodeId } from "@/lib/publicId";
-import { statusLabel } from "@/lib/alumniStatus";
+import { alumniStatus, getStatusLabel } from "@/lib/alumniStatus";
 
 const show = (v?: string | number | null, fallback = "-") =>
   v === null || v === undefined || String(v).trim() === "" ? fallback : String(v);
@@ -95,7 +95,7 @@ const AlumniDetail = () => {
                     {show(data.full_name || data.name, "Alumni")}
                   </CardTitle>
                   <Badge variant="secondary" className="text-[11px]">
-                    {statusLabel(data as never)}
+                    {getStatusLabel(alumniStatus(data as never))}
                   </Badge>
                 </div>
                 <p className="text-xs text-muted-foreground">
