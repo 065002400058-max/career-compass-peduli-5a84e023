@@ -193,16 +193,6 @@ const Navbar = () => {
         >
           Masuk
         </Button>
-        <Button
-          size="sm"
-          className={full ? "flex-1" : ""}
-          onClick={() => {
-            navigate("/auth");
-            setOpen(false);
-          }}
-        >
-          Daftar
-        </Button>
       </div>
     );
 

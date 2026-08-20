@@ -39,6 +39,7 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Navbar />
+          <IdleTimeoutGuard />
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/dashboard" element={<Dashboard />} />
