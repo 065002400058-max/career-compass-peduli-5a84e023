@@ -724,9 +724,7 @@ const AlumniCenter = () => {
               onClick={() => openDetail(a)}
               className="rounded-2xl bg-card border border-border shadow-sm p-4 flex items-start gap-3 transition-colors hover:bg-accent/30 cursor-pointer active:scale-[0.99]"
             >
-              <div className="h-10 w-10 rounded-full bg-accent flex items-center justify-center font-heading font-bold text-primary text-sm shrink-0">
-                {initials(a.full_name || a.name)}
-              </div>
+              <GenderAvatar gender={a.gender} />
               <div className="min-w-0 flex-1 space-y-1.5">
                 <div className="flex items-center gap-2 flex-wrap">
                   <h4 className="font-heading font-semibold text-foreground text-sm">{show(a.full_name || a.name, "(Tanpa Nama)")}</h4>
