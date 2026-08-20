@@ -1,6 +1,8 @@
 import * as XLSX from "xlsx";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
+import { downloadReportPdf, type ReportOptions } from "@/lib/pdfReport";
+
+export type { ReportOptions };
+
 
 /**
  * Standardized mapping for export headers to ensure human-readable Excel/CSV files.
@@ -96,23 +98,15 @@ export const exportToExcel = (rows: any[], filename: string, sheetName = "Data")
   XLSX.writeFile(wb, `${filename}.xlsx`);
 };
 
-export const exportToPDF = (rows: any[], filename: string, title: string) => {
+export const exportToPDF = async (
+  rows: any[],
+  filename: string,
+  title: string,
+  opts: ReportOptions = {}
+) => {
   if (!rows.length) return;
   const mappedRows = mapHeaders(rows);
-  const doc = new jsPDF();
-  doc.setFontSize(14);
-  doc.text(title, 14, 16);
-  doc.setFontSize(9);
-  doc.text(`Diunduh: ${new Date().toLocaleString("id-ID")}`, 14, 22);
-  const headers = Object.keys(mappedRows[0]);
-  const body = mappedRows.map((r) => headers.map((h) => String(r[h] ?? "")));
-  autoTable(doc, { 
-    head: [headers], 
-    body, 
-    startY: 26, 
-    styles: { fontSize: 7 }, 
-    headStyles: { fillColor: [16, 185, 129] } 
-  });
-  doc.save(`${filename}.pdf`);
+  await downloadReportPdf(mappedRows, filename, title, opts);
 };
+
 

@@ -610,7 +610,7 @@ const MonitoringDashboard = () => {
           <Button size="sm" variant="outline" className="h-10 rounded-xl" onClick={() => exportToExcel(exportRows, "monitoring-pengguna")} disabled={!exportRows.length}>
             <FileSpreadsheet className="h-4 w-4 mr-1.5" /> Excel
           </Button>
-          <Button size="sm" className="h-10 rounded-xl" onClick={() => exportToPDF(exportRows, "monitoring-pengguna", "Monitoring Layanan Pengguna PEDULI")} disabled={!exportRows.length}>
+          <Button size="sm" className="h-10 rounded-xl" onClick={() => exportToPDF(exportRows, "monitoring-pengguna", "Monitoring Layanan Pengguna PEDULI", { badge: "Laporan Monitoring", reportKind: "Monitoring Layanan", subtitle: "Progres layanan skrining, CBT, dan konseling per pengguna", summary: [{ label: "Total Pengguna", value: exportRows.length }] })} disabled={!exportRows.length}>
             <FileDown className="h-4 w-4 mr-1.5" /> PDF
           </Button>
         </div>
@@ -772,7 +772,7 @@ const MonitoringDashboard = () => {
             <Button size="sm" variant="outline" onClick={() => exportToExcel((list?.rows ?? []).map((u, i) => ({ No: i + 1, Nama: u.name, Status: u.statusLabel, Jenjang: u.education_level, Sekolah: u.school, Jurusan: u.major })), "daftar-pengguna")} disabled={!list?.rows.length}>
               <FileSpreadsheet className="h-4 w-4 mr-1.5" /> Excel
             </Button>
-            <Button size="sm" variant="outline" onClick={() => exportToPDF((list?.rows ?? []).map((u, i) => ({ No: i + 1, Nama: u.name, Status: u.statusLabel, Jenjang: u.education_level, Sekolah: u.school, Jurusan: u.major })), "daftar-pengguna", list?.title ?? "Daftar Pengguna")} disabled={!list?.rows.length}>
+            <Button size="sm" variant="outline" onClick={() => exportToPDF((list?.rows ?? []).map((u, i) => ({ No: i + 1, Nama: u.name, Status: u.statusLabel, Jenjang: u.education_level, Sekolah: u.school, Jurusan: u.major })), "daftar-pengguna", list?.title ?? "Daftar Pengguna", { badge: "Laporan Monitoring", reportKind: "Daftar Pengguna", orientation: "portrait" })} disabled={!list?.rows.length}>
               <FileDown className="h-4 w-4 mr-1.5" /> PDF
             </Button>
           </div>

@@ -577,7 +577,7 @@ const SantriCenter = () => {
           <Button variant="outline" size="sm" className="h-9 rounded-md" disabled={!exportRows.length} onClick={() => exportToExcel(exportRows, "santri-peduli")}>
             <FileSpreadsheet className="h-3.5 w-3.5 mr-1.5" />Excel
           </Button>
-          <Button variant="outline" size="sm" className="h-9 rounded-md" disabled={!exportRows.length} onClick={() => exportToPDF(exportRows, "santri-peduli", "Data Santri PEDULI")}>
+          <Button variant="outline" size="sm" className="h-9 rounded-md" disabled={!exportRows.length} onClick={() => exportToPDF(exportRows, "santri-peduli", "Data Santri PEDULI", { badge: "Laporan Data", reportKind: "Data Santri", subtitle: "Rekapitulasi data santri & progres layanan karier", summary: [{ label: "Total Santri", value: exportRows.length }] })}>
             <FileDown className="h-3.5 w-3.5 mr-1.5" />PDF
           </Button>
         </div>
