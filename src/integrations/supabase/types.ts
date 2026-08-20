@@ -222,6 +222,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "alumni_education_alumni_id_fkey"
+            columns: ["alumni_id"]
+            isOneToOne: false
+            referencedRelation: "alumni_directory"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "alumni_education_university_id_fkey"
             columns: ["university_id"]
             isOneToOne: false
@@ -267,6 +274,13 @@ export type Database = {
             columns: ["alumni_id"]
             isOneToOne: false
             referencedRelation: "alumni"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "alumni_employment_alumni_id_fkey"
+            columns: ["alumni_id"]
+            isOneToOne: false
+            referencedRelation: "alumni_directory"
             referencedColumns: ["id"]
           },
           {
@@ -357,6 +371,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "career_updates_alumni_id_fkey"
+            columns: ["alumni_id"]
+            isOneToOne: false
+            referencedRelation: "alumni_directory"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "career_updates_company_id_fkey"
             columns: ["company_id"]
             isOneToOne: false
@@ -426,6 +447,13 @@ export type Database = {
           score?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "cbt_attempt_answers_answer_id_fkey"
+            columns: ["answer_id"]
+            isOneToOne: false
+            referencedRelation: "cbt_answer_options"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "cbt_attempt_answers_answer_id_fkey"
             columns: ["answer_id"]
@@ -595,6 +623,13 @@ export type Database = {
             columns: ["alumni_id"]
             isOneToOne: false
             referencedRelation: "alumni"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cbt_results_alumni_id_fkey"
+            columns: ["alumni_id"]
+            isOneToOne: false
+            referencedRelation: "alumni_directory"
             referencedColumns: ["id"]
           },
           {
@@ -794,6 +829,13 @@ export type Database = {
             columns: ["alumni_id"]
             isOneToOne: false
             referencedRelation: "alumni"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "counseling_alumni_id_fkey"
+            columns: ["alumni_id"]
+            isOneToOne: false
+            referencedRelation: "alumni_directory"
             referencedColumns: ["id"]
           },
         ]
@@ -1439,6 +1481,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "psychotest_results_alumni_id_fkey"
+            columns: ["alumni_id"]
+            isOneToOne: false
+            referencedRelation: "alumni_directory"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "psychotest_results_psychotest_id_fkey"
             columns: ["psychotest_id"]
             isOneToOne: false
@@ -1587,7 +1636,140 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      alumni_directory: {
+        Row: {
+          company: string | null
+          company_type: string | null
+          created_at: string | null
+          current_company: string | null
+          current_field: string | null
+          current_location: string | null
+          current_position: string | null
+          education_level: string | null
+          employment_status: string | null
+          faculty: string | null
+          full_name: string | null
+          further_education: string | null
+          gender: string | null
+          graduation_status: string | null
+          graduation_year: number | null
+          id: string | null
+          job_field: string | null
+          location: string | null
+          major: string | null
+          name: string | null
+          origin: string | null
+          position: string | null
+          status: string | null
+          target_university: string | null
+          tracer_filled_at: string | null
+          university: string | null
+          university_status: string | null
+          updated_at: string | null
+          work_city: string | null
+          work_country: string | null
+          work_province: string | null
+          year_graduated: number | null
+        }
+        Insert: {
+          company?: string | null
+          company_type?: string | null
+          created_at?: string | null
+          current_company?: string | null
+          current_field?: string | null
+          current_location?: string | null
+          current_position?: string | null
+          education_level?: string | null
+          employment_status?: string | null
+          faculty?: string | null
+          full_name?: string | null
+          further_education?: string | null
+          gender?: string | null
+          graduation_status?: string | null
+          graduation_year?: number | null
+          id?: string | null
+          job_field?: string | null
+          location?: string | null
+          major?: string | null
+          name?: string | null
+          origin?: string | null
+          position?: string | null
+          status?: string | null
+          target_university?: string | null
+          tracer_filled_at?: string | null
+          university?: string | null
+          university_status?: string | null
+          updated_at?: string | null
+          work_city?: string | null
+          work_country?: string | null
+          work_province?: string | null
+          year_graduated?: number | null
+        }
+        Update: {
+          company?: string | null
+          company_type?: string | null
+          created_at?: string | null
+          current_company?: string | null
+          current_field?: string | null
+          current_location?: string | null
+          current_position?: string | null
+          education_level?: string | null
+          employment_status?: string | null
+          faculty?: string | null
+          full_name?: string | null
+          further_education?: string | null
+          gender?: string | null
+          graduation_status?: string | null
+          graduation_year?: number | null
+          id?: string | null
+          job_field?: string | null
+          location?: string | null
+          major?: string | null
+          name?: string | null
+          origin?: string | null
+          position?: string | null
+          status?: string | null
+          target_university?: string | null
+          tracer_filled_at?: string | null
+          university?: string | null
+          university_status?: string | null
+          updated_at?: string | null
+          work_city?: string | null
+          work_country?: string | null
+          work_province?: string | null
+          year_graduated?: number | null
+        }
+        Relationships: []
+      }
+      cbt_answer_options: {
+        Row: {
+          answer_text: string | null
+          created_at: string | null
+          id: string | null
+          question_id: string | null
+        }
+        Insert: {
+          answer_text?: string | null
+          created_at?: string | null
+          id?: string | null
+          question_id?: string | null
+        }
+        Update: {
+          answer_text?: string | null
+          created_at?: string | null
+          id?: string | null
+          question_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cbt_answers_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "cbt_questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       has_role: {
@@ -1602,6 +1784,10 @@ export type Database = {
         Returns: string
       }
       public_stats: { Args: never; Returns: Json }
+      submit_cbt_attempt: {
+        Args: { _answers: Json; _test_id: string }
+        Returns: Json
+      }
       submit_graduate_status: {
         Args: {
           _company?: string
