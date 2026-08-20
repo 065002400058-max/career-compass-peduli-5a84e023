@@ -63,6 +63,18 @@ const AiHistoryViewer = () => {
         .eq("thread_id", activeId as string)
         .order("created_at");
       if (error) throw error;
+
+      // Jejak audit: siapa admin yang membuka percakapan siapa, kapan
+      const { data: me } = await supabase.auth.getUser();
+      if (me?.user) {
+        await supabase.from("ai_access_audit").insert({
+          admin_id: me.user.id,
+          thread_id: activeId as string,
+          target_user_id: (active as any)?.user_id ?? null,
+          action: "view_thread",
+        });
+      }
+
       return data ?? [];
     },
     enabled: !!activeId,

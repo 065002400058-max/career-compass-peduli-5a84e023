@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_access_audit: {
+        Row: {
+          action: string
+          admin_id: string
+          created_at: string
+          id: string
+          target_user_id: string | null
+          thread_id: string | null
+        }
+        Insert: {
+          action?: string
+          admin_id: string
+          created_at?: string
+          id?: string
+          target_user_id?: string | null
+          thread_id?: string | null
+        }
+        Update: {
+          action?: string
+          admin_id?: string
+          created_at?: string
+          id?: string
+          target_user_id?: string | null
+          thread_id?: string | null
+        }
+        Relationships: []
+      }
       alumni: {
         Row: {
           company: string | null
@@ -887,7 +914,9 @@ export type Database = {
           expires_at: string
           full_name: string | null
           id: string
+          identity_number: string | null
           invited_by: string | null
+          last_sent_at: string | null
           notes: string | null
           role: Database["public"]["Enums"]["app_role"]
           status: string
@@ -901,7 +930,9 @@ export type Database = {
           expires_at?: string
           full_name?: string | null
           id?: string
+          identity_number?: string | null
           invited_by?: string | null
+          last_sent_at?: string | null
           notes?: string | null
           role?: Database["public"]["Enums"]["app_role"]
           status?: string
@@ -915,7 +946,9 @@ export type Database = {
           expires_at?: string
           full_name?: string | null
           id?: string
+          identity_number?: string | null
           invited_by?: string | null
+          last_sent_at?: string | null
           notes?: string | null
           role?: Database["public"]["Enums"]["app_role"]
           status?: string
@@ -1036,6 +1069,39 @@ export type Database = {
           },
         ]
       }
+      login_attempts: {
+        Row: {
+          created_at: string
+          email: string
+          failed_attempts: number
+          id: string
+          ip_key: string
+          last_failed_attempt: string | null
+          locked_until: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          failed_attempts?: number
+          id?: string
+          ip_key?: string
+          last_failed_attempt?: string | null
+          locked_until?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          failed_attempts?: number
+          id?: string
+          ip_key?: string
+          last_failed_attempt?: string | null
+          locked_until?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string | null
@@ -1118,6 +1184,8 @@ export type Database = {
       }
       profiles: {
         Row: {
+          account_status: string
+          activated_at: string | null
           address: string | null
           avatar_url: string | null
           bio: string | null
@@ -1130,6 +1198,7 @@ export type Database = {
           gender: string | null
           graduation_year: number | null
           id: string
+          invited_at: string | null
           major: string | null
           origin: string | null
           phone: string | null
@@ -1140,6 +1209,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          account_status?: string
+          activated_at?: string | null
           address?: string | null
           avatar_url?: string | null
           bio?: string | null
@@ -1152,6 +1223,7 @@ export type Database = {
           gender?: string | null
           graduation_year?: number | null
           id?: string
+          invited_at?: string | null
           major?: string | null
           origin?: string | null
           phone?: string | null
@@ -1162,6 +1234,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          account_status?: string
+          activated_at?: string | null
           address?: string | null
           avatar_url?: string | null
           bio?: string | null
@@ -1174,6 +1248,7 @@ export type Database = {
           gender?: string | null
           graduation_year?: number | null
           id?: string
+          invited_at?: string | null
           major?: string | null
           origin?: string | null
           phone?: string | null
