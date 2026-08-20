@@ -25,9 +25,6 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import duLogo from "@/assets/du-logo-t.png.asset.json";
-import { assetUrl } from "@/lib/assetUrl";
-
 type Item = { label: string; path: string; show?: boolean };
 type Group = { label: string; items: Item[]; icon: typeof Home };
 
