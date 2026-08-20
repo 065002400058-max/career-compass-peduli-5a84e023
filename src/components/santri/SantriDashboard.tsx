@@ -291,7 +291,50 @@ const SantriDashboard = () => {
     profile?.education_level && { icon: GraduationCap, text: profile.education_level },
   ].filter(Boolean) as { icon: typeof School; text: string }[];
 
+  /* ---- skeleton / error state ---- */
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[hsl(var(--muted))]/40">
+        <div className="mx-auto w-full max-w-[1600px] animate-pulse px-4 py-6 md:px-7 md:py-7">
+          <div className="mb-5 h-7 w-56 rounded-md bg-muted" />
+          <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_300px]">
+            <div className="space-y-5">
+              <div className="grid gap-5 md:grid-cols-2">
+                <div className="h-40 rounded-xl border border-border bg-card" />
+                <div className="h-40 rounded-xl border border-border bg-card" />
+              </div>
+              <div className="h-64 rounded-xl border border-border bg-card" />
+              <div className="h-48 rounded-xl border border-border bg-card" />
+            </div>
+            <div className="h-72 rounded-xl border border-border bg-card" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="min-h-screen bg-[hsl(var(--muted))]/40">
+        <div className="mx-auto w-full max-w-[1600px] px-4 py-10 md:px-7">
+          <Card className="mx-auto max-w-md p-6 text-center">
+            <h2 className="font-heading text-base font-semibold text-foreground">
+              Gagal memuat data dashboard
+            </h2>
+            <p className="mt-1.5 text-[12.5px] text-muted-foreground">
+              Periksa koneksi Anda lalu coba muat ulang halaman.
+            </p>
+            <Button className="mt-4" onClick={() => window.location.reload()}>
+              Muat Ulang
+            </Button>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
   return (
+
     <div className="min-h-screen bg-[hsl(var(--muted))]/40">
       <div className="mx-auto w-full max-w-[1600px] px-4 py-6 md:px-7 md:py-7">
         {/* Header */}
