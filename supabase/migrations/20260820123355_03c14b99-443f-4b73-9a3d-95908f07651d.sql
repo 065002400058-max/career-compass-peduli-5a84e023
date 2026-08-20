@@ -1,0 +1,1 @@
+ALTER TABLE public.alumni ADD COLUMN IF NOT EXISTS phone text;

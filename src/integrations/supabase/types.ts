@@ -66,6 +66,7 @@ export type Database = {
           name: string
           nim: string | null
           origin: string | null
+          phone: string | null
           position: string | null
           profile_id: string | null
           status: string
@@ -107,6 +108,7 @@ export type Database = {
           name: string
           nim?: string | null
           origin?: string | null
+          phone?: string | null
           position?: string | null
           profile_id?: string | null
           status?: string
@@ -148,6 +150,7 @@ export type Database = {
           name?: string
           nim?: string | null
           origin?: string | null
+          phone?: string | null
           position?: string | null
           profile_id?: string | null
           status?: string

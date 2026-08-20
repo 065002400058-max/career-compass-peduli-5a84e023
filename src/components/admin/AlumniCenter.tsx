@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import AlumniCsvImport from "@/components/AlumniCsvImport";
 import AlumniAddDialog from "@/components/AlumniAddDialog";
+import GenderAvatar from "@/components/shared/GenderAvatar";
 import { exportToExcel, exportToPDF } from "@/lib/exportUtils";
 import { toast } from "sonner";
 import {
@@ -141,6 +142,7 @@ const FIELDS: { key: string; label: string; type?: string }[] = [
   { key: "full_name", label: "Nama Lengkap" },
   { key: "student_id", label: "NIM/ID Santri" },
   { key: "gender", label: "Jenis Kelamin" },
+  { key: "phone", label: "Nomor Handphone (WhatsApp)" },
   { key: "graduation_year", label: "Angkatan", type: "number" },
   { key: "origin", label: "Asal" },
   { key: "education_level", label: "Jenjang Pendidikan" },
@@ -724,9 +726,7 @@ const AlumniCenter = () => {
               onClick={() => openDetail(a)}
               className="rounded-2xl bg-card border border-border shadow-sm p-4 flex items-start gap-3 transition-colors hover:bg-accent/30 cursor-pointer active:scale-[0.99]"
             >
-              <div className="h-10 w-10 rounded-full bg-accent flex items-center justify-center font-heading font-bold text-primary text-sm shrink-0">
-                {initials(a.full_name || a.name)}
-              </div>
+              <GenderAvatar gender={a.gender} />
               <div className="min-w-0 flex-1 space-y-1.5">
                 <div className="flex items-center gap-2 flex-wrap">
                   <h4 className="font-heading font-semibold text-foreground text-sm">{show(a.full_name || a.name, "(Tanpa Nama)")}</h4>
@@ -865,6 +865,7 @@ const AlumniCenter = () => {
                       {[
                         ["Nama", show(detail.full_name || detail.name)],
                         ["Jenis Kelamin", show(detail.gender)],
+                        ["Nomor HP (WhatsApp)", show(detail.phone)],
                         ["Angkatan", detail.graduation_year ?? EMPTY],
                         ["Asal", show(detail.origin)],
                         ["Jenjang Pendidikan", show(detail.education_level)],

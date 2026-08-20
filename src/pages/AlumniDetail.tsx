@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import GenderAvatar from "@/components/shared/GenderAvatar";
 import { decodeId } from "@/lib/publicId";
 import { alumniStatus, getStatusLabel } from "@/lib/alumniStatus";
 
@@ -90,7 +91,8 @@ const AlumniDetail = () => {
             <Card className="rounded-2xl overflow-hidden">
               <div className="h-2 bg-gradient-to-r from-primary via-primary/70 to-primary/30" />
               <CardHeader className="pb-3">
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="flex flex-wrap items-center gap-3">
+                  <GenderAvatar gender={data.gender} className="h-12 w-12" iconClassName="h-6 w-6" />
                   <CardTitle className="font-heading text-xl md:text-2xl">
                     {show(data.full_name || data.name, "Alumni")}
                   </CardTitle>
