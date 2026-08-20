@@ -24,7 +24,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { Camera, Loader2, Save, Trash2, User as UserIcon, Lock, Mail } from "lucide-react";
+import { Camera, Loader2, Save, Trash2, User as UserIcon, Lock, Mail, GraduationCap } from "lucide-react";
 
 type ProfileForm = {
   full_name: string;
