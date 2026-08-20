@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -17,6 +17,7 @@ import {
   Clock,
   Building2,
   Quote,
+  Bell,
 } from "lucide-react";
 import { detectScreeningKind, type ScreeningKind } from "@/lib/psikotesScoring";
 import AlumniInsight from "@/components/shared/AlumniInsight";
@@ -112,6 +113,7 @@ const SCREENING_META: Record<ScreeningKind, { label: string }> = {
 
 const SantriDashboard = () => {
   const { user, roles } = useAuth();
+  const qc = useQueryClient();
   const uid = user?.id;
   useMyResultsRealtime(uid);
 
@@ -158,7 +160,7 @@ const SantriDashboard = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("counseling_referrals")
-        .select("id, status, level, reason, created_at")
+        .select("id, status, level, reason, notes, created_at")
         .eq("user_id", uid!)
         .order("created_at", { ascending: false });
       if (error) throw error;
@@ -166,6 +168,32 @@ const SantriDashboard = () => {
     },
     enabled: !!uid,
   });
+
+  const { data: notifications } = useQuery({
+    queryKey: ["me-notifications", uid],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("notifications")
+        .select("id, title, message, type, read, created_at")
+        .eq("user_id", uid!)
+        .order("created_at", { ascending: false })
+        .limit(10);
+      if (error) throw error;
+      return data ?? [];
+    },
+    enabled: !!uid,
+  });
+
+  const calls = (referrals ?? []).filter(
+    (r: any) => r.status === "diproses" || (r.level ?? "").toLowerCase() === "tinggi",
+  );
+  const unreadCount = (notifications ?? []).filter((n: any) => !n.read).length;
+
+  const markAllRead = async () => {
+    if (!uid) return;
+    await supabase.from("notifications").update({ read: true }).eq("user_id", uid).eq("read", false);
+    qc.invalidateQueries({ queryKey: ["me-notifications", uid] });
+  };
 
   const isLoading = loadProfile || loadPsi || loadCbt || loadRef;
   const isError = errProfile || errPsi || errCbt || errRef;
