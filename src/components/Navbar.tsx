@@ -109,7 +109,7 @@ const Navbar = () => {
       active ? "text-primary" : "text-foreground/80 hover:text-primary"
     }`;
 
-  const AuthActions = ({ full = false }: { full?: boolean }) =>
+  const AuthActions = ({ full = false, showRegister = false }: { full?: boolean; showRegister?: boolean }) =>
     loading ? null : user ? (
       <Button
         variant="outline"
@@ -136,6 +136,17 @@ const Navbar = () => {
         >
           Masuk
         </Button>
+        {showRegister && !full && (
+          <Button
+            size="sm"
+            onClick={() => {
+              navigate("/auth");
+              setOpen(false);
+            }}
+          >
+            Daftar
+          </Button>
+        )}
       </div>
     );
 
