@@ -111,52 +111,63 @@ const SCREENING_META: Record<ScreeningKind, { label: string }> = {
 const SantriDashboard = () => {
   const { user, roles } = useAuth();
   const uid = user?.id;
+  useMyResultsRealtime(uid);
 
-  const { data: profile } = useQuery({
+  const { data: profile, isLoading: loadProfile, isError: errProfile } = useQuery({
     queryKey: ["me-profile", uid],
-    queryFn: async () =>
-      (await supabase.from("profiles").select("*").eq("id", uid!).maybeSingle()).data,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("profiles").select("*").eq("id", uid!).maybeSingle();
+      if (error) throw error;
+      return data;
+    },
     enabled: !!uid,
   });
 
-  const { data: psikotes } = useQuery({
+  const { data: psikotes, isLoading: loadPsi, isError: errPsi } = useQuery({
     queryKey: ["me-psikotes", uid],
-    queryFn: async () =>
-      (
-        await supabase
-          .from("psikotes_attempts")
-          .select("*, psikotes_tests(title, psikotes_categories(name))")
-          .eq("user_id", uid!)
-          .order("completed_at", { ascending: false })
-      ).data ?? [],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("psikotes_attempts")
+        .select("*, psikotes_tests(title, psikotes_categories(name))")
+        .eq("user_id", uid!)
+        .order("completed_at", { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
     enabled: !!uid,
   });
 
-  const { data: cbt } = useQuery({
+  const { data: cbt, isLoading: loadCbt, isError: errCbt } = useQuery({
     queryKey: ["me-cbt", uid],
-    queryFn: async () =>
-      (
-        await supabase
-          .from("cbt_attempts")
-          .select("*, cbt_tests(title)")
-          .eq("user_id", uid!)
-          .order("created_at", { ascending: false })
-      ).data ?? [],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("cbt_attempts")
+        .select("*, cbt_tests(title)")
+        .eq("user_id", uid!)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
     enabled: !!uid,
   });
 
-  const { data: referrals } = useQuery({
+  const { data: referrals, isLoading: loadRef, isError: errRef } = useQuery({
     queryKey: ["me-referrals", uid],
-    queryFn: async () =>
-      (
-        await supabase
-          .from("counseling_referrals")
-          .select("id, status, level, reason, created_at")
-          .eq("user_id", uid!)
-          .order("created_at", { ascending: false })
-      ).data ?? [],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("counseling_referrals")
+        .select("id, status, level, reason, created_at")
+        .eq("user_id", uid!)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
     enabled: !!uid,
   });
+
+  const isLoading = loadProfile || loadPsi || loadCbt || loadRef;
+  const isError = errProfile || errPsi || errCbt || errRef;
+
 
   const roleLabel = roles.includes("alumni") ? "Alumni" : "Santri";
   const fullName = profile?.full_name || user?.user_metadata?.full_name || user?.email || "Pengguna";
