@@ -105,7 +105,9 @@ const AlumniCsvImport = () => {
         headers.forEach((h, i) => { obj[h] = r[i]?.trim() ?? ""; });
         let year = parseInt(obj.graduation_year, 10);
         if (!isNaN(year) && year < 100) year = 2000 + year; // "26" -> 2026
+        if (isNaN(year)) year = new Date().getFullYear(); // Angkatan opsional
         const g = (obj.gender || "").trim().toLowerCase();
+
         const gender = ["l", "lk", "laki", "laki-laki", "pria", "male", "m"].includes(g)
           ? "Laki-laki"
           : ["p", "pr", "perempuan", "wanita", "female", "f"].includes(g)
