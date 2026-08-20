@@ -85,7 +85,12 @@ const Alumni = () => {
                   {filtered.map((a: any, idx: number) => (
                     <TableRow key={a.id}>
                       <TableCell>{idx + 1}</TableCell>
-                      <TableCell className="font-medium">{a.name}</TableCell>
+                      <TableCell className="font-medium">
+                        <span className="flex items-center gap-2">
+                          <GenderAvatar gender={a.gender} className="h-8 w-8" iconClassName="h-4 w-4" />
+                          {a.name}
+                        </span>
+                      </TableCell>
                       <TableCell>{a.gender ?? "-"}</TableCell>
                       <TableCell>{a.graduation_year}</TableCell>
                       <TableCell>{a.origin ?? "-"}</TableCell>
