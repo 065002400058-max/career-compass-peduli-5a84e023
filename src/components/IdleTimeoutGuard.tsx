@@ -47,6 +47,10 @@ const IdleTimeoutGuard = () => {
   const schedule = useCallback(() => {
     clearAll();
     setWarn(false);
+    // last_activity dipakai saat aplikasi dibuka kembali / antar tab
+    try {
+      window.localStorage.setItem(LAST_ACTIVITY_KEY, String(Date.now()));
+    } catch { /* storage tidak tersedia */ }
     warnTimer.current = window.setTimeout(() => {
       setLeft(Math.round(WARNING_MS / 1000));
       setWarn(true);
@@ -61,17 +65,39 @@ const IdleTimeoutGuard = () => {
       setWarn(false);
       return;
     }
+
+    // Saat aplikasi dibuka kembali: jika sudah lewat 3 menit, wajib login lagi.
+    const stored = Number(window.localStorage.getItem(LAST_ACTIVITY_KEY) ?? 0);
+    if (stored && Date.now() - stored > IDLE_MS) {
+      doLogout();
+      return;
+    }
+
     schedule();
     const onActivity = () => {
       // Saat modal peringatan tampil, hanya tombol "Tetap Masuk" yang memperpanjang sesi
       if (!warn) schedule();
     };
+    // Sinkronisasi antar tab: aktivitas di tab lain memperpanjang sesi di tab ini
+    const onStorage = (e: StorageEvent) => {
+      if (e.key !== LAST_ACTIVITY_KEY || warn) return;
+      clearAll();
+      warnTimer.current = window.setTimeout(() => {
+        setLeft(Math.round(WARNING_MS / 1000));
+        setWarn(true);
+        tick.current = window.setInterval(() => setLeft((s) => Math.max(0, s - 1)), 1000);
+      }, IDLE_MS - WARNING_MS) as unknown as number;
+      logoutTimer.current = window.setTimeout(doLogout, IDLE_MS) as unknown as number;
+    };
+
     EVENTS.forEach((e) => window.addEventListener(e, onActivity, { passive: true }));
+    window.addEventListener("storage", onStorage);
     return () => {
       EVENTS.forEach((e) => window.removeEventListener(e, onActivity));
+      window.removeEventListener("storage", onStorage);
       clearAll();
     };
-  }, [user, warn, schedule, clearAll]);
+  }, [user, warn, schedule, clearAll, doLogout]);
 
   // Pindah halaman dihitung sebagai aktivitas pengguna
   useEffect(() => {
