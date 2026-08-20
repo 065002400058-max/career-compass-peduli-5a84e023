@@ -1601,6 +1601,7 @@ export type Database = {
         Args: { _full_name: string; _md?: Json; _user_id: string }
         Returns: string
       }
+      public_stats: { Args: never; Returns: Json }
       submit_graduate_status: {
         Args: {
           _company?: string
