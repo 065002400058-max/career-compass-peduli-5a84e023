@@ -105,6 +105,69 @@ const ReportTable = ({ kind }: { kind: "cbt" | "psikotes" }) => {
 
   const fname = isCbt ? "laporan-tes-cbt" : "laporan-psikotes";
 
+  const pdfOptions = useMemo(() => {
+    const arr = filtered as any[];
+    const santri = arr.filter((r) => r.role === "SANTRI").length;
+    const alumni = arr.filter((r) => r.role === "ALUMNI").length;
+    if (isCbt) {
+      const passed = arr.filter((r) => r.passed).length;
+      const avg = arr.length ? Math.round(arr.reduce((s, r) => s + Number(r.percentage ?? 0), 0) / arr.length) : 0;
+      return {
+        badge: "Laporan Layanan",
+        reportKind: "Tes Potensi Akademik & Minat Bakat",
+        subtitle: "Rekapitulasi hasil Computer Based Test peserta Career Center PEDULI",
+        meta: { Populasi: `${santri} santri • ${alumni} alumni`, "Jumlah tes": arr.length },
+        summary: [
+          { label: "Total Peserta", value: arr.length, hint: "peserta unik terekam" },
+          { label: "Rata-rata Nilai", value: `${avg}%` },
+          { label: "Peserta Lulus", value: passed, hint: `${arr.length ? Math.round((passed / arr.length) * 100) : 0}% dari peserta` },
+          { label: "Belum Lulus", value: arr.length - passed },
+        ],
+        donut: {
+          title: "Status Kelulusan",
+          slices: [
+            { label: "Lulus", value: passed },
+            { label: "Belum lulus", value: arr.length - passed },
+          ],
+        },
+        bars: { title: "Sebaran Populasi", items: [{ label: "Santri", value: santri }, { label: "Alumni", value: alumni }] },
+        note: {
+          title: "Catatan Laporan",
+          text: "Nilai dihitung otomatis oleh sistem berdasarkan kunci jawaban yang tersimpan di server. Laporan ini bersifat internal untuk kebutuhan pembinaan karier.",
+        },
+      } as const;
+    }
+    const lv = (n: string) => arr.filter((r) => String(r.level ?? "").toLowerCase() === n).length;
+    const rendah = lv("rendah");
+    const sedang = lv("sedang");
+    const tinggi = lv("tinggi");
+    return {
+      badge: "Laporan Layanan",
+      reportKind: "Screening Kesehatan Mental",
+      subtitle: "Rekapitulasi hasil screening mental & rekomendasi konseling",
+      meta: { Populasi: `${santri} santri • ${alumni} alumni`, "Jumlah screening": arr.length },
+      summary: [
+        { label: "Total Peserta", value: arr.length, hint: "hasil screening" },
+        { label: "Level Rendah", value: rendah },
+        { label: "Level Sedang", value: sedang, hint: "perlu pemantauan" },
+        { label: "Level Tinggi", value: tinggi, hint: "prioritas konseling" },
+      ],
+      donut: {
+        title: "Distribusi Tingkat Risiko",
+        slices: [
+          { label: "Rendah", value: rendah },
+          { label: "Sedang", value: sedang },
+          { label: "Tinggi", value: tinggi },
+        ],
+      },
+      bars: { title: "Sebaran Populasi", items: [{ label: "Santri", value: santri }, { label: "Alumni", value: alumni }] },
+      note: {
+        title: "Catatan Interpretasi",
+        text: "Hasil screening merupakan deteksi awal, bukan diagnosis klinis. Peserta dengan level sedang atau tinggi otomatis masuk daftar rujukan konseling untuk ditindaklanjuti admin.",
+      },
+    } as const;
+  }, [filtered, isCbt]);
+
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2 justify-between">
@@ -117,11 +180,12 @@ const ReportTable = ({ kind }: { kind: "cbt" | "psikotes" }) => {
           <Button size="sm" variant="outline" onClick={() => exportToExcel(exportRows, fname)} disabled={!exportRows.length}>
             <FileSpreadsheet className="h-4 w-4 mr-1" /> Excel/CSV
           </Button>
-          <Button size="sm" onClick={() => exportToPDF(exportRows, fname, title)} disabled={!exportRows.length}>
+          <Button size="sm" onClick={() => exportToPDF(exportRows, fname, title, pdfOptions as any)} disabled={!exportRows.length}>
             <FileDown className="h-4 w-4 mr-1" /> PDF
           </Button>
         </div>
       </div>
+
 
       <div className="glass-card rounded-xl overflow-auto">
         {isLoading ? (
