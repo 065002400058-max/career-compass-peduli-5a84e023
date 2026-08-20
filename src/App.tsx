@@ -7,6 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import AiAssistantButton from "@/components/AiAssistantButton";
+import IdleTimeoutGuard from "@/components/IdleTimeoutGuard";
 import Index from "./pages/Index";
 import Jobs from "./pages/Jobs";
 import Alumni from "./pages/Alumni";
@@ -38,6 +39,7 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Navbar />
+          <IdleTimeoutGuard />
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/dashboard" element={<Dashboard />} />
