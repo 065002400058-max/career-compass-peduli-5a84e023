@@ -426,7 +426,73 @@ const SantriDashboard = () => {
               </Card>
             </div>
 
+            {/* Panggilan Konseling & Notifikasi */}
+            <Card className="p-5">
+              <div className="mb-3 flex items-center gap-2">
+                <IconBox tone="coral" icon={HeartPulse} size="sm" />
+                <h3 className="font-heading text-[15px] font-semibold text-foreground">
+                  Panggilan Konseling & Notifikasi
+                </h3>
+                {unreadCount > 0 && <Badge tone="coral">{unreadCount} baru</Badge>}
+              </div>
+
+              {calls.length === 0 && (notifications ?? []).length === 0 ? (
+                <p className="text-[12px] text-muted-foreground">
+                  Belum ada panggilan konseling atau notifikasi untuk Anda.
+                </p>
+              ) : (
+                <div className="space-y-2.5">
+                  {calls.map((c: any) => (
+                    <div
+                      key={c.id}
+                      className="rounded-[10px] border border-rose-100 bg-rose-50/60 p-3"
+                    >
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="text-[12.5px] font-semibold text-foreground">
+                          Anda dipanggil untuk sesi konseling
+                        </p>
+                        <Badge tone={levelTone(c.level)}>Level: {c.level}</Badge>
+                        <Badge tone="amber">{c.status}</Badge>
+                      </div>
+                      <p className="mt-1 text-[11.5px] text-muted-foreground">{c.reason}</p>
+                      {c.notes && (
+                        <p className="mt-1 text-[11.5px] text-foreground/80">Pesan konselor: {c.notes}</p>
+                      )}
+                      <p className="mt-1 text-[10.5px] text-muted-foreground">
+                        {fmtDate(c.created_at)} • {fmtTime(c.created_at)}
+                      </p>
+                    </div>
+                  ))}
+                  {(notifications ?? []).map((n: any) => (
+                    <div
+                      key={n.id}
+                      className={`rounded-[10px] border p-3 ${
+                        n.read ? "border-border" : "border-primary/30 bg-primary/5"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <Bell className="h-3.5 w-3.5 shrink-0 text-primary" strokeWidth={1.8} />
+                        <p className="text-[12.5px] font-semibold text-foreground">{n.title}</p>
+                      </div>
+                      {n.message && (
+                        <p className="mt-1 text-[11.5px] text-muted-foreground">{n.message}</p>
+                      )}
+                      <p className="mt-1 text-[10.5px] text-muted-foreground">
+                        {fmtDate(n.created_at)} • {fmtTime(n.created_at)}
+                      </p>
+                    </div>
+                  ))}
+                  {unreadCount > 0 && (
+                    <Button size="sm" variant="outline" onClick={markAllRead}>
+                      Tandai semua sudah dibaca
+                    </Button>
+                  )}
+                </div>
+              )}
+            </Card>
+
             {/* Layanan Saya */}
+
             <Card className="p-5">
               <h3 className="mb-4 font-heading text-[15px] font-semibold text-foreground">
                 Layanan Saya
