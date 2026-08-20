@@ -604,7 +604,7 @@ const AlumniCenter = () => {
                     <FileSpreadsheet className="h-3.5 w-3.5" /> Export Excel
                   </button>
                   <button
-                    onClick={() => exportToPDF(exportRows, "alumni-peduli", "Data Alumni PEDULI")}
+                    onClick={() => exportToPDF(exportRows, "alumni-peduli", "Data Alumni PEDULI", { badge: "Laporan Data", reportKind: "Data Alumni", subtitle: "Rekapitulasi data alumni & tracer study Career Center PEDULI", summary: [{ label: "Total Alumni", value: exportRows.length }] })}
                     className="w-full h-8 rounded-md bg-destructive text-destructive-foreground text-[12px] font-medium flex items-center justify-center gap-1.5"
                   >
                     <FileDown className="h-3.5 w-3.5" /> Export PDF
@@ -683,7 +683,7 @@ const AlumniCenter = () => {
         <Button size="sm" variant="outline" className="rounded-xl" onClick={() => exportToExcel(exportRows, "alumni-peduli")} disabled={!exportRows.length}>
           <FileSpreadsheet className="h-4 w-4 mr-1.5" /> Excel
         </Button>
-        <Button size="sm" variant="outline" className="rounded-xl" onClick={() => exportToPDF(exportRows, "alumni-peduli", "Data Alumni PEDULI")} disabled={!exportRows.length}>
+        <Button size="sm" variant="outline" className="rounded-xl" onClick={() => exportToPDF(exportRows, "alumni-peduli", "Data Alumni PEDULI", { badge: "Laporan Data", reportKind: "Data Alumni", subtitle: "Rekapitulasi data alumni & tracer study Career Center PEDULI", summary: [{ label: "Total Alumni", value: exportRows.length }] })} disabled={!exportRows.length}>
           <FileDown className="h-4 w-4 mr-1.5" /> PDF
         </Button>
         <AlumniAddDialog />

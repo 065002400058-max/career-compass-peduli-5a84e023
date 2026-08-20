@@ -183,7 +183,7 @@ export default function UniversitiesManager() {
           <Button
             size="sm"
             variant="outline"
-            onClick={() => exportToPDF(exportRows, "data-kampus", "Data Kampus — Career Center PEDULI")}
+            onClick={() => exportToPDF(exportRows, "data-kampus", "Data Kampus — Career Center PEDULI", { badge: "Laporan Data", reportKind: "Database Kampus", subtitle: "Daftar perguruan tinggi tujuan santri & alumni", summary: [{ label: "Total Kampus", value: exportRows.length }] })}
             disabled={!exportRows.length}
           >
             <FileText className="h-4 w-4 mr-1" /> PDF
