@@ -49,6 +49,7 @@ export type Database = {
           university_id: string | null
           university_status: string | null
           updated_at: string
+          updated_by: string | null
           user_id: string | null
           work_city: string | null
           work_country: string | null
@@ -89,6 +90,7 @@ export type Database = {
           university_id?: string | null
           university_status?: string | null
           updated_at?: string
+          updated_by?: string | null
           user_id?: string | null
           work_city?: string | null
           work_country?: string | null
@@ -129,6 +131,7 @@ export type Database = {
           university_id?: string | null
           university_status?: string | null
           updated_at?: string
+          updated_by?: string | null
           user_id?: string | null
           work_city?: string | null
           work_country?: string | null
@@ -431,6 +434,8 @@ export type Database = {
           started_at: string
           test_id: string
           total_score: number
+          updated_at: string
+          updated_by: string | null
           user_id: string
         }
         Insert: {
@@ -444,6 +449,8 @@ export type Database = {
           started_at?: string
           test_id: string
           total_score?: number
+          updated_at?: string
+          updated_by?: string | null
           user_id: string
         }
         Update: {
@@ -457,6 +464,8 @@ export type Database = {
           started_at?: string
           test_id?: string
           total_score?: number
+          updated_at?: string
+          updated_by?: string | null
           user_id?: string
         }
         Relationships: [
@@ -772,6 +781,7 @@ export type Database = {
           source: string | null
           status: string
           updated_at: string
+          updated_by: string | null
           user_id: string
           user_name: string
         }
@@ -784,6 +794,7 @@ export type Database = {
           source?: string | null
           status?: string
           updated_at?: string
+          updated_by?: string | null
           user_id: string
           user_name: string
         }
@@ -796,6 +807,7 @@ export type Database = {
           source?: string | null
           status?: string
           updated_at?: string
+          updated_by?: string | null
           user_id?: string
           user_name?: string
         }
@@ -1144,6 +1156,8 @@ export type Database = {
           recommendation: string | null
           test_id: string
           total_score: number
+          updated_at: string
+          updated_by: string | null
           user_id: string
         }
         Insert: {
@@ -1156,6 +1170,8 @@ export type Database = {
           recommendation?: string | null
           test_id: string
           total_score?: number
+          updated_at?: string
+          updated_by?: string | null
           user_id: string
         }
         Update: {
@@ -1168,6 +1184,8 @@ export type Database = {
           recommendation?: string | null
           test_id?: string
           total_score?: number
+          updated_at?: string
+          updated_by?: string | null
           user_id?: string
         }
         Relationships: [
