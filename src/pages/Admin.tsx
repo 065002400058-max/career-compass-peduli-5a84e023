@@ -131,7 +131,12 @@ const Admin = () => {
     qc.invalidateQueries({ queryKey: ["admin-pending-jobs"] });
   };
 
-  const activeItem = [...MAIN_NAV, ...TOOL_NAV].find((i) => i.key === view);
+  const EXTRA_NAV: AdminNavItem[] = [
+    { key: "counseling", label: "Konseling", icon: HeartPulse },
+    { key: "settings", label: "Pengaturan", icon: MoreHorizontal },
+  ];
+  const activeItem = [...MAIN_NAV, ...TOOL_NAV, ...EXTRA_NAV].find((i) => i.key === view);
+
 
   const Dashboard = () => (
     <div className="pt-8 md:pt-10 pb-6">
