@@ -12,10 +12,12 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { HeartPulse, ArrowLeft, Info } from "lucide-react";
 import { toast } from "sonner";
+import { decodeId } from "@/lib/publicId";
 import { detectScreeningKind, itemScore, interpretScreening, POSITIVE_MESSAGE, DISCLAIMER } from "@/lib/psikotesScoring";
 
 const PsikotesTake = () => {
-  const { id } = useParams();
+  const { id: rawId } = useParams();
+  const id = decodeId(rawId);
   const navigate = useNavigate();
   const { user, loading } = useAuth();
   const qc = useQueryClient();

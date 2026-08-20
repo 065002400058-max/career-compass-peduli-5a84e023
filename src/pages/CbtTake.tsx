@@ -12,6 +12,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Clock, Trophy, CheckCircle2, XCircle, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
+import { decodeId } from "@/lib/publicId";
 
 const RECOMMEND: Record<string, string> = {
   tpa: "Cocok untuk bidang akademik, riset, dan analisis.",
@@ -23,7 +24,8 @@ const RECOMMEND: Record<string, string> = {
 };
 
 const CbtTake = () => {
-  const { id } = useParams();
+  const { id: rawId } = useParams();
+  const id = decodeId(rawId);
   const navigate = useNavigate();
   const { user, loading } = useAuth();
   const qc = useQueryClient();

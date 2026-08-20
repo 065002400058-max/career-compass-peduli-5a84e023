@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { encodeId } from "@/lib/publicId";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -51,7 +52,7 @@ const CbtList = () => {
       navigate("/auth");
       return;
     }
-    navigate(`/cbt/${id}`);
+    navigate(`/cbt/${encodeId(id)}`);
   };
 
   return (
