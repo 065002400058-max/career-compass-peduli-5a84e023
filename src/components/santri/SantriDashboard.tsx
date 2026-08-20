@@ -21,6 +21,8 @@ import {
 import { detectScreeningKind, type ScreeningKind } from "@/lib/psikotesScoring";
 import AlumniInsight from "@/components/shared/AlumniInsight";
 import GraduateStatusCard from "@/components/shared/GraduateStatusCard";
+import useMyResultsRealtime from "@/hooks/useMyResultsRealtime";
+
 
 /* ---------------- helpers ---------------- */
 
@@ -111,52 +113,63 @@ const SCREENING_META: Record<ScreeningKind, { label: string }> = {
 const SantriDashboard = () => {
   const { user, roles } = useAuth();
   const uid = user?.id;
+  useMyResultsRealtime(uid);
 
-  const { data: profile } = useQuery({
+  const { data: profile, isLoading: loadProfile, isError: errProfile } = useQuery({
     queryKey: ["me-profile", uid],
-    queryFn: async () =>
-      (await supabase.from("profiles").select("*").eq("id", uid!).maybeSingle()).data,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("profiles").select("*").eq("id", uid!).maybeSingle();
+      if (error) throw error;
+      return data;
+    },
     enabled: !!uid,
   });
 
-  const { data: psikotes } = useQuery({
+  const { data: psikotes, isLoading: loadPsi, isError: errPsi } = useQuery({
     queryKey: ["me-psikotes", uid],
-    queryFn: async () =>
-      (
-        await supabase
-          .from("psikotes_attempts")
-          .select("*, psikotes_tests(title, psikotes_categories(name))")
-          .eq("user_id", uid!)
-          .order("completed_at", { ascending: false })
-      ).data ?? [],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("psikotes_attempts")
+        .select("*, psikotes_tests(title, psikotes_categories(name))")
+        .eq("user_id", uid!)
+        .order("completed_at", { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
     enabled: !!uid,
   });
 
-  const { data: cbt } = useQuery({
+  const { data: cbt, isLoading: loadCbt, isError: errCbt } = useQuery({
     queryKey: ["me-cbt", uid],
-    queryFn: async () =>
-      (
-        await supabase
-          .from("cbt_attempts")
-          .select("*, cbt_tests(title)")
-          .eq("user_id", uid!)
-          .order("created_at", { ascending: false })
-      ).data ?? [],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("cbt_attempts")
+        .select("*, cbt_tests(title)")
+        .eq("user_id", uid!)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
     enabled: !!uid,
   });
 
-  const { data: referrals } = useQuery({
+  const { data: referrals, isLoading: loadRef, isError: errRef } = useQuery({
     queryKey: ["me-referrals", uid],
-    queryFn: async () =>
-      (
-        await supabase
-          .from("counseling_referrals")
-          .select("id, status, level, reason, created_at")
-          .eq("user_id", uid!)
-          .order("created_at", { ascending: false })
-      ).data ?? [],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("counseling_referrals")
+        .select("id, status, level, reason, created_at")
+        .eq("user_id", uid!)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
     enabled: !!uid,
   });
+
+  const isLoading = loadProfile || loadPsi || loadCbt || loadRef;
+  const isError = errProfile || errPsi || errCbt || errRef;
+
 
   const roleLabel = roles.includes("alumni") ? "Alumni" : "Santri";
   const fullName = profile?.full_name || user?.user_metadata?.full_name || user?.email || "Pengguna";
@@ -278,7 +291,50 @@ const SantriDashboard = () => {
     profile?.education_level && { icon: GraduationCap, text: profile.education_level },
   ].filter(Boolean) as { icon: typeof School; text: string }[];
 
+  /* ---- skeleton / error state ---- */
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[hsl(var(--muted))]/40">
+        <div className="mx-auto w-full max-w-[1600px] animate-pulse px-4 py-6 md:px-7 md:py-7">
+          <div className="mb-5 h-7 w-56 rounded-md bg-muted" />
+          <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_300px]">
+            <div className="space-y-5">
+              <div className="grid gap-5 md:grid-cols-2">
+                <div className="h-40 rounded-xl border border-border bg-card" />
+                <div className="h-40 rounded-xl border border-border bg-card" />
+              </div>
+              <div className="h-64 rounded-xl border border-border bg-card" />
+              <div className="h-48 rounded-xl border border-border bg-card" />
+            </div>
+            <div className="h-72 rounded-xl border border-border bg-card" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="min-h-screen bg-[hsl(var(--muted))]/40">
+        <div className="mx-auto w-full max-w-[1600px] px-4 py-10 md:px-7">
+          <Card className="mx-auto max-w-md p-6 text-center">
+            <h2 className="font-heading text-base font-semibold text-foreground">
+              Gagal memuat data dashboard
+            </h2>
+            <p className="mt-1.5 text-[12.5px] text-muted-foreground">
+              Periksa koneksi Anda lalu coba muat ulang halaman.
+            </p>
+            <Button className="mt-4" onClick={() => window.location.reload()}>
+              Muat Ulang
+            </Button>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
   return (
+
     <div className="min-h-screen bg-[hsl(var(--muted))]/40">
       <div className="mx-auto w-full max-w-[1600px] px-4 py-6 md:px-7 md:py-7">
         {/* Header */}

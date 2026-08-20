@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,8 +18,11 @@ const PsikotesTake = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user, loading } = useAuth();
+  const qc = useQueryClient();
+  const submittingRef = useRef(false);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [result, setResult] = useState<null | { score: string; level: string; conclusion: string; recommendation: string }>(null);
+
 
   useEffect(() => { if (!loading && !user) navigate("/auth"); }, [loading, user, navigate]);
 
@@ -35,6 +39,8 @@ const PsikotesTake = () => {
 
   const handleSubmit = async () => {
     if (!data?.test || !user) return;
+    if (result || submittingRef.current) return;
+    submittingRef.current = true; // cegah simpan ganda saat tombol ditekan berkali-kali
     const kind = detectScreeningKind(data.test.title, (data.test as any).psikotes_categories?.name);
     let total = 0;
     const answerData: any[] = [];
@@ -66,9 +72,17 @@ const PsikotesTake = () => {
       user_id: user.id, test_id: data.test.id, total_score: total,
       level, conclusion, recommendation, answers: answerData,
     });
-    if (error) { toast.error("Gagal menyimpan"); return; }
+    if (error) {
+      submittingRef.current = false;
+      toast.error("Gagal menyimpan");
+      return;
+    }
     setResult({ score: displayScore, level, conclusion, recommendation });
+    ["me-psikotes", "me-cbt", "me-referrals", "santri-center", "screening-insights", "monitoring"].forEach((k) =>
+      qc.invalidateQueries({ queryKey: [k] })
+    );
   };
+
 
 
   const answered = Object.keys(answers).length;

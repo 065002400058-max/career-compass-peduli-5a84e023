@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -25,11 +26,14 @@ const CbtTake = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user, loading } = useAuth();
+  const qc = useQueryClient();
+  const submittingRef = useRef(false);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState<null | {
     score: number; max: number; pct: number; passed: boolean; rec: string;
   }>(null);
   const [timeLeft, setTimeLeft] = useState<number>(0);
+
 
   useEffect(() => { if (!loading && !user) navigate("/auth"); }, [loading, user, navigate]);
 
@@ -62,7 +66,8 @@ const CbtTake = () => {
 
   const handleSubmit = async () => {
     if (!data?.test || !user) return;
-    if (submitted) return;
+    if (submitted || submittingRef.current) return;
+    submittingRef.current = true; // cegah duplikat (klik ganda / timer habis bersamaan)
     let total = 0, max = 0;
     const rows: any[] = [];
     for (const q of data.questions as any[]) {
@@ -83,10 +88,21 @@ const CbtTake = () => {
       percentage: pct, passed, recommendation: rec, completed_at: new Date().toISOString(),
     }).select().single();
 
-    if (error) { toast.error("Gagal menyimpan hasil"); return; }
-    await supabase.from("cbt_attempt_answers").insert(rows.map(r => ({ ...r, attempt_id: attempt.id })));
+    if (error) {
+      submittingRef.current = false;
+      toast.error("Gagal menyimpan hasil");
+      return;
+    }
+    const { error: ansErr } = await supabase
+      .from("cbt_attempt_answers")
+      .insert(rows.map(r => ({ ...r, attempt_id: attempt.id })));
+    if (ansErr) toast.error("Hasil tersimpan, tetapi detail jawaban gagal disimpan");
     setSubmitted({ score: total, max, pct, passed, rec });
+    ["me-cbt", "me-psikotes", "me-referrals", "cbt-attempts", "santri-center", "monitoring"].forEach((k) =>
+      qc.invalidateQueries({ queryKey: [k] })
+    );
   };
+
 
   const answered = Object.keys(answers).length;
   const totalQ = data?.questions.length ?? 0;
