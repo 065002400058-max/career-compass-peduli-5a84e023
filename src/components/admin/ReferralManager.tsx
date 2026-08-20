@@ -14,6 +14,7 @@ const ReferralManager = () => {
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("semua");
+  const [levelFilter, setLevelFilter] = useState("semua");
   const [editing, setEditing] = useState<any>(null);
   const [form, setForm] = useState<any>({ level: "Ringan", status: "pending", reason: "", notes: "" });
   const [busy, setBusy] = useState(false);
