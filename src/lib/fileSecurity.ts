@@ -26,25 +26,23 @@ export async function sniffImageMime(file: File): Promise<string | null> {
   return null;
 }
 
-export type ImageCheck =
-  | { ok: true; mime: string; ext: string }
-  | { ok: false; error: string };
+export type ImageCheck = { ok: boolean; mime: string; ext: string; error: string };
 
 /** Validasi ukuran, MIME yang dilaporkan, dan isi file. */
 export async function validateImageUpload(file: File, maxBytes = 2 * 1024 * 1024): Promise<ImageCheck> {
-  if (file.size === 0) return { ok: false, error: "File kosong" };
+  if (file.size === 0) return { ok: false, mime: "", ext: "", error: "File kosong" };
   if (file.size > maxBytes)
-    return { ok: false, error: `Ukuran file maksimal ${Math.round(maxBytes / 1024 / 1024)}MB` };
+    return { ok: false, mime: "", ext: "", error: `Ukuran file maksimal ${Math.round(maxBytes / 1024 / 1024)}MB` };
 
   const sniffed = await sniffImageMime(file);
   if (!sniffed)
-    return { ok: false, error: "Format tidak didukung. Gunakan PNG, JPG, atau WEBP." };
+    return { ok: false, mime: "", ext: "", error: "Format tidak didukung. Gunakan PNG, JPG, atau WEBP." };
   if (!IMAGE_MIME_ALLOWLIST.includes(sniffed as (typeof IMAGE_MIME_ALLOWLIST)[number]))
-    return { ok: false, error: "Format file tidak diizinkan" };
+    return { ok: false, mime: "", ext: "", error: "Format file tidak diizinkan" };
   if (file.type && file.type !== sniffed && !(sniffed === "image/jpeg" && file.type === "image/jpg"))
-    return { ok: false, error: "Isi file tidak sesuai dengan tipe file" };
+    return { ok: false, mime: "", ext: "", error: "Isi file tidak sesuai dengan tipe file" };
 
-  return { ok: true, mime: sniffed, ext: EXT_BY_MIME[sniffed] };
+  return { ok: true, mime: sniffed, ext: EXT_BY_MIME[sniffed], error: "" };
 }
 
 /** Nama file acak (UUID) di dalam folder milik pengguna. */
