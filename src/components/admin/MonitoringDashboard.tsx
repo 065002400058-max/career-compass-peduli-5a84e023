@@ -153,12 +153,12 @@ function useMonitoringData() {
         }
       });
 
-      const profileMap = new Map((profiles.data ?? []).map((p: any) => [p.user_id, p]));
+      const profileMap = new Map((profiles.data ?? []).map((p: any) => [p.user_id ?? p.id, p]));
       const alumniByUser = new Map((alumni.data ?? []).filter((a: any) => a.user_id).map((a: any) => [a.user_id, a]));
 
       // kumpulkan semua user id yang punya jejak di sistem
       const ids = new Set<string>();
-      (profiles.data ?? []).forEach((p: any) => ids.add(p.user_id));
+      (profiles.data ?? []).forEach((p: any) => ids.add(p.user_id ?? p.id));
       (roles.data ?? []).forEach((r: any) => ids.add(r.user_id));
       [...(psiAttempts.data ?? []), ...(cbtAttempts.data ?? []), ...(referrals.data ?? [])].forEach((r: any) => r.user_id && ids.add(r.user_id));
 
