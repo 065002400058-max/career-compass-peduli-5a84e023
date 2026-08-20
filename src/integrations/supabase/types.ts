@@ -158,33 +158,60 @@ export type Database = {
       alumni_education: {
         Row: {
           alumni_id: string | null
+          city: string | null
           created_at: string | null
           degree: string | null
           end_year: number | null
           id: string
+          level: string | null
           major: string | null
+          notes: string | null
+          province: string | null
           start_year: number | null
+          status: string
           university_id: string | null
+          university_name: string | null
+          university_type: string | null
+          updated_at: string
+          updated_by: string | null
         }
         Insert: {
           alumni_id?: string | null
+          city?: string | null
           created_at?: string | null
           degree?: string | null
           end_year?: number | null
           id?: string
+          level?: string | null
           major?: string | null
+          notes?: string | null
+          province?: string | null
           start_year?: number | null
+          status?: string
           university_id?: string | null
+          university_name?: string | null
+          university_type?: string | null
+          updated_at?: string
+          updated_by?: string | null
         }
         Update: {
           alumni_id?: string | null
+          city?: string | null
           created_at?: string | null
           degree?: string | null
           end_year?: number | null
           id?: string
+          level?: string | null
           major?: string | null
+          notes?: string | null
+          province?: string | null
           start_year?: number | null
+          status?: string
           university_id?: string | null
+          university_name?: string | null
+          university_type?: string | null
+          updated_at?: string
+          updated_by?: string | null
         }
         Relationships: [
           {
