@@ -1,1 +1,4 @@
 project_id = "leyqeacwutuslhyteofs"
+
+[functions.login-guard]
+verify_jwt = false
