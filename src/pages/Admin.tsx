@@ -24,6 +24,8 @@ import UsageReports from "@/components/admin/UsageReports";
 import JobsManager from "@/components/admin/JobsManager";
 import PartnersManager from "@/components/admin/PartnersManager";
 import EventsManager from "@/components/admin/EventsManager";
+import AiHistoryViewer from "@/components/admin/AiHistoryViewer";
+
 
 import duLogo from "@/assets/du-logo-t.png.asset.json";
 import yayasanLogo from "@/assets/yayasan-logo-t.png.asset.json";
@@ -58,6 +60,8 @@ const TOOL_NAV: AdminNavItem[] = [
   { key: "referrals", label: "Rujukan", icon: Users },
   { key: "reports", label: "Laporan Pengguna", icon: FileDown },
   { key: "invitations", label: "Undangan Akun", icon: MailPlus },
+  { key: "ai-history", label: "Histori AI", icon: Bot },
+
 ];
 
 
@@ -216,6 +220,8 @@ const Admin = () => {
       case "referrals": return <ReferralManager />;
       case "reports": return <UsageReports />;
       case "invitations": return <InvitationsManager />;
+      case "ai-history": return <AiHistoryViewer />;
+
       default: return null;
     }
   };
@@ -235,8 +241,9 @@ const Admin = () => {
         },
         { label: "Layanan & Tes", items: [tool("screening"), tool("cbt"), tool("psikotes"), { key: "counseling", label: "Konseling", icon: HeartPulse }, tool("referrals")] },
         { label: "Karier & Kemitraan", items: [tool("jobs"), tool("partners"), tool("events"), tool("universities"), tool("scholarships")] },
-        { label: "Laporan", items: [tool("reports")] },
+        { label: "Laporan", items: [tool("reports"), tool("ai-history")] },
         { label: "Akun & Akses", items: [tool("invitations")] },
+
         { label: "Pengaturan", items: [{ key: "settings", label: "Pengaturan", icon: MoreHorizontal }] },
       ]}
 
