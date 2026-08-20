@@ -77,6 +77,21 @@ const Profile = () => {
 
   const set = (k: keyof ProfileForm, v: string) => setForm((f) => ({ ...f, [k]: v }));
 
+  // id data alumni milik user (untuk riwayat pendidikan)
+  const { data: myAlumniId } = useQuery({
+    queryKey: ["my-alumni-id", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("alumni")
+        .select("id")
+        .eq("user_id", user!.id)
+        .maybeSingle();
+      if (error) throw error;
+      return data?.id ?? null;
+    },
+  });
+
   useEffect(() => {
     if (!authLoading && !user) navigate("/auth");
   }, [authLoading, user, navigate]);
