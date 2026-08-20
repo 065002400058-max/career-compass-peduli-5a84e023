@@ -43,74 +43,87 @@ Deno.serve(async (req) => {
     const ipKey =
       (req.headers.get("x-forwarded-for") ?? "").split(",")[0].trim().slice(0, 64) || "";
 
-    // Baris per (email, ip) -> kegagalan satu akun tidak mengunci akun lain
+    // Dua baris: level akun (ip_key = '') dan level IP -> lock akun ATAU IP.
+    const keys = ipKey ? ["", ipKey] : [""];
+
     const load = async () => {
       const { data } = await admin
         .from("login_attempts")
         .select("*")
         .eq("email", email)
-        .eq("ip_key", ipKey)
-        .maybeSingle();
-      return data as
-        | { id: string; failed_attempts: number; locked_until: string | null }
-        | null;
+        .in("ip_key", keys);
+      return (data ?? []) as {
+        id: string;
+        ip_key: string;
+        failed_attempts: number;
+        locked_until: string | null;
+      }[];
     };
 
-    const lockedInfo = (row: { locked_until: string | null } | null) => {
-      if (!row?.locked_until) return { locked: false, retry_after: 0 };
-      const ms = new Date(row.locked_until).getTime() - Date.now();
-      return ms > 0 ? { locked: true, retry_after: Math.ceil(ms / 1000) } : { locked: false, retry_after: 0 };
+    const lockSeconds = (rows: { locked_until: string | null }[]) => {
+      const max = rows.reduce((acc, r) => {
+        if (!r.locked_until) return acc;
+        const ms = new Date(r.locked_until).getTime() - Date.now();
+        return ms > acc ? ms : acc;
+      }, 0);
+      return max > 0 ? Math.ceil(max / 1000) : 0;
     };
 
-    const current = await load();
+    const rows = await load();
+    const secs = lockSeconds(rows);
 
     if (action === "check") {
-      return json({ ...lockedInfo(current), max_attempts: MAX_ATTEMPTS });
+      return json({ locked: secs > 0, retry_after: secs, max_attempts: MAX_ATTEMPTS });
     }
 
     if (action === "success") {
-      if (current) {
+      if (rows.length) {
         await admin
           .from("login_attempts")
           .update({ failed_attempts: 0, locked_until: null })
-          .eq("id", current.id);
+          .in("id", rows.map((r) => r.id));
       }
       return json({ locked: false, retry_after: 0 });
     }
 
     // action === "failure"
-    const stillLocked = lockedInfo(current);
-    if (stillLocked.locked) {
-      return json({ ...stillLocked, attempts: current?.failed_attempts ?? 0 });
-    }
+    if (secs > 0) return json({ locked: true, retry_after: secs });
 
-    const attempts = (current?.failed_attempts ?? 0) + 1;
-    const lockedUntil =
-      attempts >= MAX_ATTEMPTS ? new Date(Date.now() + LOCK_SECONDS * 1000).toISOString() : null;
+    let locked = false;
+    let attemptsLeft = MAX_ATTEMPTS;
 
-    if (current) {
-      await admin
-        .from("login_attempts")
-        .update({
-          failed_attempts: lockedUntil ? 0 : attempts, // reset counter saat mulai terkunci
+    for (const key of keys) {
+      const row = rows.find((r) => r.ip_key === key);
+      const attempts = (row?.failed_attempts ?? 0) + 1;
+      const lockedUntil =
+        attempts >= MAX_ATTEMPTS ? new Date(Date.now() + LOCK_SECONDS * 1000).toISOString() : null;
+      if (lockedUntil) locked = true;
+      attemptsLeft = Math.min(attemptsLeft, Math.max(0, MAX_ATTEMPTS - attempts));
+
+      if (row) {
+        await admin
+          .from("login_attempts")
+          .update({
+            failed_attempts: lockedUntil ? 0 : attempts, // counter direset saat mulai terkunci
+            last_failed_attempt: new Date().toISOString(),
+            locked_until: lockedUntil,
+          })
+          .eq("id", row.id);
+      } else {
+        await admin.from("login_attempts").insert({
+          email,
+          ip_key: key,
+          failed_attempts: attempts,
           last_failed_attempt: new Date().toISOString(),
           locked_until: lockedUntil,
-        })
-        .eq("id", current.id);
-    } else {
-      await admin.from("login_attempts").insert({
-        email,
-        ip_key: ipKey,
-        failed_attempts: attempts,
-        last_failed_attempt: new Date().toISOString(),
-        locked_until: lockedUntil,
-      });
+        });
+      }
     }
 
     return json({
-      locked: !!lockedUntil,
-      retry_after: lockedUntil ? LOCK_SECONDS : 0,
-      attempts_left: lockedUntil ? 0 : Math.max(0, MAX_ATTEMPTS - attempts),
+      locked,
+      retry_after: locked ? LOCK_SECONDS : 0,
+      attempts_left: locked ? 0 : attemptsLeft,
     });
   } catch (e) {
     console.error("login-guard error", e);
