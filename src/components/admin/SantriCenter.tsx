@@ -176,7 +176,8 @@ const SantriCenter = () => {
       ]);
       const { data: psiTests } = await supabase.from("psikotes_tests").select("id, title");
       return {
-        profiles: profs.data ?? [],
+        // profiles memakai kolom `id` sebagai user id — normalkan ke `user_id`
+        profiles: (profs.data ?? []).map((p: any) => ({ ...p, user_id: p.user_id ?? p.id })),
         santriIds,
         psi: (psi.data ?? []).filter((r: any) => santriIds.has(r.user_id)),
         cbt: (cbt.data ?? []).filter((r: any) => santriIds.has(r.user_id)),
