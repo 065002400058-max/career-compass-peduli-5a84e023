@@ -293,6 +293,11 @@ const Profile = () => {
                 <UserIcon className="h-4 w-4 mr-1.5" /> Status Lulus
               </TabsTrigger>
             )}
+            {!roles.includes("admin") && (
+              <TabsTrigger value="pendidikan">
+                <GraduationCap className="h-4 w-4 mr-1.5" /> Pendidikan
+              </TabsTrigger>
+            )}
             <TabsTrigger value="akun">
               <Lock className="h-4 w-4 mr-1.5" /> Keamanan Akun
             </TabsTrigger>
@@ -301,6 +306,28 @@ const Profile = () => {
           {!roles.includes("admin") && (
             <TabsContent value="status">
               <GraduateStatusCard />
+            </TabsContent>
+          )}
+
+          {!roles.includes("admin") && (
+            <TabsContent value="pendidikan">
+              <Card className="glass-card">
+                <CardHeader>
+                  <CardTitle className="font-heading text-lg">Riwayat Pendidikan</CardTitle>
+                  <CardDescription>
+                    Lengkapi jenjang, perguruan tinggi, program studi, lokasi, tahun, dan status studi Anda.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {myAlumniId ? (
+                    <AlumniEducationManager alumniId={myAlumniId} canEdit />
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      Riwayat pendidikan tersedia setelah Anda memperbarui status kelulusan pada tab <strong>Status Lulus</strong>.
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
             </TabsContent>
           )}
 
