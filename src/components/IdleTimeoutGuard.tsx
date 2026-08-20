@@ -14,6 +14,7 @@ import {
 import { toast } from "sonner";
 
 const IDLE_MS = 3 * 60 * 1000; // auto logout setelah 3 menit tanpa aktivitas
+const LAST_ACTIVITY_KEY = "peduli:last_activity";
 const WARNING_MS = 30 * 1000; // peringatan 30 detik sebelum logout
 
 const EVENTS = ["mousedown", "click", "mousemove", "keydown", "touchstart", "scroll", "visibilitychange"];
