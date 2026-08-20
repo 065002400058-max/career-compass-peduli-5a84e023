@@ -97,7 +97,7 @@ const AlumniCsvImport = () => {
       if (rows.length < 2) throw new Error("CSV kosong");
       const headers = rows[0].map((h) => headerMap[h.trim().toLowerCase()] || h.trim().toLowerCase());
       if (!headers.includes("full_name")) throw new Error("Kolom 'Nama Lengkap' wajib ada");
-      if (!headers.includes("graduation_year")) throw new Error("Kolom 'Angkatan' wajib ada");
+
 
 
       const records = rows.slice(1).map((r) => {
