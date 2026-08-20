@@ -24,6 +24,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
+import { validateImageUpload, ownedStoragePath } from "@/lib/fileSecurity";
 import { Camera, Loader2, Save, Trash2, User as UserIcon, Lock, Mail, GraduationCap } from "lucide-react";
 
 type ProfileForm = {
