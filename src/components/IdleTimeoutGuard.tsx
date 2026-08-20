@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,11 +16,12 @@ import { toast } from "sonner";
 const IDLE_MS = 3 * 60 * 1000; // auto logout setelah 3 menit tanpa aktivitas
 const WARNING_MS = 30 * 1000; // peringatan 30 detik sebelum logout
 
-const EVENTS = ["mousedown", "mousemove", "keydown", "touchstart", "scroll", "visibilitychange"];
+const EVENTS = ["mousedown", "click", "mousemove", "keydown", "touchstart", "scroll", "visibilitychange"];
 
 const IdleTimeoutGuard = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [warn, setWarn] = useState(false);
   const [left, setLeft] = useState(Math.round(WARNING_MS / 1000));
 
@@ -71,6 +72,12 @@ const IdleTimeoutGuard = () => {
       clearAll();
     };
   }, [user, warn, schedule, clearAll]);
+
+  // Pindah halaman dihitung sebagai aktivitas pengguna
+  useEffect(() => {
+    if (user && !warn) schedule();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname]);
 
   if (!user) return null;
 
