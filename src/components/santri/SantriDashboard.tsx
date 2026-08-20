@@ -21,6 +21,8 @@ import {
 import { detectScreeningKind, type ScreeningKind } from "@/lib/psikotesScoring";
 import AlumniInsight from "@/components/shared/AlumniInsight";
 import GraduateStatusCard from "@/components/shared/GraduateStatusCard";
+import useMyResultsRealtime from "@/hooks/useMyResultsRealtime";
+
 
 /* ---------------- helpers ---------------- */
 
