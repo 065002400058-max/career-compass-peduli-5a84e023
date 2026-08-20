@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect } from "react";
-import { Send, Plus, Trash2, Bot, User as UserIcon, Loader2, Briefcase, GraduationCap, Building, Heart, Sparkles, Users } from "lucide-react";
+import { Send, Plus, Trash2, Bot, User as UserIcon, Loader2, Briefcase, GraduationCap, Building, Heart, Sparkles, Users, PanelLeft, Mail, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
@@ -24,7 +25,7 @@ const MODES = [
 ];
 
 const Chat = () => {
-  const { user, loading } = useAuth();
+  const { user, loading, hasRole } = useAuth();
   const navigate = useNavigate();
   const qc = useQueryClient();
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -32,8 +33,10 @@ const Chat = () => {
   const [sending, setSending] = useState(false);
   const [guestMode, setGuestMode] = useState<string>("umum");
   const [guestMessages, setGuestMessages] = useState<Msg[]>([]);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const isAdmin = hasRole("admin");
 
   const { data: threads = [] } = useQuery({
     queryKey: ["chat-threads", user?.id],
@@ -54,6 +57,21 @@ const Chat = () => {
     enabled: !!activeId,
   });
 
+  const { data: threadOwner } = useQuery({
+    queryKey: ["chat-thread-owner", activeId],
+    queryFn: async () => {
+      const owner = threads.find((t: any) => t.id === activeId)?.user_id;
+      if (!owner) return null;
+      const [{ data: profile }, { count: psi }, { count: cbt }] = await Promise.all([
+        supabase.from("profiles").select("full_name, email, role, phone").eq("id", owner).maybeSingle(),
+        supabase.from("psikotes_attempts").select("id", { count: "exact", head: true }).eq("user_id", owner),
+        supabase.from("cbt_attempts").select("id", { count: "exact", head: true }).eq("user_id", owner),
+      ]);
+      return { profile, psi: psi ?? 0, cbt: cbt ?? 0 };
+    },
+    enabled: !!activeId && isAdmin,
+  });
+
   const active = threads.find((t) => t.id === activeId);
 
   useEffect(() => {
@@ -72,6 +90,7 @@ const Chat = () => {
     if (error) return toast.error(error.message);
     qc.invalidateQueries({ queryKey: ["chat-threads"] });
     setActiveId(data.id);
+    setDrawerOpen(false);
   };
 
   const handleDelete = async (id: string) => {
@@ -94,7 +113,6 @@ const Chat = () => {
     const text = input.trim();
     if (!text || sending) return;
 
-    // Guest mode: no DB, just call edge function
     if (!user) {
       const newMsgs: Msg[] = [...guestMessages, { role: "user", content: text }];
       setGuestMessages(newMsgs);
@@ -156,71 +174,102 @@ const Chat = () => {
 
   if (loading) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Memuat...</div>;
 
+  const HistoryList = () => (
+    <>
+      <Button onClick={handleNew} className="w-full mb-3">
+        <Plus className="h-4 w-4 mr-2" /> Percakapan Baru
+      </Button>
+      <ScrollArea className="flex-1 -mx-1 px-1">
+        <div className="space-y-1">
+          {threads.map((t: any) => (
+            <div
+              key={t.id}
+              className={`group flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition-colors ${
+                t.id === activeId ? "bg-accent text-accent-foreground" : "hover:bg-muted"
+              }`}
+              onClick={() => { setActiveId(t.id); setDrawerOpen(false); }}
+            >
+              <Bot className="h-4 w-4 shrink-0 opacity-60" />
+              <span className="text-sm truncate flex-1">{t.title}</span>
+              <button
+                onClick={(e) => { e.stopPropagation(); handleDelete(t.id); }}
+                className="opacity-60 md:opacity-0 md:group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-opacity"
+                aria-label="Hapus percakapan"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          ))}
+          {threads.length === 0 && <p className="text-xs text-muted-foreground p-3">Belum ada percakapan. Mulai chat untuk membuat.</p>}
+        </div>
+      </ScrollArea>
+    </>
+  );
+
+  const gridCols = user
+    ? isAdmin
+      ? "lg:grid-cols-[240px_1fr] xl:grid-cols-[240px_1fr_280px]"
+      : "lg:grid-cols-[240px_1fr]"
+    : "";
+
   return (
-    <div className="min-h-[calc(100vh-4rem)] gradient-bg-subtle">
-      <div className="w-full max-w-[1600px] mx-auto px-2 sm:px-4 py-2 md:py-5">
-        <div className={`grid grid-cols-1 ${user ? "lg:grid-cols-[240px_1fr]" : ""} gap-3 h-[calc(100dvh-5rem)] md:h-[calc(100vh-6rem)]`}>
+    <div className="h-[calc(100dvh-4rem)] gradient-bg-subtle overflow-hidden">
+      <div className="w-full max-w-[1600px] mx-auto px-2 sm:px-4 py-2 md:py-4 h-full">
+        <div className={`grid grid-cols-1 ${gridCols} gap-3 h-full min-h-0`}>
 
           {user && (
-            <aside className="glass-card rounded-xl p-3 flex flex-col">
-              <Button onClick={handleNew} className="w-full mb-3">
-                <Plus className="h-4 w-4 mr-2" /> Percakapan Baru
-              </Button>
-              <ScrollArea className="flex-1 -mx-1 px-1">
-                <div className="space-y-1">
-                  {threads.map((t: any) => (
-                    <div
-                      key={t.id}
-                      className={`group flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition-colors ${
-                        t.id === activeId ? "bg-accent text-accent-foreground" : "hover:bg-muted"
-                      }`}
-                      onClick={() => setActiveId(t.id)}
-                    >
-                      <Bot className="h-4 w-4 shrink-0 opacity-60" />
-                      <span className="text-sm truncate flex-1">{t.title}</span>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); handleDelete(t.id); }}
-                        className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-opacity"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
-                  ))}
-                  {threads.length === 0 && <p className="text-xs text-muted-foreground p-3">Belum ada percakapan. Mulai chat untuk membuat.</p>}
-                </div>
-              </ScrollArea>
+            <aside className="hidden lg:flex glass-card rounded-xl p-3 flex-col min-h-0">
+              <HistoryList />
             </aside>
           )}
 
-          <main className="glass-card rounded-xl flex flex-col overflow-hidden">
+          <main className="glass-card rounded-xl flex flex-col overflow-hidden min-h-0 min-w-0">
             {!user && (
               <div className="px-4 py-2 bg-muted/50 border-b border-border flex items-center justify-between gap-2 text-xs">
                 <span className="text-muted-foreground">Mode tamu — riwayat tidak disimpan.</span>
                 <Button size="sm" variant="link" className="h-auto p-0 text-xs" onClick={() => navigate("/auth")}>Login untuk menyimpan</Button>
               </div>
             )}
-            <div className="p-3 border-b border-border flex flex-wrap gap-2">
-              {MODES.map((m) => {
-                const Icon = m.icon;
-                const isActive = displayMode === m.id;
-                return (
-                  <button
-                    key={m.id}
-                    onClick={() => setMode(m.id)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                      isActive ? "gradient-bg text-primary-foreground shadow-md" : "bg-muted hover:bg-accent text-muted-foreground"
-                    }`}
-                  >
-                    <Icon className="h-3.5 w-3.5" />
-                    {m.label}
-                  </button>
-                );
-              })}
+
+            <div className="p-2.5 border-b border-border flex items-center gap-2 min-w-0">
+              {user && (
+                <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
+                  <SheetTrigger asChild>
+                    <Button variant="outline" size="icon" className="h-8 w-8 shrink-0 lg:hidden" aria-label="Riwayat percakapan">
+                      <PanelLeft className="h-4 w-4" />
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent side="left" className="w-[86vw] max-w-[320px] flex flex-col p-4">
+                    <SheetTitle className="text-base mb-2">Riwayat Percakapan</SheetTitle>
+                    <HistoryList />
+                  </SheetContent>
+                </Sheet>
+              )}
+              <div className="flex-1 min-w-0 overflow-x-auto no-scrollbar">
+                <div className="flex gap-1.5 w-max">
+                  {MODES.map((m) => {
+                    const Icon = m.icon;
+                    const isActive = displayMode === m.id;
+                    return (
+                      <button
+                        key={m.id}
+                        onClick={() => setMode(m.id)}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
+                          isActive ? "gradient-bg text-primary-foreground shadow-md" : "bg-muted hover:bg-accent text-muted-foreground"
+                        }`}
+                      >
+                        <Icon className="h-3.5 w-3.5" />
+                        {m.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
 
-            <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4">
+            <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto p-4 md:p-6 space-y-4">
               {displayMessages.length === 0 && (
-                <div className="h-full flex flex-col items-center justify-center text-center max-w-md mx-auto py-12">
+                <div className="h-full flex flex-col items-center justify-center text-center max-w-md mx-auto py-8">
                   <div className="h-16 w-16 rounded-2xl gradient-bg flex items-center justify-center mb-4">
                     <Bot className="h-8 w-8 text-primary-foreground" />
                   </div>
@@ -238,7 +287,7 @@ const Chat = () => {
                       <Bot className="h-4 w-4 text-primary-foreground" />
                     </div>
                   )}
-                  <div className={`max-w-[90%] sm:max-w-[85%] lg:max-w-[75%] rounded-2xl px-4 py-2.5 ${m.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"}`}>
+                  <div className={`max-w-[85%] lg:max-w-[75%] rounded-2xl px-4 py-2.5 ${m.role === "user" ? "gradient-bg text-primary-foreground rounded-br-sm" : "bg-muted rounded-bl-sm"}`}>
                     {m.role === "assistant" ? (
                       <div className="prose prose-sm max-w-none dark:prose-invert prose-p:my-1 prose-ul:my-1">
                         <ReactMarkdown>{m.content}</ReactMarkdown>
@@ -267,7 +316,7 @@ const Chat = () => {
               )}
             </div>
 
-            <div className="p-3 border-t border-border">
+            <div className="p-3 border-t border-border bg-card/70 backdrop-blur">
               <div className="flex gap-2 items-end">
                 <Textarea
                   ref={inputRef}
@@ -286,6 +335,40 @@ const Chat = () => {
               </div>
             </div>
           </main>
+
+          {user && isAdmin && (
+            <aside className="hidden xl:flex glass-card rounded-xl p-4 flex-col gap-3 min-h-0 overflow-y-auto">
+              <h3 className="font-heading text-sm font-semibold flex items-center gap-2">
+                <ShieldCheck className="h-4 w-4 text-primary" /> Info Pengguna
+              </h3>
+              {!activeId || !threadOwner?.profile ? (
+                <p className="text-xs text-muted-foreground">Pilih percakapan untuk melihat detail pengguna.</p>
+              ) : (
+                <div className="space-y-3 text-sm">
+                  <div>
+                    <p className="font-medium text-foreground">{threadOwner.profile.full_name}</p>
+                    <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
+                      <Mail className="h-3 w-3" /> {threadOwner.profile.email ?? "-"}
+                    </p>
+                  </div>
+                  <Badge variant="secondary" className="text-[10px]">{threadOwner.profile.role ?? "santri"}</Badge>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="rounded-lg border border-border p-2 text-center">
+                      <p className="text-lg font-bold text-foreground">{threadOwner.psi}</p>
+                      <p className="text-[10px] text-muted-foreground">Psikotes</p>
+                    </div>
+                    <div className="rounded-lg border border-border p-2 text-center">
+                      <p className="text-lg font-bold text-foreground">{threadOwner.cbt}</p>
+                      <p className="text-[10px] text-muted-foreground">CBT</p>
+                    </div>
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    Mode aktif: <span className="text-foreground">{String(displayMode).replace("_", " ")}</span>
+                  </div>
+                </div>
+              )}
+            </aside>
+          )}
         </div>
       </div>
     </div>
