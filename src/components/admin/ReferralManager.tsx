@@ -18,6 +18,9 @@ const ReferralManager = () => {
   const [editing, setEditing] = useState<any>(null);
   const [form, setForm] = useState<any>({ level: "Ringan", status: "pending", reason: "", notes: "" });
   const [busy, setBusy] = useState(false);
+  const [calling, setCalling] = useState<any>(null);
+  const [callMsg, setCallMsg] = useState("");
+  const [callSchedule, setCallSchedule] = useState("");
 
   const { data = [], isLoading } = useQuery({
     queryKey: ["admin-referrals"],
@@ -76,6 +79,39 @@ const ReferralManager = () => {
     refresh();
   };
 
+  const openCall = (r: any) => {
+    setCalling(r);
+    setCallMsg("");
+    setCallSchedule("");
+  };
+
+  const sendCall = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!callMsg.trim()) return toast.error("Tulis pesan panggilan konseling");
+    setBusy(true);
+    const jadwal = callSchedule ? new Date(callSchedule).toLocaleString("id-ID") : null;
+    const message = jadwal ? `${callMsg.trim()} (Jadwal: ${jadwal})` : callMsg.trim();
+    const { error } = await supabase
+      .from("counseling_referrals")
+      .update({ status: "diproses", notes: message })
+      .eq("id", calling.id);
+    if (error) {
+      setBusy(false);
+      return toast.error(`Gagal memproses: ${error.message}`);
+    }
+    const { error: notifErr } = await supabase.from("notifications").insert({
+      user_id: calling.user_id,
+      title: "Panggilan Konseling",
+      message,
+      type: "warning",
+    });
+    setBusy(false);
+    if (notifErr) toast.error(`Rujukan diproses, notifikasi gagal: ${notifErr.message}`);
+    else toast.success("Panggilan konseling terkirim ke pengguna");
+    setCalling(null);
+    refresh();
+  };
+
   const levelColor = (l: string) => (l === "Tinggi" ? "destructive" : l === "Sedang" ? "default" : "secondary");
 
   const filtered = data.filter((r: any) => {
@@ -110,9 +146,21 @@ const ReferralManager = () => {
         >
           {["semua", "tinggi", "sedang", "ringan"].map((s) => <option key={s} value={s}>Level: {s}</option>)}
         </select>
-        <Badge variant={perluProses > 0 ? "destructive" : "secondary"} className="sm:ml-auto">
-          {perluProses} level tinggi perlu diproses
-        </Badge>
+        <button
+          type="button"
+          onClick={() => {
+            const active = levelFilter === "tinggi" && statusFilter === "pending";
+            setLevelFilter(active ? "semua" : "tinggi");
+            setStatusFilter(active ? "semua" : "pending");
+          }}
+          className="sm:ml-auto"
+          title="Klik untuk memfilter level tinggi yang perlu diproses"
+        >
+          <Badge variant={perluProses > 0 ? "destructive" : "secondary"} className="cursor-pointer">
+            {perluProses} level tinggi perlu diproses
+            {levelFilter === "tinggi" && statusFilter === "pending" ? " (aktif)" : ""}
+          </Badge>
+        </button>
       </div>
 
 
@@ -142,7 +190,7 @@ const ReferralManager = () => {
                 {(r.level ?? "").toLowerCase() === "tinggi" ? (
                   <>
                     {r.status === "pending" && (
-                      <Button size="sm" onClick={() => setStatus(r.id, "diproses")}><Clock className="h-3.5 w-3.5 mr-1" />Proses</Button>
+                      <Button size="sm" onClick={() => openCall(r)}><Clock className="h-3.5 w-3.5 mr-1" />Proses & Panggil</Button>
                     )}
                     {r.status !== "selesai" && (
                       <Button size="sm" variant="outline" onClick={() => setStatus(r.id, "selesai")}><CheckCircle className="h-3.5 w-3.5 mr-1" />Selesai</Button>
@@ -163,6 +211,31 @@ const ReferralManager = () => {
           ))
         )}
       </div>
+
+      <Dialog open={!!calling} onOpenChange={(v) => !v && setCalling(null)}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Panggilan Konseling — {calling?.user_name}</DialogTitle></DialogHeader>
+          <form onSubmit={sendCall} className="space-y-3">
+            <div>
+              <Label>Pesan Panggilan *</Label>
+              <Textarea
+                rows={4}
+                autoFocus
+                placeholder="Contoh: Mohon hadir ke ruang BK untuk sesi konseling bersama Ustadz Ahmad."
+                value={callMsg}
+                onChange={(e) => setCallMsg(e.target.value)}
+              />
+            </div>
+            <div>
+              <Label>Jadwal (opsional)</Label>
+              <Input type="datetime-local" value={callSchedule} onChange={(e) => setCallSchedule(e.target.value)} />
+            </div>
+            <Button type="submit" className="w-full" disabled={busy}>
+              {busy ? "Mengirim..." : "Kirim Panggilan & Tandai Diproses"}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={!!editing} onOpenChange={(v) => !v && setEditing(null)}>
         <DialogContent className="max-h-[85vh] overflow-y-auto">
