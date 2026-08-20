@@ -8,6 +8,7 @@ import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/s
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
+import { streamChatAi } from "@/lib/chatStream";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -31,6 +32,7 @@ const Chat = () => {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
+  const [streamText, setStreamText] = useState("");
   const [guestMode, setGuestMode] = useState<string>("umum");
   const [guestMessages, setGuestMessages] = useState<Msg[]>([]);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -119,13 +121,11 @@ const Chat = () => {
       setInput("");
       setSending(true);
       try {
-        const { data, error } = await supabase.functions.invoke("chat-ai", {
-          body: { messages: newMsgs, mode: guestMode },
-        });
-        if (error) throw error;
-        if (data?.error) throw new Error(data.error);
-        setGuestMessages([...newMsgs, { role: "assistant", content: data.reply }]);
+        const reply = await streamChatAi(newMsgs as any, guestMode, (partial) => setStreamText(partial));
+        setGuestMessages([...newMsgs, { role: "assistant", content: reply }]);
+        setStreamText("");
       } catch (e: any) {
+        setStreamText("");
         toast.error(e.message || "Gagal mengirim pesan");
       } finally {
         setSending(false);
@@ -155,16 +155,14 @@ const Chat = () => {
 
     try {
       const historyForAI: Msg[] = [...messages.map((m: any) => ({ role: m.role, content: m.content })), { role: "user", content: text }];
-      const { data, error } = await supabase.functions.invoke("chat-ai", {
-        body: { messages: historyForAI, mode: threadMode },
-      });
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
-      await supabase.from("chat_messages").insert({ thread_id: threadId, user_id: user.id, role: "assistant", content: data.reply });
+      const reply = await streamChatAi(historyForAI as any, threadMode, (partial) => setStreamText(partial));
+      setStreamText("");
+      await supabase.from("chat_messages").insert({ thread_id: threadId, user_id: user.id, role: "assistant", content: reply });
       await supabase.from("chat_threads").update({ updated_at: new Date().toISOString() }).eq("id", threadId);
       qc.invalidateQueries({ queryKey: ["chat-messages", threadId] });
       qc.invalidateQueries({ queryKey: ["chat-threads"] });
     } catch (e: any) {
+      setStreamText("");
       toast.error(e.message || "Gagal mengirim pesan");
     } finally {
       setSending(false);
@@ -308,10 +306,18 @@ const Chat = () => {
                   <div className="h-8 w-8 rounded-full gradient-bg flex items-center justify-center shrink-0">
                     <Bot className="h-4 w-4 text-primary-foreground" />
                   </div>
-                  <div className="bg-muted rounded-2xl px-4 py-3 flex items-center gap-2">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    <span className="text-sm text-muted-foreground">Sedang berpikir...</span>
-                  </div>
+                  {streamText ? (
+                    <div className="max-w-[85%] lg:max-w-[75%] rounded-2xl rounded-bl-sm bg-muted px-4 py-2.5">
+                      <div className="prose prose-sm max-w-none dark:prose-invert prose-p:my-1 prose-ul:my-1">
+                        <ReactMarkdown>{streamText}</ReactMarkdown>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="bg-muted rounded-2xl px-4 py-3 flex items-center gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span className="text-sm text-muted-foreground">Sedang berpikir...</span>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
