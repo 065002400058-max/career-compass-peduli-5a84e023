@@ -177,16 +177,16 @@ const Profile = () => {
 
   const uploadAvatar = async (file: File) => {
     if (!user) return;
-    if (file.size > 3 * 1024 * 1024) {
-      toast.error("Ukuran foto maksimal 3MB");
+    const check = await validateImageUpload(file, 2 * 1024 * 1024);
+    if (!check.ok) {
+      toast.error(check.error);
       return;
     }
     setUploading(true);
-    const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
-    const path = `${user.id}/avatar-${Date.now()}.${ext}`;
+    const path = ownedStoragePath(user.id, check.ext);
     const { error: upErr } = await supabase.storage
       .from("avatars")
-      .upload(path, file, { upsert: true });
+      .upload(path, file, { upsert: true, contentType: check.mime });
     if (upErr) {
       setUploading(false);
       toast.error(`Gagal unggah foto: ${upErr.message}`);
