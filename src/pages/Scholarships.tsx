@@ -49,7 +49,13 @@ const Scholarships = () => {
             {filtered.map((s: any) => (
               <div key={s.id} className="glass-card rounded-xl p-5 hover:shadow-lg transition-shadow">
                 <div className="flex items-start justify-between mb-2">
-                  <Badge variant="secondary">{s.type}</Badge>
+                  <Badge variant="secondary">
+                    {s.type === "luar_negeri"
+                      ? "Luar Negeri"
+                      : s.type === "dalam_negeri"
+                        ? "Dalam Negeri"
+                        : s.type}
+                  </Badge>
                   <Badge variant="outline">{s.country}</Badge>
                 </div>
                 <h3 className="font-heading font-semibold text-lg mb-1">{s.name}</h3>

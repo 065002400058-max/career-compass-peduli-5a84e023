@@ -11,6 +11,7 @@ import IdleTimeoutGuard from "@/components/IdleTimeoutGuard";
 import Index from "./pages/Index";
 import Jobs from "./pages/Jobs";
 import Alumni from "./pages/Alumni";
+import AlumniDetail from "./pages/AlumniDetail";
 import Partners from "./pages/Partners";
 import Events from "./pages/Events";
 import Admin from "./pages/Admin";
@@ -45,6 +46,7 @@ const App = () => (
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/jobs" element={<Jobs />} />
             <Route path="/alumni" element={<Alumni />} />
+            <Route path="/alumni/:id" element={<AlumniDetail />} />
             <Route path="/partners" element={<Partners />} />
             <Route path="/events" element={<Events />} />
             <Route path="/admin" element={<Admin />} />
