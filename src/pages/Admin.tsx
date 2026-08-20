@@ -114,11 +114,9 @@ const Admin = () => {
 
   const ALIAS: Record<string, string> = {
     tools: "jobs",
-    counseling: "referrals",
     unidentified: "alumni",
-    
-    settings: "reports",
   };
+
 
   const select = (key: string) => {
     const target = ALIAS[key] ?? key;
