@@ -23,7 +23,7 @@ const AlumniInsight = () => {
   useAlumniRealtime();
   const { data: rows = [] } = useQuery({
     queryKey: ["alumni-dashboard-agg"],
-    queryFn: async () => (await supabase.from("alumni").select("*")).data ?? [],
+    queryFn: async () => (await supabase.rpc("alumni_directory")).data ?? [],
   });
 
   const s = alumniSummary(rows as any[]);

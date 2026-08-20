@@ -1590,6 +1590,46 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      alumni_directory: {
+        Args: never
+        Returns: {
+          company: string
+          company_type: string
+          created_at: string
+          education_level: string
+          employment_status: string
+          faculty: string
+          full_name: string
+          further_education: string
+          gender: string
+          graduation_status: string
+          graduation_year: number
+          id: string
+          job_field: string
+          location: string
+          major: string
+          name: string
+          origin: string
+          position: string
+          status: string
+          target_university: string
+          tracer_filled_at: string
+          university: string
+          university_status: string
+          updated_at: string
+          work_city: string
+          work_country: string
+          work_province: string
+        }[]
+      }
+      cbt_answer_options: {
+        Args: { _test_id: string }
+        Returns: {
+          answer_text: string
+          id: string
+          question_id: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1602,6 +1642,10 @@ export type Database = {
         Returns: string
       }
       public_stats: { Args: never; Returns: Json }
+      submit_cbt_attempt: {
+        Args: { _answers: Json; _test_id: string }
+        Returns: Json
+      }
       submit_graduate_status: {
         Args: {
           _company?: string

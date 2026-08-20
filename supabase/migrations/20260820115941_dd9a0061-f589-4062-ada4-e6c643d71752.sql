@@ -1,0 +1,1 @@
+REVOKE SELECT (contact_email) ON public.partners FROM anon;

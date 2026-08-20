@@ -21,12 +21,9 @@ const Alumni = () => {
   const { data: alumni = [], isLoading } = useQuery({
     queryKey: ["alumni"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("alumni")
-        .select("*")
-        .order("graduation_year", { ascending: false });
+      const { data, error } = await supabase.rpc("alumni_directory");
       if (error) throw error;
-      return data;
+      return (data ?? []).sort((a: any, b: any) => (b.graduation_year ?? 0) - (a.graduation_year ?? 0));
     },
   });
 
