@@ -233,7 +233,8 @@ const drawSummaryCards = (
   cards.slice(0, 8).forEach((c, i) => {
     const row = Math.floor(i / perRow);
     const col = i % perRow;
-    const x = margin + col * (cardW + gap);
+    const step = perRow > 1 ? (pageW - margin * 2 - cardW) / (perRow - 1) : 0;
+    const x = margin + col * step;
     const cy = y + row * (cardH + gap);
     roundedCard(doc, x, cy, cardW, cardH);
     setFill(doc, PEDULI.emerald);
