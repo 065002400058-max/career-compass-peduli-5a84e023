@@ -205,8 +205,16 @@ const Auth = () => {
             </button>
           </div>
 
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Memproses..." : (<><LogIn className="h-4 w-4 mr-2" />Masuk</>)}
+          {lockLeft > 0 && (
+            <div className="flex items-center gap-2 rounded-xl border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+              <Timer className="h-3.5 w-3.5 shrink-0" />
+              Terlalu banyak percobaan login. Silakan coba kembali dalam{" "}
+              <span className="font-semibold">{lockLeft} detik</span>.
+            </div>
+          )}
+
+          <Button type="submit" className="w-full" disabled={loading || lockLeft > 0}>
+            {loading ? "Memproses..." : lockLeft > 0 ? `Tunggu ${lockLeft}s` : (<><LogIn className="h-4 w-4 mr-2" />Masuk</>)}
           </Button>
         </form>
 
