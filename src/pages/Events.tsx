@@ -2,6 +2,8 @@ import { CalendarDays, MapPin, Clock, Users, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
@@ -63,6 +65,7 @@ const downloadIcs = (ev: any) => {
 
 const Events = () => {
   const { hasRole } = useAuth();
+  const [selected, setSelected] = useState<any>(null);
   const isAdmin = hasRole("admin");
   const { data: events = [], isLoading } = useQuery({
     queryKey: ["events"],
@@ -137,7 +140,7 @@ const Events = () => {
                 whileHover={{ y: -4, transition: { duration: 0.2 } }}
                 className="glass-card rounded-xl overflow-hidden border-primary/10 group flex flex-col"
               >
-                <div className="relative h-28 overflow-hidden">
+                <button type="button" onClick={() => setSelected(e)} className="relative h-28 overflow-hidden text-left" aria-label={`Lihat detail ${e.title}`}>
                   <img
                     src={assetUrl(e.image_url || eventImages[e.type] || eventImages["Seminar"])}
                     alt={e.title}
@@ -149,7 +152,7 @@ const Events = () => {
                     <Badge variant={(typeColor[e.type] as any) || "secondary"} className="mb-1 text-[10px] px-1.5 py-0">{e.type}</Badge>
                     <h3 className="font-heading font-semibold text-white text-sm line-clamp-1">{e.title}</h3>
                   </div>
-                </div>
+                </button>
                 <div className="p-3 flex-1 flex flex-col">
                   {e.description && <p className="text-xs text-muted-foreground mb-2 line-clamp-2">{e.description}</p>}
                   <div className="space-y-1 text-xs text-muted-foreground mb-3">
@@ -158,13 +161,47 @@ const Events = () => {
                     <p className="flex items-center gap-1.5"><MapPin className="h-3 w-3 text-primary shrink-0" />{e.location}</p>
                     {e.capacity && <p className="flex items-center gap-1.5"><Users className="h-3 w-3 text-primary shrink-0" />{e.capacity} peserta</p>}
                   </div>
-                  <Button className="w-full mt-auto gradient-bg border-0 hover:opacity-90 transition-opacity text-xs h-8" size="sm" onClick={() => downloadIcs(e)}>Simpan ke Kalender</Button>
+                  <Button variant="outline" className="w-full mt-auto text-xs h-8" size="sm" onClick={() => setSelected(e)}>Lihat Detail</Button>
                 </div>
               </motion.div>
             ))}
           </motion.div>
         )}
       </div>
+
+      <Dialog open={!!selected} onOpenChange={(v) => !v && setSelected(null)}>
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto p-0">
+          {selected && (
+            <>
+              <div className="relative h-44 overflow-hidden rounded-t-lg">
+                <img
+                  src={assetUrl(selected.image_url || eventImages[selected.type] || eventImages["Seminar"])}
+                  alt={selected.title}
+                  className="h-full w-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+                <Badge variant={(typeColor[selected.type] as any) || "secondary"} className="absolute top-3 left-3">{selected.type}</Badge>
+              </div>
+              <div className="p-5">
+                <DialogHeader className="mb-3">
+                  <DialogTitle className="font-heading text-lg leading-snug">{selected.title}</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-1.5 text-sm text-muted-foreground mb-3">
+                  <p className="flex items-center gap-2"><CalendarDays className="h-4 w-4 text-primary shrink-0" />{format(new Date(selected.date), "EEEE, d MMMM yyyy", { locale: idLocale })}</p>
+                  <p className="flex items-center gap-2"><Clock className="h-4 w-4 text-primary shrink-0" />{format(new Date(selected.date), "HH:mm")} WIB</p>
+                  <p className="flex items-center gap-2"><MapPin className="h-4 w-4 text-primary shrink-0" />{selected.location}</p>
+                  {selected.capacity && <p className="flex items-center gap-2"><Users className="h-4 w-4 text-primary shrink-0" />Kapasitas {selected.capacity} peserta</p>}
+                  {selected.organizer && <p className="text-xs">Penyelenggara: {selected.organizer}</p>}
+                </div>
+                {selected.description && <p className="text-sm text-foreground/80 whitespace-pre-line mb-4">{selected.description}</p>}
+                <Button className="w-full gradient-bg border-0 hover:opacity-90" onClick={() => downloadIcs(selected)}>
+                  Daftar / Simpan ke Kalender
+                </Button>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

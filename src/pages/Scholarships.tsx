@@ -4,11 +4,14 @@ import { Award, Calendar, ExternalLink, Search, GraduationCap } from "lucide-rea
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { assetUrl } from "@/lib/assetUrl";
 import { scholarshipImages } from "@/lib/defaultImages";
 
 const Scholarships = () => {
   const [q, setQ] = useState("");
+  const [selected, setSelected] = useState<any>(null);
   const { data = [], isLoading } = useQuery({
     queryKey: ["scholarships"],
     queryFn: async () => {
@@ -53,7 +56,7 @@ const Scholarships = () => {
               const imageUrl = s.image_url || (isDomestic ? scholarshipImages.domestic : scholarshipImages.abroad);
               return (
                 <div key={s.id} className="glass-card rounded-xl overflow-hidden hover:shadow-lg transition-shadow flex flex-col">
-                  <div className="relative h-24 overflow-hidden">
+                  <button type="button" onClick={() => setSelected({ ...s, imageUrl })} className="relative h-24 overflow-hidden text-left w-full" aria-label={`Lihat detail ${s.name}`}>
                     <img
                       src={assetUrl(imageUrl)}
                       alt={s.name}
@@ -69,7 +72,7 @@ const Scholarships = () => {
                     <div className="absolute bottom-2 right-2">
                       <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-background/80">{s.country}</Badge>
                     </div>
-                  </div>
+                  </button>
                   <div className="p-3 flex-1 flex flex-col">
                     <div className="flex items-start gap-2 mb-1">
                       <div className="h-7 w-7 rounded-lg gradient-bg flex items-center justify-center shrink-0">
@@ -87,11 +90,13 @@ const Scholarships = () => {
                         <Calendar className="h-3 w-3" /> Deadline: {new Date(s.deadline).toLocaleDateString("id-ID")}
                       </p>
                     )}
-                    {s.url && (
-                      <a href={s.url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline flex items-center gap-1 mt-auto">
-                        Daftar / Info <ExternalLink className="h-3 w-3" />
-                      </a>
-                    )}
+                    <button
+                      type="button"
+                      onClick={() => setSelected({ ...s, imageUrl })}
+                      className="text-xs text-primary hover:underline flex items-center gap-1 mt-auto"
+                    >
+                      Lihat Detail <ExternalLink className="h-3 w-3" />
+                    </button>
                   </div>
                 </div>
               );
@@ -99,6 +104,53 @@ const Scholarships = () => {
           </div>
         )}
       </div>
+
+      <Dialog open={!!selected} onOpenChange={(v) => !v && setSelected(null)}>
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto p-0">
+          {selected && (
+            <>
+              <div className="relative h-40 overflow-hidden rounded-t-lg">
+                <img src={assetUrl(selected.imageUrl)} alt={selected.name} className="h-full w-full object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                <Badge variant="secondary" className="absolute top-3 left-3">
+                  {selected.type === "luar_negeri" ? "Luar Negeri" : selected.type === "dalam_negeri" ? "Dalam Negeri" : selected.type}
+                </Badge>
+                {selected.country && (
+                  <Badge variant="outline" className="absolute bottom-3 right-3 bg-background/80">{selected.country}</Badge>
+                )}
+              </div>
+              <div className="p-5">
+                <DialogHeader className="mb-2">
+                  <DialogTitle className="font-heading text-lg leading-snug">{selected.name}</DialogTitle>
+                </DialogHeader>
+                <p className="text-sm text-primary mb-3">{selected.provider}</p>
+                {selected.description && <p className="text-sm text-foreground/80 whitespace-pre-line mb-3">{selected.description}</p>}
+                <div className="space-y-1.5 text-sm text-muted-foreground mb-4">
+                  {selected.amount && <p>💰 Nilai beasiswa: {selected.amount}</p>}
+                  {selected.deadline && (
+                    <p className="flex items-center gap-2">
+                      <Calendar className="h-4 w-4 text-primary shrink-0" />
+                      Deadline: {new Date(selected.deadline).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
+                    </p>
+                  )}
+                  {selected.requirements && (
+                    <p className="whitespace-pre-line text-foreground/80">Persyaratan: {selected.requirements}</p>
+                  )}
+                </div>
+                {selected.url ? (
+                  <Button asChild className="w-full gradient-bg border-0 hover:opacity-90">
+                    <a href={selected.url} target="_blank" rel="noopener noreferrer">
+                      Daftar / Info Lengkap <ExternalLink className="h-4 w-4 ml-1.5" />
+                    </a>
+                  </Button>
+                ) : (
+                  <p className="text-xs text-muted-foreground">Tautan pendaftaran belum tersedia.</p>
+                )}
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
