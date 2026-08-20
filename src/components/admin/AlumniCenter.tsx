@@ -831,6 +831,11 @@ const AlumniCenter = () => {
                         </AlertDialogFooter>
                       </AlertDialogContent>
                     </AlertDialog>
+                    <Button asChild size="sm" variant="outline" className="rounded-xl">
+                      <Link to={`/alumni/${encodeId(detail.id)}`}>
+                        <ExternalLink className="h-4 w-4 mr-1.5" /> Halaman Detail
+                      </Link>
+                    </Button>
                   </>
                 )}
               </div>
