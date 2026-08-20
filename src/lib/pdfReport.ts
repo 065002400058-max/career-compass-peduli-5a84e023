@@ -240,6 +240,11 @@ const drawSummaryCards = (
     doc.roundedRect(x, cy, 1.6, cardH, 0.8, 0.8, "F");
     setFill(doc, PEDULI.light);
     doc.roundedRect(x + 5, cy + 5.5, 7, 7, 2, 2, "F");
+    setFill(doc, PEDULI.emerald);
+    doc.roundedRect(x + 7, cy + 10.4, 1.3, 2.6, 0.6, 0.6, "F");
+    doc.roundedRect(x + 9, cy + 8.6, 1.3, 4.4, 0.6, 0.6, "F");
+    setFill(doc, PEDULI.gold);
+    doc.roundedRect(x + 11, cy + 7.4, 1.3, 5.6, 0.6, 0.6, "F");
 
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7.5);
@@ -292,31 +297,29 @@ const drawDonut = (
     const sweep = (s.value / total) * 360;
     const col = s.color ?? CHART_COLORS[i % CHART_COLORS.length];
     setFill(doc, col);
-    // approximate the ring with thin radial segments (print-safe, no gradients)
-    for (let a = start; a < start + sweep; a += 1.5) {
-      const rad1 = (a * Math.PI) / 180;
-      const rad2 = ((a + 1.8) * Math.PI) / 180;
+    setDraw(doc, col);
+    doc.setLineWidth(0.2);
+    // filled sector built from an overlapping triangle fan (no seams, print-safe)
+    for (let a = start; a < start + sweep - 0.001; a += 3) {
+      const a2 = Math.min(a + 3.4, start + sweep);
+      const r1 = (a * Math.PI) / 180;
+      const r2 = (a2 * Math.PI) / 180;
       doc.triangle(
-        cx + rInner * Math.cos(rad1),
-        cy + rInner * Math.sin(rad1),
-        cx + rOuter * Math.cos(rad1),
-        cy + rOuter * Math.sin(rad1),
-        cx + rOuter * Math.cos(rad2),
-        cy + rOuter * Math.sin(rad2),
-        "F"
-      );
-      doc.triangle(
-        cx + rInner * Math.cos(rad1),
-        cy + rInner * Math.sin(rad1),
-        cx + rInner * Math.cos(rad2),
-        cy + rInner * Math.sin(rad2),
-        cx + rOuter * Math.cos(rad2),
-        cy + rOuter * Math.sin(rad2),
-        "F"
+        cx,
+        cy,
+        cx + rOuter * Math.cos(r1),
+        cy + rOuter * Math.sin(r1),
+        cx + rOuter * Math.cos(r2),
+        cy + rOuter * Math.sin(r2),
+        "FD"
       );
     }
     start += sweep;
   });
+  // hole
+  setFill(doc, PEDULI.white);
+  setDraw(doc, PEDULI.white);
+  doc.circle(cx, cy, rInner, "FD");
 
   const main = cfg.slices[0];
   doc.setFont("helvetica", "bold");
@@ -474,7 +477,8 @@ export const generateReportPdf = async (
       head: [headers],
       body,
       startY: y,
-      margin: { left: margin, right: margin, top: HEADER_H + 8, bottom: 20 },
+      margin: { left: margin, right: margin, top: HEADER_H + 10, bottom: 24 },
+      rowPageBreak: "avoid",
       theme: "plain",
       styles: {
         font: "helvetica",
