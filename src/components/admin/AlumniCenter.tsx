@@ -865,6 +865,7 @@ const AlumniCenter = () => {
                       {[
                         ["Nama", show(detail.full_name || detail.name)],
                         ["Jenis Kelamin", show(detail.gender)],
+                        ["Nomor HP (WhatsApp)", show(detail.phone)],
                         ["Angkatan", detail.graduation_year ?? EMPTY],
                         ["Asal", show(detail.origin)],
                         ["Jenjang Pendidikan", show(detail.education_level)],
