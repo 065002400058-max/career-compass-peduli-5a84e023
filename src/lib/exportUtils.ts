@@ -77,13 +77,23 @@ const HEADER_MAP: Record<string, string> = {
   completed_at: "Selesai",
 };
 
+/**
+ * Cegah CSV/Excel formula injection: nilai yang diawali = + - @ (atau kontrol
+ * karakter tab/CR) bisa dieksekusi sebagai formula saat file dibuka.
+ */
+const sanitizeCell = (value: any) => {
+  if (typeof value !== "string") return value;
+  const trimmed = value.replace(/^[\t\r\n]+/, "");
+  return /^[=+\-@]/.test(trimmed) ? `'${trimmed}` : trimmed;
+};
+
 const mapHeaders = (rows: any[]) => {
   if (!rows.length) return [];
   return rows.map(row => {
     const newRow: any = {};
     Object.keys(row).forEach(key => {
       const mappedKey = HEADER_MAP[key] || key;
-      newRow[mappedKey] = row[key];
+      newRow[mappedKey] = sanitizeCell(row[key]);
     });
     return newRow;
   });

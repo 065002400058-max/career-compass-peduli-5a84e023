@@ -29,6 +29,7 @@ import Tentang from "./pages/Tentang";
 import Profile from "./pages/Profile";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
+import RobotsController from "./components/seo/RobotsController";
 
 const queryClient = new QueryClient();
 
@@ -41,6 +42,7 @@ const App = () => (
         <BrowserRouter>
           <Navbar />
           <IdleTimeoutGuard />
+          <RobotsController />
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/dashboard" element={<Dashboard />} />

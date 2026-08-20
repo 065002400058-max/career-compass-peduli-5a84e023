@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Noto+Sans+Arabic:wght@400;500;600;700&family=Poppins:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap');
+/* Font di-host lokal: lihat public/fonts/fonts.css (dimuat dari index.html) */
 
 @tailwind base;
 @tailwind components;
