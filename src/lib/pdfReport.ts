@@ -498,6 +498,10 @@ export const generateReportPdf = async (
       bodyStyles: { fillColor: PEDULI.white },
       tableLineColor: PEDULI.border,
       tableLineWidth: 0,
+      willDrawPage: () => {
+        setFill(doc, PEDULI.greyBg);
+        doc.rect(0, 0, pageW, pageH, "F");
+      },
       didParseCell: (data) => {
         if (data.section === "body") {
           const v = String(data.cell.raw ?? "");
