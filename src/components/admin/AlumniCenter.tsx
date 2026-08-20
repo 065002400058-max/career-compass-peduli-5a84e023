@@ -857,12 +857,14 @@ const AlumniCenter = () => {
                       </div>
                     </dl>
                   </section>
+
+                  <AlumniEducationManager alumniId={detail.id} canEdit title="Riwayat Pendidikan Alumni" />
                 </>
               )}
             </div>
           )}
-        </SheetContent>
-      </Sheet>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };
