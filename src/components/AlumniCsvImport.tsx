@@ -61,6 +61,26 @@ const headerMap: Record<string, string> = {
   "kampus": "university",
   "pekerjaan": "position",
   "position": "position",
+  "nomor handphone (whatsapp)": "phone",
+  "nomor handphone": "phone",
+  "nomor hp": "phone",
+  "no hp": "phone",
+  "no. hp": "phone",
+  "handphone": "phone",
+  "whatsapp": "phone",
+  "wa": "phone",
+  "telepon": "phone",
+  "phone": "phone",
+};
+
+// Normalisasi nomor HP Indonesia -> format 62xxxxxxxxxx
+const normalizePhone = (raw?: string) => {
+  const digits = (raw || "").replace(/[^0-9+]/g, "").replace(/^\+/, "");
+  if (!digits) return null;
+  if (digits.startsWith("62")) return digits;
+  if (digits.startsWith("0")) return `62${digits.slice(1)}`;
+  if (digits.startsWith("8")) return `62${digits}`;
+  return digits;
 };
 
 
@@ -96,6 +116,7 @@ const AlumniCsvImport = () => {
           major: obj.major || null,
           university: obj.university || null,
           position: obj.position || null,
+          phone: normalizePhone(obj.phone),
           status: "belum_mengisi_tracer",
           graduation_status: "belum_mengisi_tracer",
           employment_status: "belum_mengisi_tracer",
@@ -121,7 +142,7 @@ const AlumniCsvImport = () => {
   };
 
   const downloadTemplate = () => {
-    const csv = "No,Nama Lengkap,NIM,Jenis Kelamin,Angkatan,Asal,Jenjang Pendidikan,Jurusan,Universitas,Pekerjaan\n1,Ahmad Fauzi,12345,Laki-laki,2022,Bandung,S1,Teknik Informatika,Universitas Indonesia,Software Engineer\n";
+    const csv = "No,Nama Lengkap,NIM,Jenis Kelamin,Nomor Handphone (Whatsapp),Angkatan,Asal,Jenjang Pendidikan,Jurusan,Universitas,Pekerjaan\n1,Ahmad Fauzi,12345,Laki-laki,081234567890,2022,Bandung,S1,Teknik Informatika,Universitas Indonesia,Software Engineer\n2,Siti Aminah,12346,Perempuan,082198765432,2023,Cirebon,S1,Manajemen,Universitas Padjadjaran,Staff Marketing\n";
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
