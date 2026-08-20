@@ -121,12 +121,23 @@ const ReferralManager = () => {
                 <p className="text-[10px] text-muted-foreground mt-1">{new Date(r.created_at).toLocaleString("id-ID")}</p>
               </div>
               <div className="flex flex-wrap gap-2 shrink-0">
-                {r.status === "pending" && (
-                  <Button size="sm" onClick={() => setStatus(r.id, "diproses")}><Clock className="h-3.5 w-3.5 mr-1" />Proses</Button>
+                {(r.level ?? "").toLowerCase() === "tinggi" ? (
+                  <>
+                    {r.status === "pending" && (
+                      <Button size="sm" onClick={() => setStatus(r.id, "diproses")}><Clock className="h-3.5 w-3.5 mr-1" />Proses</Button>
+                    )}
+                    {r.status !== "selesai" && (
+                      <Button size="sm" variant="outline" onClick={() => setStatus(r.id, "selesai")}><CheckCircle className="h-3.5 w-3.5 mr-1" />Selesai</Button>
+                    )}
+                  </>
+                ) : (
+                  r.status !== "selesai" && (
+                    <Button size="sm" variant="outline" onClick={() => setStatus(r.id, "selesai")}>
+                      <CheckCircle className="h-3.5 w-3.5 mr-1" />Cukup Dipantau
+                    </Button>
+                  )
                 )}
-                {r.status !== "selesai" && (
-                  <Button size="sm" variant="outline" onClick={() => setStatus(r.id, "selesai")}><CheckCircle className="h-3.5 w-3.5 mr-1" />Selesai</Button>
-                )}
+
                 <Button size="icon" variant="ghost" onClick={() => setEditing(r)}><Pencil className="h-4 w-4" /></Button>
                 <Button size="icon" variant="ghost" className="text-destructive" onClick={() => del(r)}><Trash2 className="h-4 w-4" /></Button>
               </div>
