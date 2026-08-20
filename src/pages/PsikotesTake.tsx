@@ -18,8 +18,11 @@ const PsikotesTake = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user, loading } = useAuth();
+  const qc = useQueryClient();
+  const submittingRef = useRef(false);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [result, setResult] = useState<null | { score: string; level: string; conclusion: string; recommendation: string }>(null);
+
 
   useEffect(() => { if (!loading && !user) navigate("/auth"); }, [loading, user, navigate]);
 
