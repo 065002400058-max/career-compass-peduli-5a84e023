@@ -652,12 +652,21 @@ const AlumniCenter = () => {
             { v: fUniversitas, set: setFUniversitas, ph: "Universitas", opts: uniqSorted(rows, "university") },
             { v: fUniStatus, set: setFUniStatus, ph: "Dalam/Luar Negeri", opts: Array.from(new Set(rows.map(uniStatus))).sort() },
             { v: fKerja, set: setFKerja, ph: "Status Pekerjaan", opts: Array.from(new Set(rows.map(workStatus))).sort() },
-          ].map((f) => (
+            { v: fEduLevel, set: setFEduLevel, ph: "Jenjang Kuliah", opts: EDU_LEVELS.map((o) => o.value), labels: EDU_LEVELS },
+            { v: fEduType, set: setFEduType, ph: "PTN/PTS", opts: EDU_UNI_TYPES.map((o) => o.value), labels: EDU_UNI_TYPES },
+            { v: fEduKampus, set: setFEduKampus, ph: "Kampus (Pendidikan)", opts: Array.from(new Set(eduRows.map((e) => e.university_name).filter(Boolean) as string[])).sort((a, b) => a.localeCompare(b)) },
+            { v: fEduProdi, set: setFEduProdi, ph: "Program Studi", opts: Array.from(new Set(eduRows.map((e) => e.major).filter(Boolean) as string[])).sort((a, b) => a.localeCompare(b)) },
+            { v: fEduLulus, set: setFEduLulus, ph: "Tahun Lulus Kuliah", opts: Array.from(new Set(eduRows.map((e) => (e.end_year ? String(e.end_year) : "")).filter(Boolean))).sort((a, b) => b.localeCompare(a)) },
+          ].map((f: any) => (
             <Select key={f.ph} value={f.v} onValueChange={f.set}>
               <SelectTrigger className="h-9 rounded-xl bg-card text-xs"><SelectValue placeholder={f.ph} /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Semua {f.ph}</SelectItem>
-                {f.opts.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+                {f.opts.map((o: string) => (
+                  <SelectItem key={o} value={o}>
+                    {f.labels ? f.labels.find((l: any) => l.value === o)?.label ?? o : o}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           ))}
@@ -674,7 +683,7 @@ const AlumniCenter = () => {
         </Button>
         <AlumniAddDialog />
         <AlumniCsvImport />
-        {(onlyNoTracer || search || [fAngkatan, fGender, fJenjang, fUniversitas, fUniStatus, fKerja].some((v) => v !== "all")) && (
+        {(onlyNoTracer || search || [fAngkatan, fGender, fJenjang, fUniversitas, fUniStatus, fKerja, fEduLevel, fEduType, fEduKampus, fEduProdi, fEduLulus].some((v) => v !== "all")) && (
           <Button size="sm" variant="ghost" className="rounded-xl" onClick={resetFilters}>
             <X className="h-4 w-4 mr-1.5" /> Reset filter
           </Button>
