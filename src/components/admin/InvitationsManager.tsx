@@ -33,6 +33,7 @@ import {
   Search,
   Send,
   Trash2,
+  Upload,
   UserPlus,
   XCircle,
 } from "lucide-react";
@@ -46,6 +47,7 @@ type Invitation = {
   role: Role;
   status: string;
   notes: string | null;
+  identity_number: string | null;
   expires_at: string | null;
   accepted_at: string | null;
   created_at: string;
@@ -60,7 +62,7 @@ const STATUS_LABEL: Record<string, string> = {
   kedaluwarsa: "Kedaluwarsa",
 };
 
-const EMPTY = { email: "", full_name: "", role: "santri" as Role, notes: "" };
+const EMPTY = { email: "", full_name: "", identity_number: "", role: "santri" as Role, notes: "" };
 
 const InvitationsManager = () => {
   const qc = useQueryClient();
@@ -72,6 +74,8 @@ const InvitationsManager = () => {
   const [fStatus, setFStatus] = useState<string>("all");
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [lastLink, setLastLink] = useState<string | null>(null);
+  const [importing, setImporting] = useState(false);
+  const [importLog, setImportLog] = useState<string[]>([]);
 
   const set = (k: keyof typeof EMPTY, v: string) => setForm((f) => ({ ...f, [k]: v }));
 
@@ -112,7 +116,7 @@ const InvitationsManager = () => {
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ["admin-invitations"] });
 
-  const sendInvite = async (email: string, full_name: string, role: Role, notes?: string) => {
+  const sendInvite = async (email: string, full_name: string, role: Role, notes?: string, identity_number?: string) => {
     setSending(true);
     setLastLink(null);
     try {
@@ -128,8 +132,11 @@ const InvitationsManager = () => {
       if ((data as { error?: string })?.error) throw new Error((data as { error: string }).error);
 
       const res = data as { already_registered?: boolean; email_sent?: boolean; action_link?: string | null; warning?: string | null };
-      if (notes) {
-        await supabase.from("invitations").update({ notes }).eq("email", email.trim().toLowerCase());
+      const extra: Record<string, string> = {};
+      if (notes) extra.notes = notes;
+      if (identity_number) extra.identity_number = identity_number;
+      if (Object.keys(extra).length) {
+        await supabase.from("invitations").update(extra).eq("email", email.trim().toLowerCase());
       }
       if (res.already_registered) {
         toast.info("Email ini sudah memiliki akun aktif.");
@@ -152,7 +159,7 @@ const InvitationsManager = () => {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (sending) return;
-    const ok = await sendInvite(form.email, form.full_name, form.role, form.notes);
+    const ok = await sendInvite(form.email, form.full_name, form.role, form.notes, form.identity_number);
     if (ok) {
       setForm(EMPTY);
       setOpen(false);
@@ -178,6 +185,60 @@ const InvitationsManager = () => {
     invalidate();
   };
 
+  // Import CSV: kolom email, nama_lengkap, peran, nomor_identitas, catatan
+  const importCsv = async (file: File) => {
+    setImporting(true);
+    setImportLog([]);
+    const log: string[] = [];
+    try {
+      const text = await file.text();
+      const lines = text.split(/\r?\n/).filter((l) => l.trim() !== "");
+      if (!lines.length) throw new Error("File kosong");
+
+      const sep = lines[0].includes(";") && !lines[0].includes(",") ? ";" : ",";
+      const head = lines[0].toLowerCase().split(sep).map((h) => h.trim());
+      const idx = (...names: string[]) => head.findIndex((h) => names.includes(h));
+      const iEmail = idx("email");
+      if (iEmail < 0) throw new Error("Kolom 'email' tidak ditemukan pada header CSV");
+      const iName = idx("nama_lengkap", "nama", "full_name");
+      const iRole = idx("peran", "role");
+      const iIdent = idx("nomor_identitas", "nis", "nim", "identity_number");
+      const iNotes = idx("catatan", "notes");
+
+      let ok = 0;
+      for (const line of lines.slice(1)) {
+        const c = line.split(sep).map((v) => v.trim());
+        const email = (c[iEmail] ?? "").toLowerCase();
+        if (!email || !email.includes("@")) {
+          log.push(`Dilewati (email tidak valid): ${line.slice(0, 40)}`);
+          continue;
+        }
+        const roleRaw = (iRole >= 0 ? c[iRole] : "").toLowerCase() as Role;
+        const role = (ROLES as string[]).includes(roleRaw) ? roleRaw : ("santri" as Role);
+        const sent = await sendInvite(
+          email,
+          iName >= 0 ? c[iName] ?? "" : "",
+          role,
+          iNotes >= 0 ? c[iNotes] : undefined,
+          iIdent >= 0 ? c[iIdent] : undefined,
+        );
+        if (sent) {
+          ok += 1;
+          log.push(`Berhasil: ${email} (${role})`);
+        } else {
+          log.push(`Gagal: ${email}`);
+        }
+      }
+      toast.success(`Import selesai: ${ok} undangan diproses`);
+      invalidate();
+    } catch (e) {
+      toast.error(`Import gagal: ${(e as Error).message}`);
+    } finally {
+      setImportLog(log);
+      setImporting(false);
+    }
+  };
+
   return (
     <div className="space-y-4 min-w-0">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -186,10 +247,34 @@ const InvitationsManager = () => {
           <p className="text-sm text-muted-foreground">
             Pendaftaran publik ditutup. Akun hanya aktif setelah admin mengundang emailnya.
           </p>
+          <p className="text-[11px] text-muted-foreground mt-1">
+            Format CSV: <code>email, nama_lengkap, peran, nomor_identitas, catatan</code>
+          </p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={() => refetch()}>
             <RefreshCw className="h-4 w-4 mr-1.5" /> Muat Ulang
+          </Button>
+          <Button size="sm" variant="outline" asChild disabled={importing}>
+            <label className="cursor-pointer">
+              {importing ? (
+                <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
+              ) : (
+                <Upload className="h-4 w-4 mr-1.5" />
+              )}
+              Import CSV
+              <input
+                type="file"
+                accept=".csv,text/csv"
+                className="hidden"
+                aria-label="Import undangan dari CSV"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  e.target.value = "";
+                  if (f) importCsv(f);
+                }}
+              />
+            </label>
           </Button>
           <Button size="sm" onClick={() => setOpen(true)}>
             <UserPlus className="h-4 w-4 mr-1.5" /> Undang Pengguna
@@ -231,6 +316,20 @@ const InvitationsManager = () => {
             >
               <Copy className="h-4 w-4 mr-1.5" /> Salin
             </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {importLog.length > 0 && (
+        <Card className="rounded-2xl">
+          <CardHeader className="pb-2 flex-row items-center justify-between">
+            <CardTitle className="text-sm">Hasil Import CSV</CardTitle>
+            <Button size="sm" variant="ghost" onClick={() => setImportLog([])}>Tutup</Button>
+          </CardHeader>
+          <CardContent className="max-h-48 overflow-y-auto space-y-1">
+            {importLog.map((l, i) => (
+              <p key={i} className="text-[11px] text-muted-foreground break-words">{l}</p>
+            ))}
           </CardContent>
         </Card>
       )}
@@ -315,6 +414,9 @@ const InvitationsManager = () => {
                   </Badge>
                 </div>
                 <p className="text-xs text-muted-foreground truncate">{r.email}</p>
+                {r.identity_number && (
+                  <p className="text-[11px] text-muted-foreground">No. Identitas: {r.identity_number}</p>
+                )}
                 <p className="text-[11px] text-muted-foreground">
                   Dibuat {new Date(r.created_at).toLocaleDateString("id-ID")}
                   {r.accepted_at && ` · Aktif ${new Date(r.accepted_at).toLocaleDateString("id-ID")}`}
@@ -327,7 +429,7 @@ const InvitationsManager = () => {
                       size="sm"
                       variant="outline"
                       disabled={sending}
-                      onClick={() => sendInvite(r.email, r.full_name ?? "", r.role)}
+                      onClick={() => sendInvite(r.email, r.full_name ?? "", r.role, undefined, r.identity_number ?? undefined)}
                     >
                       <Send className="h-4 w-4 mr-1.5" /> Kirim Ulang
                     </Button>
@@ -380,6 +482,15 @@ const InvitationsManager = () => {
                 value={form.full_name}
                 onChange={(e) => set("full_name", e.target.value)}
                 placeholder="Nama lengkap"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Nomor Identitas (NIS/NIM)</Label>
+              <Input
+                aria-label="Nomor identitas undangan"
+                value={form.identity_number}
+                onChange={(e) => set("identity_number", e.target.value)}
+                placeholder="Opsional"
               />
             </div>
             <div className="space-y-1.5">
