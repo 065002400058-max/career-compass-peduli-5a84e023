@@ -82,12 +82,17 @@ const ReferralManager = () => {
     const matchSearch =
       (r.user_name ?? "").toLowerCase().includes(s) || (r.reason ?? "").toLowerCase().includes(s);
     const matchStatus = statusFilter === "semua" || r.status === statusFilter;
-    return matchSearch && matchStatus;
+    const matchLevel = levelFilter === "semua" || (r.level ?? "").toLowerCase() === levelFilter;
+    return matchSearch && matchStatus && matchLevel;
   });
+
+  const perluProses = data.filter(
+    (r: any) => (r.level ?? "").toLowerCase() === "tinggi" && r.status === "pending",
+  ).length;
 
   return (
     <div>
-      <div className="flex flex-col sm:flex-row gap-2 mb-3">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-3">
         <Input placeholder="Cari nama / alasan..." value={search} onChange={(e) => setSearch(e.target.value)} className="sm:max-w-xs" />
         <select
           className="h-10 rounded-md border border-input bg-background px-3 text-sm"
@@ -96,7 +101,19 @@ const ReferralManager = () => {
         >
           {["semua", "pending", "diproses", "selesai"].map((s) => <option key={s} value={s}>{s}</option>)}
         </select>
+        <select
+          className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+          value={levelFilter}
+          onChange={(e) => setLevelFilter(e.target.value)}
+          aria-label="Filter level"
+        >
+          {["semua", "tinggi", "sedang", "ringan"].map((s) => <option key={s} value={s}>Level: {s}</option>)}
+        </select>
+        <Badge variant={perluProses > 0 ? "destructive" : "secondary"} className="sm:ml-auto">
+          {perluProses} level tinggi perlu diproses
+        </Badge>
       </div>
+
 
       <div className="glass-card rounded-xl divide-y divide-border">
         {isLoading ? (
