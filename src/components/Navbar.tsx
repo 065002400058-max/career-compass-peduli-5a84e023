@@ -218,9 +218,9 @@ const Navbar = () => {
             to="/"
             className="flex items-center justify-center gap-3 lg:gap-5 min-w-0 flex-wrap"
           >
-            <LogoStrip />
             <BrandText />
           </Link>
+
 
 
           <div className="flex items-center justify-end gap-2">
