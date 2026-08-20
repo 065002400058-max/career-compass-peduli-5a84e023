@@ -467,6 +467,7 @@ export const generateReportPdf = async (
     y += h + 6;
   }
 
+  let firstTablePage = true;
   if (rows.length) {
     const body = rows.map((r) => headers.map((h) => String(r[h] ?? "-")));
     autoTable(doc, {
@@ -499,6 +500,10 @@ export const generateReportPdf = async (
       tableLineColor: PEDULI.border,
       tableLineWidth: 0,
       willDrawPage: () => {
+        if (firstTablePage) {
+          firstTablePage = false;
+          return;
+        }
         setFill(doc, PEDULI.greyBg);
         doc.rect(0, 0, pageW, pageH, "F");
       },
