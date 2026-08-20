@@ -133,7 +133,7 @@ const ScreeningInsights = () => {
         tests: tests.data ?? [],
         attempts: attempts.data ?? [],
         roles: roles.data ?? [],
-        profiles: profiles.data ?? [],
+        profiles: (profiles.data ?? []).map((p: any) => ({ ...p, user_id: p.id })),
         referrals: referrals.data ?? [],
         cbt: cbt.data ?? [],
         cbtTests: cbtTests.data ?? [],
