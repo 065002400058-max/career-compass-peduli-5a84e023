@@ -1,5 +1,8 @@
 import { useAlumniRealtime } from "@/hooks/useAlumniRealtime";
 import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import { ExternalLink } from "lucide-react";
+import { encodeId } from "@/lib/publicId";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
