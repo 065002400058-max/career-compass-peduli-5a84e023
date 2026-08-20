@@ -478,7 +478,7 @@ export const generateReportPdf = async (
       body,
       startY: y,
       margin: { left: margin, right: margin, top: HEADER_H + 10, bottom: 24 },
-      rowPageBreak: "avoid",
+      rowPageBreak: "auto",
       theme: "plain",
       styles: {
         font: "helvetica",
