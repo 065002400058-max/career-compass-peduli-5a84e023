@@ -3,6 +3,7 @@ import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import GenderAvatar from "@/components/shared/GenderAvatar";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Table,
