@@ -1,6 +1,8 @@
 import * as XLSX from "xlsx";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
+import { downloadReportPdf, type ReportOptions } from "@/lib/pdfReport";
+
+export type { ReportOptions };
+
 
 /**
  * Standardized mapping for export headers to ensure human-readable Excel/CSV files.
