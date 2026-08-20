@@ -22,14 +22,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [roles, setRoles] = useState<AppRole[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [rolesLoading, setRolesLoading] = useState(false);
+
+  // Selesai memuat hanya jika sesi DAN peran sudah diketahui,
+  // supaya halaman ber-guard (mis. /admin) tidak salah redirect.
+  const loading = authLoading || rolesLoading;
 
   const fetchRoles = async (userId: string) => {
+    setRolesLoading(true);
     const { data } = await supabase
       .from("user_roles")
       .select("role")
       .eq("user_id", userId);
     setRoles(data?.map((r) => r.role) ?? []);
+    setRolesLoading(false);
   };
 
   useEffect(() => {
@@ -38,11 +45,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
-          setTimeout(() => fetchRoles(session.user.id), 0);
+          setRolesLoading(true);
+          setTimeout(() => fetchRoles(session.user!.id), 0);
         } else {
           setRoles([]);
+          setRolesLoading(false);
         }
-        setLoading(false);
+        setAuthLoading(false);
       }
     );
 
@@ -50,9 +59,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
+        setRolesLoading(true);
         fetchRoles(session.user.id);
       }
-      setLoading(false);
+      setAuthLoading(false);
     });
 
     return () => subscription.unsubscribe();
