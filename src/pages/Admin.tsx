@@ -8,7 +8,7 @@ import { Sheet, SheetContent } from "@/components/ui/sheet";
 import {
   Users, Briefcase, Building2, CheckCircle, XCircle, Brain, HeartPulse, GraduationCap,
   Award, MoreHorizontal, TrendingUp, FileDown, Bell, Menu, LayoutDashboard, UserCircle,
-  ChevronDown, ArrowRight, User as UserIcon, MailPlus,
+  ChevronDown, ArrowRight, User as UserIcon, MailPlus, Bot,
 } from "lucide-react";
 import AdminSidebar, { AdminNavItem } from "@/components/admin/AdminSidebar";
 import SantriCenter from "@/components/admin/SantriCenter";
