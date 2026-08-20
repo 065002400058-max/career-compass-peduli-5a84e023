@@ -1,14 +1,14 @@
-User-agent: Googlebot
-Allow: /
-
-User-agent: Bingbot
-Allow: /
-
-User-agent: Twitterbot
-Allow: /
-
-User-agent: facebookexternalhit
-Allow: /
-
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /profil
+Disallow: /chat
+Disallow: /auth
+Disallow: /reset-password
+Disallow: /cbt
+Disallow: /psikotes
+Disallow: /tracer
+Disallow: /alumni
+
+Sitemap: https://career-compass-peduli.lovable.app/sitemap.xml
