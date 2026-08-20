@@ -29,6 +29,7 @@ const CounselingManager = () => {
   const [editing, setEditing] = useState<any>(null);
   const [form, setForm] = useState<any>(emptyForm);
   const [busy, setBusy] = useState(false);
+  const [personQuery, setPersonQuery] = useState("");
 
   const { data = [], isLoading } = useQuery({
     queryKey: ["admin-counseling"],
@@ -57,6 +58,7 @@ const CounselingManager = () => {
 
   useEffect(() => {
     if (!open) return;
+    setPersonQuery("");
     setForm(
       editing
         ? {
@@ -181,15 +183,26 @@ const CounselingManager = () => {
           <form onSubmit={save} className="space-y-3">
             <div>
               <Label>Peserta (Santri/Alumni)</Label>
+              <Input
+                className="mb-2"
+                placeholder="Ketik nama peserta untuk mencari..."
+                value={personQuery}
+                onChange={(e) => setPersonQuery(e.target.value)}
+              />
               <select
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
                 value={form.alumni_id}
                 onChange={(e) => setForm({ ...form, alumni_id: e.target.value })}
               >
                 <option value="">— Tidak dikaitkan —</option>
-                {people.map((p: any) => (
-                  <option key={p.id} value={p.id}>{p.full_name || p.name}</option>
-                ))}
+                {people
+                  .filter((p: any) =>
+                    (p.full_name || p.name || "").toLowerCase().includes(personQuery.toLowerCase()),
+                  )
+                  .slice(0, 100)
+                  .map((p: any) => (
+                    <option key={p.id} value={p.id}>{p.full_name || p.name}</option>
+                  ))}
               </select>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
