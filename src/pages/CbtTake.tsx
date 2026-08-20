@@ -26,11 +26,14 @@ const CbtTake = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user, loading } = useAuth();
+  const qc = useQueryClient();
+  const submittingRef = useRef(false);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState<null | {
     score: number; max: number; pct: number; passed: boolean; rec: string;
   }>(null);
   const [timeLeft, setTimeLeft] = useState<number>(0);
+
 
   useEffect(() => { if (!loading && !user) navigate("/auth"); }, [loading, user, navigate]);
 
