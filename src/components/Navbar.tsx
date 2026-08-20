@@ -251,7 +251,6 @@ const Navbar = () => {
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent side="left" className="md:hidden p-0 w-[86vw] max-w-[320px] flex flex-col">
           <div className="h-[56px] px-4 border-b border-border flex items-center gap-2.5 shrink-0">
-            <img src={assetUrl(duLogo.url)} alt="Career Center PEDULI" className="h-8 w-8 object-contain shrink-0" />
             <div className="leading-tight min-w-0">
               <p className="font-heading text-[14px] font-bold text-foreground truncate">
                 Career Center <span className="text-primary">PEDULI</span>
