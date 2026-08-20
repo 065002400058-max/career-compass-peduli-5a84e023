@@ -43,8 +43,15 @@ const CbtTake = () => {
     queryKey: ["cbt-take", id],
     queryFn: async () => {
       const { data: test } = await supabase.from("cbt_tests").select("*, cbt_categories(name, type)").eq("id", id).single();
-      const { data: qs } = await supabase.from("cbt_questions").select("*, cbt_answers(*)").eq("test_id", id).order("order_index");
-      return { test, questions: qs ?? [] };
+      const { data: qs } = await supabase.from("cbt_questions").select("*").eq("test_id", id).order("order_index");
+      const { data: opts } = await supabase.rpc("cbt_answer_options", { _test_id: id as string });
+      const byQ = new Map<string, any[]>();
+      ((opts as any[]) ?? []).forEach((o) => {
+        const list = byQ.get(o.question_id) ?? [];
+        list.push(o);
+        byQ.set(o.question_id, list);
+      });
+      return { test, questions: (qs ?? []).map((q: any) => ({ ...q, cbt_answers: byQ.get(q.id) ?? [] })) };
     },
     enabled: !!id && !!user,
   });
@@ -70,36 +77,25 @@ const CbtTake = () => {
     if (!data?.test || !user) return;
     if (submitted || submittingRef.current) return;
     submittingRef.current = true; // cegah duplikat (klik ganda / timer habis bersamaan)
-    let total = 0, max = 0;
-    const rows: any[] = [];
-    for (const q of data.questions as any[]) {
-      const maxQ = Math.max(0, ...q.cbt_answers.map((a: any) => a.score));
-      max += maxQ;
-      const chosenId = answers[q.id];
-      const chosen = q.cbt_answers.find((a: any) => a.id === chosenId);
-      const score = chosen?.score ?? 0;
-      total += score;
-      rows.push({ question_id: q.id, answer_id: chosenId ?? null, score });
-    }
-    const pct = max > 0 ? (total / max) * 100 : 0;
-    const passed = pct >= (data.test.passing_score ?? 0);
-    const rec = RECOMMEND[data.test.cbt_categories?.type] ?? "Pertimbangkan bidang yang sesuai minat Anda.";
 
-    const { data: attempt, error } = await supabase.from("cbt_attempts").insert({
-      user_id: user.id, test_id: data.test.id, total_score: total, max_score: max,
-      percentage: pct, passed, recommendation: rec, completed_at: new Date().toISOString(),
-    }).select().single();
+    const { data: res, error } = await supabase.rpc("submit_cbt_attempt", {
+      _test_id: data.test.id,
+      _answers: answers as any,
+    });
 
-    if (error) {
+    if (error || !res) {
       submittingRef.current = false;
       toast.error("Gagal menyimpan hasil");
       return;
     }
-    const { error: ansErr } = await supabase
-      .from("cbt_attempt_answers")
-      .insert(rows.map(r => ({ ...r, attempt_id: attempt.id })));
-    if (ansErr) toast.error("Hasil tersimpan, tetapi detail jawaban gagal disimpan");
-    setSubmitted({ score: total, max, pct, passed, rec });
+    const r = res as any;
+    setSubmitted({
+      score: r.total,
+      max: r.max,
+      pct: Number(r.percentage) || 0,
+      passed: !!r.passed,
+      rec: r.recommendation ?? RECOMMEND[data.test.cbt_categories?.type] ?? "Pertimbangkan bidang yang sesuai minat Anda.",
+    });
     ["me-cbt", "me-psikotes", "me-referrals", "cbt-attempts", "santri-center", "monitoring"].forEach((k) =>
       qc.invalidateQueries({ queryKey: [k] })
     );
