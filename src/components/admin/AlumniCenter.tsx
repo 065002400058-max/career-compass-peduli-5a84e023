@@ -338,35 +338,49 @@ const AlumniCenter = () => {
       if (fUniversitas !== "all" && val(a.university) !== fUniversitas) return false;
       if (fUniStatus !== "all" && uniStatus(a) !== fUniStatus) return false;
       if (fKerja !== "all" && alumniStatus(a) !== fKerja) return false;
+      if (!matchEdu(a)) return false;
       if (!q) return true;
       return [a.full_name, a.name, a.graduation_year, a.origin, a.major, a.university, a.status, a.position, a.company, a.job_field, a.education_level]
         .some((v: any) => String(v ?? "").toLowerCase().includes(q));
 
     });
-  }, [rows, search, onlyNoTracer, fAngkatan, fGender, fJenjang, fUniversitas, fUniStatus, fKerja]);
+  }, [rows, search, onlyNoTracer, fAngkatan, fGender, fJenjang, fUniversitas, fUniStatus, fKerja,
+      fEduLevel, fEduType, fEduKampus, fEduProdi, fEduLulus, eduByAlumni]);
 
-  const exportRows = filtered.map((a) => ({
-    full_name: show(a.full_name || a.name, ""),
-    student_id: show(a.student_id || a.nim, ""),
-    gender: show(a.gender, ""),
-    graduation_year: a.graduation_year ?? "",
-    origin: show(a.origin, ""),
-    education_level: show(a.education_level, ""),
-    major: show(a.major, ""),
-    university: show(a.university, ""),
-    university_status: show(a.university_status, ""),
-    status: getStatusLabel(alumniStatus(a)),
-    job_field: show(a.job_field, ""),
-    company: show(a.company, ""),
-    position: show(a.position, ""),
-    work_city: show(a.work_city, ""),
-    created_at: a.created_at ? new Date(a.created_at).toLocaleDateString("id-ID") : "",
-  }));
+  const exportRows = filtered.map((a) => {
+    const edu = (eduByAlumni.get(a.id) ?? [])
+      .slice()
+      .sort((x, y) => (y.end_year ?? y.start_year ?? 0) - (x.end_year ?? x.start_year ?? 0))[0];
+    return {
+      full_name: show(a.full_name || a.name, ""),
+      student_id: show(a.student_id || a.nim, ""),
+      gender: show(a.gender, ""),
+      graduation_year: a.graduation_year ?? "",
+      origin: show(a.origin, ""),
+      education_level: show(a.education_level, ""),
+      major: show(a.major, ""),
+      university: show(a.university, ""),
+      university_status: show(a.university_status, ""),
+      edu_level: edu?.level ? String(edu.level).toUpperCase() : "",
+      edu_university: edu?.university_name ?? "",
+      edu_university_type: edu?.university_type ? String(edu.university_type).toUpperCase().replace("_", " ") : "",
+      edu_major: edu?.major ?? "",
+      edu_end_year: edu?.end_year ?? "",
+      edu_status: edu?.status ?? "",
+      status: getStatusLabel(alumniStatus(a)),
+      job_field: show(a.job_field, ""),
+      company: show(a.company, ""),
+      position: show(a.position, ""),
+      work_city: show(a.work_city, ""),
+      created_at: a.created_at ? new Date(a.created_at).toLocaleDateString("id-ID") : "",
+    };
+  });
 
 
   const resetFilters = () => {
     setSearch(""); setFAngkatan("all"); setFGender("all"); setFJenjang("all");
     setFUniversitas("all"); setFUniStatus("all"); setFKerja("all"); setOnlyNoTracer(false);
+    setFEduLevel("all"); setFEduType("all"); setFEduKampus("all"); setFEduProdi("all"); setFEduLulus("all");
   };
 
   const openDetail = (a: AlumniRow) => { setDetail(a); setEditing(false); setForm(a); };
