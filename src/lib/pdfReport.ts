@@ -472,13 +472,20 @@ export const generateReportPdf = async (
 
   let firstTablePage = true;
   if (rows.length) {
+    // avoid an orphan table header at the bottom of the cover page
+    if (y + 46 > pageH - 24) {
+      doc.addPage();
+      setFill(doc, PEDULI.greyBg);
+      doc.rect(0, 0, pageW, pageH, "F");
+      y = HEADER_H + 12;
+    }
     const body = rows.map((r) => headers.map((h) => String(r[h] ?? "-")));
     autoTable(doc, {
       head: [headers],
       body,
       startY: y,
       margin: { left: margin, right: margin, top: HEADER_H + 10, bottom: 24 },
-      rowPageBreak: "auto",
+      rowPageBreak: "avoid",
       theme: "plain",
       styles: {
         font: "helvetica",
