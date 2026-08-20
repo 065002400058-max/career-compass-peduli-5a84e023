@@ -172,12 +172,8 @@ const Navbar = () => {
             )}
           </div>
 
-          <Link
-            to="/"
-            className="flex items-center justify-center gap-3 lg:gap-5 min-w-0 flex-wrap"
-          >
-            <BrandText />
-          </Link>
+          <div aria-hidden className="min-w-0" />
+
 
 
 
