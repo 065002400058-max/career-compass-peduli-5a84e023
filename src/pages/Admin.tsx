@@ -25,22 +25,9 @@ import JobsManager from "@/components/admin/JobsManager";
 import PartnersManager from "@/components/admin/PartnersManager";
 import EventsManager from "@/components/admin/EventsManager";
 import AiHistoryViewer from "@/components/admin/AiHistoryViewer";
+import CounselingManager from "@/components/admin/CounselingManager";
+import AdminSettings from "@/components/admin/AdminSettings";
 
-
-import duLogo from "@/assets/du-logo-t.png.asset.json";
-import yayasanLogo from "@/assets/yayasan-logo-t.png.asset.json";
-import trisaktiLogo from "@/assets/trisakti-logo-t.png.asset.json";
-import diktiLogo from "@/assets/dikti-logo-t.png.asset.json";
-import tutwuriLogo from "@/assets/tutwuri-logo-t.png.asset.json";
-import { assetUrl } from "@/lib/assetUrl";
-
-const HEADER_LOGOS = [
-  { src: assetUrl(duLogo.url), alt: "Pesantren Daarul 'Uluum Lido" },
-  { src: assetUrl(yayasanLogo.url), alt: "Yayasan Salsabila Lido" },
-  { src: assetUrl(trisaktiLogo.url), alt: "Universitas Trisakti" },
-  { src: assetUrl(diktiLogo.url), alt: "Diktisaintek Berdampak" },
-  { src: assetUrl(tutwuriLogo.url), alt: "Tut Wuri Handayani" },
-];
 
 const MAIN_NAV: AdminNavItem[] = [
   { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },
