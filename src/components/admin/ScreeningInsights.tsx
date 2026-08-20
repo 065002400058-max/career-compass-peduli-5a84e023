@@ -124,7 +124,7 @@ const ScreeningInsights = () => {
         supabase.from("psikotes_tests").select("id,title,is_active,psikotes_categories(name)"),
         supabase.from("psikotes_attempts").select("id,user_id,test_id,total_score,level,completed_at,answers").order("completed_at", { ascending: false }),
         supabase.from("user_roles").select("user_id,role"),
-        supabase.from("profiles").select("user_id,full_name,education_level,school_origin,university,major,graduation_year"),
+        supabase.from("profiles").select("id,full_name,education_level,school_origin,university,major,graduation_year"),
         supabase.from("counseling_referrals").select("id,user_id,user_name,created_at,status,level").order("created_at", { ascending: false }),
         supabase.from("cbt_attempts").select("id,user_id,test_id,total_score,max_score,percentage,passed,completed_at").order("completed_at", { ascending: false }),
         supabase.from("cbt_tests").select("id,title"),
