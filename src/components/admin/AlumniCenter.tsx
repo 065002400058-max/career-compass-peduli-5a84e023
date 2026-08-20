@@ -728,12 +728,15 @@ const AlumniCenter = () => {
 
 
 
-      {/* Detail */}
-      <Sheet open={!!detail} onOpenChange={(o) => { if (!o) { setDetail(null); setEditing(false); } }}>
-        <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
-          <SheetHeader>
-            <SheetTitle className="font-heading">{show(detail?.full_name || detail?.name, "Detail Alumni")}</SheetTitle>
-          </SheetHeader>
+      {/* Detail — popup card di tengah layar */}
+      <Dialog open={!!detail} onOpenChange={(o) => { if (!o) { setDetail(null); setEditing(false); } }}>
+        <DialogContent className="w-[calc(100vw-2rem)] sm:max-w-2xl max-h-[88vh] overflow-y-auto rounded-2xl">
+          <DialogHeader>
+            <DialogTitle className="font-heading">{show(detail?.full_name || detail?.name, "Detail Alumni")}</DialogTitle>
+            <DialogDescription className="text-xs">
+              Profil, pekerjaan, pendidikan, dan status tracer study alumni.
+            </DialogDescription>
+          </DialogHeader>
           {detail && (
             <div className="mt-4 space-y-5">
               <div className="flex gap-2">
