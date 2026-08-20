@@ -1,0 +1,1 @@
+REVOKE ALL ON FUNCTION public.auto_counseling_referral() FROM anon, authenticated, PUBLIC;
