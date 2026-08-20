@@ -27,54 +27,12 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import duLogo from "@/assets/du-logo-t.png.asset.json";
-import yayasanLogo from "@/assets/yayasan-logo-t.png.asset.json";
-import trisaktiLogo from "@/assets/trisakti-logo-t.png.asset.json";
-import diktiLogo from "@/assets/dikti-logo-t.png.asset.json";
-import tutwuriLogo from "@/assets/tutwuri-logo-t.png.asset.json";
-import bimaAsset from "@/assets/bima-logo-full.png.asset.json";
 import { assetUrl } from "@/lib/assetUrl";
-
-const logos = [
-  { src: assetUrl(duLogo.url), alt: "Pesantren Daarul 'Uluum Lido" },
-  { src: assetUrl(yayasanLogo.url), alt: "Yayasan Salsabila Lido" },
-  { src: assetUrl(trisaktiLogo.url), alt: "Universitas Trisakti" },
-  { src: assetUrl(diktiLogo.url), alt: "Diktisaintek Berdampak" },
-  {
-    src: assetUrl(bimaAsset.url),
-    alt: "BiMA",
-    className: "h-8 w-auto lg:h-10",
-    compactClassName: "h-7 w-auto sm:h-8",
-  },
-
-  { src: assetUrl(tutwuriLogo.url), alt: "Tut Wuri Handayani" },
-];
 
 type Item = { label: string; path: string; show?: boolean };
 type Group = { label: string; items: Item[]; icon: typeof Home };
 
-/* ---------- Logo strip (shared) ---------- */
-const LogoStrip = ({ compact = false }: { compact?: boolean }) => (
-  <div
-    className={`flex items-center justify-center flex-wrap ${
-      compact ? "gap-1.5 sm:gap-2" : "gap-2 lg:gap-3"
-    }`}
-  >
-    {logos.map((l) => {
-      const sizeClass = compact
-        ? l.compactClassName || l.className || "h-7 w-7 sm:h-8 sm:w-8"
-        : l.className || "h-8 w-8 lg:h-10 lg:w-10";
-      return (
-        <img
-          key={l.alt}
-          src={l.src}
-          alt={l.alt}
-          loading="lazy"
-          className={`object-contain shrink-0 ${sizeClass}`}
-        />
-      );
-    })}
-  </div>
-);
+
 
 
 const BrandText = ({ compact = false }: { compact?: boolean }) => (
