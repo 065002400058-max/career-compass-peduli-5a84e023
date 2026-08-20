@@ -329,7 +329,7 @@ const Admin = () => {
         {/* Green strip */}
         <div className="h-[5px] bg-primary" />
 
-        <main className="flex-1 px-4 md:px-6 lg:px-8 pb-8 lg:pb-10 bg-muted/20">
+        <main className="flex-1 min-w-0 overflow-x-hidden px-4 md:px-6 lg:px-8 pb-8 lg:pb-10 bg-muted/20">
           {view !== "dashboard" && view !== "santri" && view !== "alumni" && (
             <div className="pt-5 pb-4 flex items-center gap-2">
               {activeItem && <activeItem.icon className="h-4 w-4 text-primary" />}

@@ -176,7 +176,8 @@ const SantriCenter = () => {
       ]);
       const { data: psiTests } = await supabase.from("psikotes_tests").select("id, title");
       return {
-        profiles: profs.data ?? [],
+        // profiles memakai kolom `id` sebagai user id — normalkan ke `user_id`
+        profiles: (profs.data ?? []).map((p: any) => ({ ...p, user_id: p.user_id ?? p.id })),
         santriIds,
         psi: (psi.data ?? []).filter((r: any) => santriIds.has(r.user_id)),
         cbt: (cbt.data ?? []).filter((r: any) => santriIds.has(r.user_id)),
@@ -726,21 +727,21 @@ const SantriCenter = () => {
   );
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 w-full min-w-0 max-w-full">
       {/* page header */}
-      <div className="flex items-start gap-2.5">
+      <div className="flex items-start gap-2.5 min-w-0">
         <span className="h-9 w-9 rounded-[9px] bg-accent/70 flex items-center justify-center shrink-0">
           <Users className="h-[18px] w-[18px] text-primary" strokeWidth={1.8} />
         </span>
-        <div>
+        <div className="min-w-0">
           <h2 className="font-heading text-[22px] font-bold text-foreground leading-tight">Data Santri</h2>
           <p className="text-[12px] text-muted-foreground mt-0.5">Kelola dan pantau data santri, layanan, dan perkembangan secara real-time.</p>
         </div>
       </div>
 
       {/* tabs + filter */}
-      <div className="flex items-center gap-3 border-b border-border">
-        <div className="flex items-center gap-4 overflow-x-auto no-scrollbar">
+      <div className="flex items-center gap-3 border-b border-border min-w-0">
+        <div className="flex items-center gap-4 min-w-0 overflow-x-auto overflow-y-hidden no-scrollbar">
           {TABS.map((t) => (
             <button
               key={t.key}
