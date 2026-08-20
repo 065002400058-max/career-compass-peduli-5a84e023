@@ -134,25 +134,31 @@ const Events = () => {
               <motion.div
                 key={e.id}
                 variants={item}
-                whileHover={{ y: -6, transition: { duration: 0.2 } }}
-                className="glass-card rounded-xl overflow-hidden border-primary/10 group"
+                whileHover={{ y: -4, transition: { duration: 0.2 } }}
+                className="glass-card rounded-xl overflow-hidden border-primary/10 group flex flex-col"
               >
-                <div className="gradient-bg p-4 relative overflow-hidden">
-                  <div className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-300" style={{
-                    backgroundImage: "url(\"data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.3' fill-rule='evenodd'%3E%3Cpath d='M20 18v-2h-2v2h-2v2h2v2h2v-2h2v-2h-2z'/%3E%3C/g%3E%3C/svg%3E\")"
-                  }} />
-                  <Badge variant={(typeColor[e.type] as any) || "secondary"} className="mb-2 relative z-10">{e.type}</Badge>
-                  <h3 className="font-heading font-semibold text-primary-foreground text-lg relative z-10">{e.title}</h3>
-                </div>
-                <div className="p-5">
-                  {e.description && <p className="text-sm text-muted-foreground mb-4">{e.description}</p>}
-                  <div className="space-y-2 text-sm text-muted-foreground">
-                    <p className="flex items-center gap-2"><CalendarDays className="h-3.5 w-3.5 text-primary" />{format(new Date(e.date), "d MMMM yyyy", { locale: idLocale })}</p>
-                    <p className="flex items-center gap-2"><Clock className="h-3.5 w-3.5 text-primary" />{format(new Date(e.date), "HH:mm")}</p>
-                    <p className="flex items-center gap-2"><MapPin className="h-3.5 w-3.5 text-primary" />{e.location}</p>
-                    {e.capacity && <p className="flex items-center gap-2"><Users className="h-3.5 w-3.5 text-primary" />{e.capacity} peserta</p>}
+                <div className="relative h-28 overflow-hidden">
+                  <img
+                    src={assetUrl(e.image_url || eventImages[e.type] || eventImages["Seminar"])}
+                    alt={e.title}
+                    loading="lazy"
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                  <div className="absolute bottom-2 left-2 right-2">
+                    <Badge variant={(typeColor[e.type] as any) || "secondary"} className="mb-1 text-[10px] px-1.5 py-0">{e.type}</Badge>
+                    <h3 className="font-heading font-semibold text-white text-sm line-clamp-1">{e.title}</h3>
                   </div>
-                  <Button className="w-full mt-4 gradient-bg border-0 hover:opacity-90 transition-opacity" size="sm" onClick={() => downloadIcs(e)}>Simpan ke Kalender</Button>
+                </div>
+                <div className="p-3 flex-1 flex flex-col">
+                  {e.description && <p className="text-xs text-muted-foreground mb-2 line-clamp-2">{e.description}</p>}
+                  <div className="space-y-1 text-xs text-muted-foreground mb-3">
+                    <p className="flex items-center gap-1.5"><CalendarDays className="h-3 w-3 text-primary shrink-0" />{format(new Date(e.date), "d MMM yyyy", { locale: idLocale })}</p>
+                    <p className="flex items-center gap-1.5"><Clock className="h-3 w-3 text-primary shrink-0" />{format(new Date(e.date), "HH:mm")}</p>
+                    <p className="flex items-center gap-1.5"><MapPin className="h-3 w-3 text-primary shrink-0" />{e.location}</p>
+                    {e.capacity && <p className="flex items-center gap-1.5"><Users className="h-3 w-3 text-primary shrink-0" />{e.capacity} peserta</p>}
+                  </div>
+                  <Button className="w-full mt-auto gradient-bg border-0 hover:opacity-90 transition-opacity text-xs h-8" size="sm" onClick={() => downloadIcs(e)}>Simpan ke Kalender</Button>
                 </div>
               </motion.div>
             ))}

@@ -47,35 +47,55 @@ const Scholarships = () => {
             <p className="text-muted-foreground">Belum ada beasiswa terdaftar.</p>
           </div>
         ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filtered.map((s: any) => (
-              <div key={s.id} className="glass-card rounded-xl p-5 hover:shadow-lg transition-shadow">
-                <div className="flex items-start justify-between mb-2">
-                  <Badge variant="secondary">
-                    {s.type === "luar_negeri"
-                      ? "Luar Negeri"
-                      : s.type === "dalam_negeri"
-                        ? "Dalam Negeri"
-                        : s.type}
-                  </Badge>
-                  <Badge variant="outline">{s.country}</Badge>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {filtered.map((s: any) => {
+              const isDomestic = s.type === "dalam_negeri" || s.country === "Indonesia";
+              const imageUrl = s.image_url || (isDomestic ? scholarshipImages.domestic : scholarshipImages.abroad);
+              return (
+                <div key={s.id} className="glass-card rounded-xl overflow-hidden hover:shadow-lg transition-shadow flex flex-col">
+                  <div className="relative h-24 overflow-hidden">
+                    <img
+                      src={assetUrl(imageUrl)}
+                      alt={s.name}
+                      loading="lazy"
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                    <div className="absolute top-2 left-2 flex gap-1">
+                      <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                        {s.type === "luar_negeri" ? "Luar Negeri" : s.type === "dalam_negeri" ? "Dalam Negeri" : s.type}
+                      </Badge>
+                    </div>
+                    <div className="absolute bottom-2 right-2">
+                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-background/80">{s.country}</Badge>
+                    </div>
+                  </div>
+                  <div className="p-3 flex-1 flex flex-col">
+                    <div className="flex items-start gap-2 mb-1">
+                      <div className="h-7 w-7 rounded-lg gradient-bg flex items-center justify-center shrink-0">
+                        <GraduationCap className="h-3.5 w-3.5 text-primary-foreground" />
+                      </div>
+                      <div className="min-w-0">
+                        <h3 className="font-heading font-semibold text-sm leading-tight line-clamp-1">{s.name}</h3>
+                        <p className="text-xs text-primary line-clamp-1">{s.provider}</p>
+                      </div>
+                    </div>
+                    {s.description && <p className="text-[11px] text-muted-foreground line-clamp-2 mb-2">{s.description}</p>}
+                    {s.amount && <p className="text-xs font-medium mb-1.5">💰 {s.amount}</p>}
+                    {s.deadline && (
+                      <p className="text-[11px] text-muted-foreground flex items-center gap-1 mb-2">
+                        <Calendar className="h-3 w-3" /> Deadline: {new Date(s.deadline).toLocaleDateString("id-ID")}
+                      </p>
+                    )}
+                    {s.url && (
+                      <a href={s.url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline flex items-center gap-1 mt-auto">
+                        Daftar / Info <ExternalLink className="h-3 w-3" />
+                      </a>
+                    )}
+                  </div>
                 </div>
-                <h3 className="font-heading font-semibold text-lg mb-1">{s.name}</h3>
-                <p className="text-sm text-primary mb-2">{s.provider}</p>
-                {s.description && <p className="text-xs text-muted-foreground line-clamp-3 mb-3">{s.description}</p>}
-                {s.amount && <p className="text-sm font-medium mb-2">💰 {s.amount}</p>}
-                {s.deadline && (
-                  <p className="text-xs text-muted-foreground flex items-center gap-1 mb-3">
-                    <Calendar className="h-3 w-3" /> Deadline: {new Date(s.deadline).toLocaleDateString("id-ID")}
-                  </p>
-                )}
-                {s.url && (
-                  <a href={s.url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline flex items-center gap-1">
-                    Daftar / Info <ExternalLink className="h-3 w-3" />
-                  </a>
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
