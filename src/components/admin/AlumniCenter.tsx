@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import AlumniEducationManager, { EDU_LEVELS, EDU_UNI_TYPES } from "@/components/shared/AlumniEducationManager";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import AlumniCsvImport from "@/components/AlumniCsvImport";
@@ -196,6 +197,11 @@ const AlumniCenter = () => {
   const [fUniversitas, setFUniversitas] = useState("all");
   const [fUniStatus, setFUniStatus] = useState("all");
   const [fKerja, setFKerja] = useState("all");
+  const [fEduLevel, setFEduLevel] = useState("all");
+  const [fEduType, setFEduType] = useState("all");
+  const [fEduKampus, setFEduKampus] = useState("all");
+  const [fEduProdi, setFEduProdi] = useState("all");
+  const [fEduLulus, setFEduLulus] = useState("all");
   const [onlyNoTracer, setOnlyNoTracer] = useState(false);
   const [detail, setDetail] = useState<AlumniRow | null>(null);
   const [editing, setEditing] = useState(false);
@@ -206,6 +212,40 @@ const AlumniCenter = () => {
     queryFn: async () =>
       (await supabase.from("alumni").select("*").order("graduation_year", { ascending: false })).data ?? [],
   });
+
+  const { data: eduRows = [] } = useQuery({
+    queryKey: ["admin-alumni-education"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("alumni_education").select("*");
+      if (error) throw error;
+      return (data ?? []) as AlumniRow[];
+    },
+  });
+
+  const eduByAlumni = useMemo(() => {
+    const m = new Map<string, AlumniRow[]>();
+    eduRows.forEach((e) => {
+      if (!e.alumni_id) return;
+      m.set(e.alumni_id, [...(m.get(e.alumni_id) ?? []), e]);
+    });
+    return m;
+  }, [eduRows]);
+
+  const eduFilterActive = [fEduLevel, fEduType, fEduKampus, fEduProdi, fEduLulus].some((v) => v !== "all");
+
+  const matchEdu = (a: AlumniRow) => {
+    if (!eduFilterActive) return true;
+    const list = eduByAlumni.get(a.id) ?? [];
+    return list.some((e) => {
+      const lvl = String(e.level ?? e.degree ?? "").toLowerCase();
+      if (fEduLevel !== "all" && lvl !== fEduLevel) return false;
+      if (fEduType !== "all" && String(e.university_type ?? "").toLowerCase() !== fEduType) return false;
+      if (fEduKampus !== "all" && (e.university_name ?? "") !== fEduKampus) return false;
+      if (fEduProdi !== "all" && (e.major ?? "") !== fEduProdi) return false;
+      if (fEduLulus !== "all" && String(e.end_year ?? "") !== fEduLulus) return false;
+      return true;
+    });
+  };
 
   const rows: AlumniRow[] = alumni ?? [];
 
@@ -298,35 +338,49 @@ const AlumniCenter = () => {
       if (fUniversitas !== "all" && val(a.university) !== fUniversitas) return false;
       if (fUniStatus !== "all" && uniStatus(a) !== fUniStatus) return false;
       if (fKerja !== "all" && alumniStatus(a) !== fKerja) return false;
+      if (!matchEdu(a)) return false;
       if (!q) return true;
       return [a.full_name, a.name, a.graduation_year, a.origin, a.major, a.university, a.status, a.position, a.company, a.job_field, a.education_level]
         .some((v: any) => String(v ?? "").toLowerCase().includes(q));
 
     });
-  }, [rows, search, onlyNoTracer, fAngkatan, fGender, fJenjang, fUniversitas, fUniStatus, fKerja]);
+  }, [rows, search, onlyNoTracer, fAngkatan, fGender, fJenjang, fUniversitas, fUniStatus, fKerja,
+      fEduLevel, fEduType, fEduKampus, fEduProdi, fEduLulus, eduByAlumni]);
 
-  const exportRows = filtered.map((a) => ({
-    full_name: show(a.full_name || a.name, ""),
-    student_id: show(a.student_id || a.nim, ""),
-    gender: show(a.gender, ""),
-    graduation_year: a.graduation_year ?? "",
-    origin: show(a.origin, ""),
-    education_level: show(a.education_level, ""),
-    major: show(a.major, ""),
-    university: show(a.university, ""),
-    university_status: show(a.university_status, ""),
-    status: getStatusLabel(alumniStatus(a)),
-    job_field: show(a.job_field, ""),
-    company: show(a.company, ""),
-    position: show(a.position, ""),
-    work_city: show(a.work_city, ""),
-    created_at: a.created_at ? new Date(a.created_at).toLocaleDateString("id-ID") : "",
-  }));
+  const exportRows = filtered.map((a) => {
+    const edu = (eduByAlumni.get(a.id) ?? [])
+      .slice()
+      .sort((x, y) => (y.end_year ?? y.start_year ?? 0) - (x.end_year ?? x.start_year ?? 0))[0];
+    return {
+      full_name: show(a.full_name || a.name, ""),
+      student_id: show(a.student_id || a.nim, ""),
+      gender: show(a.gender, ""),
+      graduation_year: a.graduation_year ?? "",
+      origin: show(a.origin, ""),
+      education_level: show(a.education_level, ""),
+      major: show(a.major, ""),
+      university: show(a.university, ""),
+      university_status: show(a.university_status, ""),
+      edu_level: edu?.level ? String(edu.level).toUpperCase() : "",
+      edu_university: edu?.university_name ?? "",
+      edu_university_type: edu?.university_type ? String(edu.university_type).toUpperCase().replace("_", " ") : "",
+      edu_major: edu?.major ?? "",
+      edu_end_year: edu?.end_year ?? "",
+      edu_status: edu?.status ?? "",
+      status: getStatusLabel(alumniStatus(a)),
+      job_field: show(a.job_field, ""),
+      company: show(a.company, ""),
+      position: show(a.position, ""),
+      work_city: show(a.work_city, ""),
+      created_at: a.created_at ? new Date(a.created_at).toLocaleDateString("id-ID") : "",
+    };
+  });
 
 
   const resetFilters = () => {
     setSearch(""); setFAngkatan("all"); setFGender("all"); setFJenjang("all");
     setFUniversitas("all"); setFUniStatus("all"); setFKerja("all"); setOnlyNoTracer(false);
+    setFEduLevel("all"); setFEduType("all"); setFEduKampus("all"); setFEduProdi("all"); setFEduLulus("all");
   };
 
   const openDetail = (a: AlumniRow) => { setDetail(a); setEditing(false); setForm(a); };
@@ -598,12 +652,21 @@ const AlumniCenter = () => {
             { v: fUniversitas, set: setFUniversitas, ph: "Universitas", opts: uniqSorted(rows, "university") },
             { v: fUniStatus, set: setFUniStatus, ph: "Dalam/Luar Negeri", opts: Array.from(new Set(rows.map(uniStatus))).sort() },
             { v: fKerja, set: setFKerja, ph: "Status Pekerjaan", opts: Array.from(new Set(rows.map(workStatus))).sort() },
-          ].map((f) => (
+            { v: fEduLevel, set: setFEduLevel, ph: "Jenjang Kuliah", opts: EDU_LEVELS.map((o) => o.value), labels: EDU_LEVELS },
+            { v: fEduType, set: setFEduType, ph: "PTN/PTS", opts: EDU_UNI_TYPES.map((o) => o.value), labels: EDU_UNI_TYPES },
+            { v: fEduKampus, set: setFEduKampus, ph: "Kampus (Pendidikan)", opts: Array.from(new Set(eduRows.map((e) => e.university_name).filter(Boolean) as string[])).sort((a, b) => a.localeCompare(b)) },
+            { v: fEduProdi, set: setFEduProdi, ph: "Program Studi", opts: Array.from(new Set(eduRows.map((e) => e.major).filter(Boolean) as string[])).sort((a, b) => a.localeCompare(b)) },
+            { v: fEduLulus, set: setFEduLulus, ph: "Tahun Lulus Kuliah", opts: Array.from(new Set(eduRows.map((e) => (e.end_year ? String(e.end_year) : "")).filter(Boolean))).sort((a, b) => b.localeCompare(a)) },
+          ].map((f: any) => (
             <Select key={f.ph} value={f.v} onValueChange={f.set}>
               <SelectTrigger className="h-9 rounded-xl bg-card text-xs"><SelectValue placeholder={f.ph} /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Semua {f.ph}</SelectItem>
-                {f.opts.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+                {f.opts.map((o: string) => (
+                  <SelectItem key={o} value={o}>
+                    {f.labels ? f.labels.find((l: any) => l.value === o)?.label ?? o : o}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           ))}
@@ -620,7 +683,7 @@ const AlumniCenter = () => {
         </Button>
         <AlumniAddDialog />
         <AlumniCsvImport />
-        {(onlyNoTracer || search || [fAngkatan, fGender, fJenjang, fUniversitas, fUniStatus, fKerja].some((v) => v !== "all")) && (
+        {(onlyNoTracer || search || [fAngkatan, fGender, fJenjang, fUniversitas, fUniStatus, fKerja, fEduLevel, fEduType, fEduKampus, fEduProdi, fEduLulus].some((v) => v !== "all")) && (
           <Button size="sm" variant="ghost" className="rounded-xl" onClick={resetFilters}>
             <X className="h-4 w-4 mr-1.5" /> Reset filter
           </Button>
@@ -727,12 +790,15 @@ const AlumniCenter = () => {
 
 
 
-      {/* Detail */}
-      <Sheet open={!!detail} onOpenChange={(o) => { if (!o) { setDetail(null); setEditing(false); } }}>
-        <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
-          <SheetHeader>
-            <SheetTitle className="font-heading">{show(detail?.full_name || detail?.name, "Detail Alumni")}</SheetTitle>
-          </SheetHeader>
+      {/* Detail — popup card di tengah layar */}
+      <Dialog open={!!detail} onOpenChange={(o) => { if (!o) { setDetail(null); setEditing(false); } }}>
+        <DialogContent className="w-[calc(100vw-2rem)] sm:max-w-2xl max-h-[88vh] overflow-y-auto rounded-2xl">
+          <DialogHeader>
+            <DialogTitle className="font-heading">{show(detail?.full_name || detail?.name, "Detail Alumni")}</DialogTitle>
+            <DialogDescription className="text-xs">
+              Profil, pekerjaan, pendidikan, dan status tracer study alumni.
+            </DialogDescription>
+          </DialogHeader>
           {detail && (
             <div className="mt-4 space-y-5">
               <div className="flex gap-2">
@@ -853,12 +919,14 @@ const AlumniCenter = () => {
                       </div>
                     </dl>
                   </section>
+
+                  <AlumniEducationManager alumniId={detail.id} canEdit title="Riwayat Pendidikan Alumni" />
                 </>
               )}
             </div>
           )}
-        </SheetContent>
-      </Sheet>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };

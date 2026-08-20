@@ -5,10 +5,12 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import GraduateStatusCard from "@/components/shared/GraduateStatusCard";
+import AlumniEducationManager from "@/components/shared/AlumniEducationManager";
+import { useQuery } from "@tanstack/react-query";
 
 import {
   AlertDialog,
@@ -22,7 +24,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { Camera, Loader2, Save, Trash2, User as UserIcon, Lock, Mail } from "lucide-react";
+import { Camera, Loader2, Save, Trash2, User as UserIcon, Lock, Mail, GraduationCap } from "lucide-react";
 
 type ProfileForm = {
   full_name: string;
@@ -74,6 +76,21 @@ const Profile = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
 
   const set = (k: keyof ProfileForm, v: string) => setForm((f) => ({ ...f, [k]: v }));
+
+  // id data alumni milik user (untuk riwayat pendidikan)
+  const { data: myAlumniId } = useQuery({
+    queryKey: ["my-alumni-id", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("alumni")
+        .select("id")
+        .eq("user_id", user!.id)
+        .maybeSingle();
+      if (error) throw error;
+      return data?.id ?? null;
+    },
+  });
 
   useEffect(() => {
     if (!authLoading && !user) navigate("/auth");
@@ -293,6 +310,11 @@ const Profile = () => {
                 <UserIcon className="h-4 w-4 mr-1.5" /> Status Lulus
               </TabsTrigger>
             )}
+            {!roles.includes("admin") && (
+              <TabsTrigger value="pendidikan">
+                <GraduationCap className="h-4 w-4 mr-1.5" /> Pendidikan
+              </TabsTrigger>
+            )}
             <TabsTrigger value="akun">
               <Lock className="h-4 w-4 mr-1.5" /> Keamanan Akun
             </TabsTrigger>
@@ -301,6 +323,28 @@ const Profile = () => {
           {!roles.includes("admin") && (
             <TabsContent value="status">
               <GraduateStatusCard />
+            </TabsContent>
+          )}
+
+          {!roles.includes("admin") && (
+            <TabsContent value="pendidikan">
+              <Card className="glass-card">
+                <CardHeader>
+                  <CardTitle className="font-heading text-lg">Riwayat Pendidikan</CardTitle>
+                  <CardDescription>
+                    Lengkapi jenjang, perguruan tinggi, program studi, lokasi, tahun, dan status studi Anda.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {myAlumniId ? (
+                    <AlumniEducationManager alumniId={myAlumniId} canEdit />
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      Riwayat pendidikan tersedia setelah Anda memperbarui status kelulusan pada tab <strong>Status Lulus</strong>.
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
             </TabsContent>
           )}
 
