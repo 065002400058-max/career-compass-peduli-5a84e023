@@ -5,6 +5,7 @@ const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Expose-Headers": "X-AI-Quota-Used, X-AI-Quota-Limit, X-AI-Quota-Remaining",
 };
 
 const MODE_PROMPTS: Record<string, string> = {
@@ -231,6 +232,7 @@ KONTEKS DATA REAL-TIME:${context || "\n(Tidak ada data spesifik dimuat)"}`;
           return new Response(resp.body, {
             headers: {
               ...corsHeaders,
+              ...quotaHeaders,
               "Content-Type": "text/event-stream",
               "Cache-Control": "no-cache",
               Connection: "keep-alive",
@@ -279,8 +281,8 @@ KONTEKS DATA REAL-TIME:${context || "\n(Tidak ada data spesifik dimuat)"}`;
     const reply = data.choices?.[0]?.message?.content ?? "Maaf, tidak ada jawaban.";
     await maybeCreateReferral().catch((e) => console.error("referral error:", e));
 
-    return new Response(JSON.stringify({ reply }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    return new Response(JSON.stringify({ reply, quota }), {
+      headers: { ...corsHeaders, ...quotaHeaders, "Content-Type": "application/json" },
     });
   } catch (e: any) {
     console.error("chat-ai error:", e);
