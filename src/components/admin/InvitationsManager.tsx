@@ -382,7 +382,7 @@ const InvitationsManager = () => {
         >
           <option value="all">Semua Peran</option>
           {ROLES.map((r) => (
-            <option key={r} value={r}>{r}</option>
+            <option key={r} value={r}>{ROLE_LABEL[r]}</option>
           ))}
         </select>
         <select
@@ -433,7 +433,7 @@ const InvitationsManager = () => {
                   <h4 className="font-heading font-semibold text-sm text-foreground truncate">
                     {r.full_name || r.email}
                   </h4>
-                  <Badge variant="outline" className="text-[10px] rounded-full capitalize">{r.role}</Badge>
+                  <Badge variant="outline" className="text-[10px] rounded-full">{ROLE_LABEL[r.role] ?? r.role}</Badge>
                   <Badge
                     className="text-[10px] rounded-full"
                     variant={r.status === "aktif" ? "default" : "secondary"}
@@ -488,7 +488,7 @@ const InvitationsManager = () => {
           <DialogHeader>
             <DialogTitle className="font-heading">Undang Pengguna</DialogTitle>
             <DialogDescription>
-              Sistem mengirim email undangan berisi link pembuatan password.
+              Sistem mengirim email undangan berisi tautan aktivasi (berlaku 24 jam) untuk membuat password.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={submit} className="space-y-3">
@@ -504,9 +504,10 @@ const InvitationsManager = () => {
               />
             </div>
             <div className="space-y-1.5">
-              <Label>Nama Lengkap</Label>
+              <Label>Nama Lengkap *</Label>
               <Input
                 aria-label="Nama lengkap undangan"
+                required
                 value={form.full_name}
                 onChange={(e) => set("full_name", e.target.value)}
                 placeholder="Nama lengkap"
@@ -530,7 +531,7 @@ const InvitationsManager = () => {
                 onChange={(e) => set("role", e.target.value)}
               >
                 {ROLES.map((r) => (
-                  <option key={r} value={r} className="capitalize">{r}</option>
+                  <option key={r} value={r}>{ROLE_LABEL[r]}</option>
                 ))}
               </select>
             </div>
