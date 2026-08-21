@@ -10,10 +10,11 @@ interface AuthContextType {
   user: User | null;
   roles: AppRole[];
   loading: boolean;
+  mustChangePassword: boolean;
   signOut: () => Promise<void>;
   hasRole: (role: AppRole) => boolean;
   refreshRoles: () => Promise<void>;
-
+  refreshProfileFlags: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
