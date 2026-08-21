@@ -356,11 +356,12 @@ const Chat = () => {
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }
                   }}
-                  placeholder={quotaExhausted ? "Kuota pesan AI bulan ini sudah habis" : "Tulis pertanyaan kamu..."}
+                  placeholder="Tulis pertanyaan kamu..."
                   className="min-h-[44px] max-h-32 resize-none"
-                  disabled={sending || quotaExhausted}
+                  disabled={sending}
                 />
-                <Button onClick={handleSend} disabled={sending || quotaExhausted || !input.trim()} size="icon" className="h-11 w-11 shrink-0">
+                <Button onClick={handleSend} disabled={sending || !input.trim()} size="icon" className="h-11 w-11 shrink-0">
+
                   {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                 </Button>
               </div>
