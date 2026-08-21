@@ -41,6 +41,36 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_message_quota: {
+        Row: {
+          created_at: string
+          id: string
+          message_limit: number
+          period: string
+          updated_at: string
+          used: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message_limit?: number
+          period: string
+          updated_at?: string
+          used?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message_limit?: number
+          period?: string
+          updated_at?: string
+          used?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       alumni: {
         Row: {
           company: string | null
@@ -1674,6 +1704,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      ai_quota_status: { Args: { _user_id?: string }; Returns: Json }
       alumni_directory: {
         Args: never
         Returns: {
@@ -1714,6 +1745,7 @@ export type Database = {
           question_id: string
         }[]
       }
+      consume_ai_quota: { Args: { _user_id: string }; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
