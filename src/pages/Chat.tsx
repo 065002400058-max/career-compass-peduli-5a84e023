@@ -115,10 +115,6 @@ const Chat = () => {
   const handleSend = async () => {
     const text = input.trim();
     if (!text || sending) return;
-    if (quotaExhausted) {
-      toast.error(`Kuota AI bulan ini sudah habis (${quota?.used}/${quota?.limit} pesan). Reset otomatis awal bulan depan.`);
-      return;
-    }
 
     if (!user) {
       const newMsgs: Msg[] = [...guestMessages, { role: "user", content: text }];
