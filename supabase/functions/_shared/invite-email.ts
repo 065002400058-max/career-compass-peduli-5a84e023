@@ -180,3 +180,183 @@ export const inviteEmailText = (opts: {
     "Career Center PEDULI",
   ].join("\n");
 };
+
+/* ==========================================================================
+   Email informasi akun (akun dibuat Admin + password sementara)
+   ========================================================================== */
+
+const CRED_COPY: Record<InviteRole, { subject: string; badge: string; title: string; intro: string }> = {
+  santri: {
+    subject: "Informasi Akun Santri | Career Center PEDULI",
+    badge: "INFORMASI AKUN",
+    title: "Akun Santri Anda Telah Dibuat",
+    intro:
+      "Akun Career Center PEDULI Anda telah dibuat oleh Admin. Silakan masuk menggunakan informasi akun sementara berikut.",
+  },
+  alumni: {
+    subject: "Informasi Akun Alumni | Career Center PEDULI",
+    badge: "INFORMASI AKUN",
+    title: "Akun Alumni Anda Telah Dibuat",
+    intro:
+      "Akun Career Center PEDULI Anda telah dibuat oleh Admin. Silakan masuk menggunakan informasi akun sementara berikut.",
+  },
+  admin: {
+    subject: "Informasi Akses Admin | Career Center PEDULI",
+    badge: "INFORMASI AKSES",
+    title: "Akses Admin Anda Telah Dibuat",
+    intro:
+      "Akun Career Center PEDULI Anda telah dibuat oleh Admin. Silakan masuk menggunakan informasi akun sementara berikut.",
+  },
+};
+
+const ROLE_LABEL: Record<InviteRole, string> = { santri: "Santri", alumni: "Alumni", admin: "Admin" };
+
+export const credentialsSubject = (role: InviteRole) => CRED_COPY[role].subject;
+
+export const renderCredentialsEmail = (opts: {
+  role: InviteRole;
+  fullName?: string | null;
+  email: string;
+  password: string;
+  loginUrl: string;
+  appUrl: string;
+}) => {
+  const c = CRED_COPY[opts.role];
+  const name = (opts.fullName ?? "").trim();
+  const greeting = name ? `Assalamu’alaikum, ${escapeHtml(name)}` : "Assalamu’alaikum";
+  const logo = `${opts.appUrl}/favicon.png`;
+  const year = new Date().getFullYear();
+
+  const row = (label: string, value: string, mono = false) => `
+    <tr>
+      <td style="padding:8px 0;color:#6B7280;font-size:12.5px;width:150px;">${escapeHtml(label)}</td>
+      <td style="padding:8px 0;color:${GREEN};font-size:${mono ? "16px" : "14px"};font-weight:bold;${
+        mono ? "font-family:'Courier New',Courier,monospace;letter-spacing:1px;" : ""
+      }">${escapeHtml(value)}</td>
+    </tr>`;
+
+  return `<!DOCTYPE html>
+<html lang="id"><head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>${escapeHtml(c.title)}</title>
+</head>
+<body style="margin:0;padding:0;background-color:#F3F4F6;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F3F4F6;padding:28px 12px;">
+<tr><td align="center">
+  <table role="presentation" width="660" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:660px;background-color:#FFFFFF;border-radius:20px;overflow:hidden;box-shadow:0 6px 24px rgba(15,23,42,0.08);font-family:Arial,Helvetica,sans-serif;">
+
+    <tr><td style="background-color:${GREEN};padding:26px 32px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td align="left" style="vertical-align:middle;">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
+              <td style="padding-right:12px;vertical-align:middle;">
+                <img src="${logo}" width="46" height="46" alt="Career Center PEDULI" style="display:block;width:46px;height:46px;border:0;" />
+              </td>
+              <td style="vertical-align:middle;">
+                <div style="color:#FFFFFF;font-size:14px;line-height:18px;letter-spacing:0.2px;">Career Center</div>
+                <div style="color:#FFFFFF;font-size:24px;line-height:28px;font-weight:bold;letter-spacing:1px;">PEDULI</div>
+              </td>
+            </tr></table>
+          </td>
+          <td align="right" style="vertical-align:middle;color:${GREEN_DARK};font-size:26px;line-height:26px;letter-spacing:2px;">&#9671;&#9671;&#9671;</td>
+        </tr>
+      </table>
+    </td></tr>
+    <tr><td style="background-color:${GOLD};height:3px;line-height:3px;font-size:0;">&nbsp;</td></tr>
+
+    <tr><td align="center" style="padding:32px 34px 8px 34px;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
+        <td style="border:1px solid ${GOLD};border-radius:999px;padding:7px 18px;color:${GOLD};font-size:11px;font-weight:bold;letter-spacing:1.4px;">
+          ${escapeHtml(c.badge)}
+        </td>
+      </tr></table>
+    </td></tr>
+
+    <tr><td align="center" style="padding:22px 34px 0 34px;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="104" style="background-color:#EAF3EC;border-radius:52px;"><tr>
+        <td align="center" height="104" style="height:104px;font-size:44px;line-height:44px;">&#128273;</td>
+      </tr></table>
+    </td></tr>
+
+    <tr><td align="center" style="padding:22px 34px 0 34px;">
+      <h1 style="margin:0;color:${GREEN};font-size:25px;line-height:32px;font-weight:bold;">${escapeHtml(c.title)}</h1>
+    </td></tr>
+
+    <tr><td align="center" style="padding:16px 40px 0 40px;color:${TEXT};font-size:15px;line-height:24px;">
+      <p style="margin:0 0 14px 0;font-weight:bold;color:${GREEN};">${greeting}</p>
+      <p style="margin:0;">${escapeHtml(c.intro)}</p>
+    </td></tr>
+
+    <tr><td style="padding:22px 34px 0 34px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F9FAFB;border:1px solid #E5E7EB;border-radius:14px;">
+        <tr><td style="padding:14px 20px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+            ${row("Email", opts.email)}
+            ${row("Password sementara", opts.password, true)}
+            ${row("Role", ROLE_LABEL[opts.role])}
+          </table>
+        </td></tr>
+      </table>
+    </td></tr>
+
+    <tr><td align="center" style="padding:28px 34px 0 34px;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
+        <td align="center" style="background-color:${GREEN};border-radius:10px;">
+          <a href="${opts.loginUrl}" style="display:inline-block;padding:15px 34px;color:#FFFFFF;font-size:16px;font-weight:bold;text-decoration:none;font-family:Arial,Helvetica,sans-serif;">
+            Masuk ke Career Center PEDULI &nbsp;<span style="color:${GOLD};">&#8594;</span>
+          </a>
+        </td>
+      </tr></table>
+    </td></tr>
+
+    <tr><td style="padding:26px 34px 0 34px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#EDF7EF;border-radius:12px;"><tr>
+        <td style="padding:14px 18px;color:#2F5F45;font-size:12.5px;line-height:20px;">
+          &#128274;&nbsp; Demi keamanan, Anda wajib mengganti password setelah login pertama.
+          Jangan membagikan informasi akun ini kepada siapa pun.
+        </td>
+      </tr></table>
+    </td></tr>
+
+    <tr><td style="padding:26px 34px 30px 34px;">
+      <div style="border-top:1px solid #E5E7EB;padding-top:18px;text-align:center;color:#6B7280;font-size:12px;line-height:20px;">
+        <p style="margin:0 0 4px 0;">&#127911;&nbsp; Butuh bantuan? Hubungi <strong style="color:${GREEN};">Tim Career Center PEDULI</strong></p>
+        <p style="margin:0 0 4px 0;">
+          <a href="${opts.appUrl}" style="color:${GREEN};text-decoration:none;">pedulismartcareer-daarululuumlido.com</a>
+        </p>
+        <p style="margin:0;">&#169; ${year} Career Center PEDULI. Semua hak dilindungi.</p>
+      </div>
+    </td></tr>
+
+  </table>
+</td></tr>
+</table>
+</body></html>`;
+};
+
+export const credentialsEmailText = (opts: {
+  role: InviteRole;
+  fullName?: string | null;
+  email: string;
+  password: string;
+  loginUrl: string;
+}) => {
+  const name = (opts.fullName ?? "").trim();
+  return [
+    name ? `Assalamu'alaikum, ${name}` : "Assalamu'alaikum",
+    "",
+    CRED_COPY[opts.role].intro,
+    "",
+    `Email: ${opts.email}`,
+    `Password sementara: ${opts.password}`,
+    `Role: ${ROLE_LABEL[opts.role]}`,
+    "",
+    `Masuk ke Career Center PEDULI: ${opts.loginUrl}`,
+    "",
+    "Demi keamanan, Anda wajib mengganti password setelah login pertama.",
+    "Jangan membagikan informasi akun ini kepada siapa pun.",
+    "Career Center PEDULI",
+  ].join("\n");
+};
