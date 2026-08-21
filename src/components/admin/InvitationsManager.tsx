@@ -161,7 +161,12 @@ const InvitationsManager = () => {
       }
       if ((data as { error?: string })?.error) throw new Error((data as { error: string }).error);
 
-      const res = data as { email_sent?: boolean; action_link?: string | null; warning?: string | null };
+      const res = data as {
+        email_sent?: boolean;
+        temp_password?: string | null;
+        warning?: string | null;
+        reused?: boolean;
+      };
       const extra: Record<string, string> = {};
       if (notes) extra.notes = notes;
       if (identity_number) extra.identity_number = identity_number;
@@ -169,10 +174,13 @@ const InvitationsManager = () => {
         await supabase.from("invitations").update(extra).eq("email", cleanEmail);
       }
       if (res.email_sent) {
-        toast.success(`Undangan terkirim ke ${cleanEmail}`);
+        toast.success(`Akun dibuat, email berisi password sementara terkirim ke ${cleanEmail}`);
       } else {
-        setLastLink(res.action_link ?? null);
-        toast.warning(res.warning ?? "Undangan dibuat, bagikan link aktivasi secara manual.");
+        setLastLink(res.temp_password ?? null);
+        toast.warning(
+          res.warning ??
+            "Akun dibuat, namun email gagal terkirim. Sampaikan password sementara di bawah secara aman.",
+        );
       }
       invalidate();
       return true;
@@ -330,7 +338,7 @@ const InvitationsManager = () => {
       {lastLink && (
         <Card className="rounded-2xl border-primary/30">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm">Link aktivasi manual</CardTitle>
+            <CardTitle className="text-sm">Password sementara (tampil sekali)</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-wrap items-center gap-2">
             <code className="text-xs break-all flex-1 min-w-0 bg-muted rounded-lg p-2">{lastLink}</code>
@@ -339,7 +347,7 @@ const InvitationsManager = () => {
               variant="outline"
               onClick={() => {
                 navigator.clipboard.writeText(lastLink);
-                toast.success("Link disalin");
+                toast.success("Password sementara disalin");
               }}
             >
               <Copy className="h-4 w-4 mr-1.5" /> Salin
