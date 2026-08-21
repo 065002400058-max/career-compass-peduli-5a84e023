@@ -276,7 +276,7 @@ const InvitationsManager = () => {
             Pendaftaran publik ditutup. Akun hanya aktif setelah admin mengundang emailnya.
           </p>
           <p className="text-[11px] text-muted-foreground mt-1">
-            Format CSV: <code>email, nama_lengkap, peran, nomor_identitas, catatan</code>
+            Format CSV: <code>email, nama_lengkap, peran (santri/alumni/admin), nomor_identitas, catatan</code>
           </p>
         </div>
         <div className="flex gap-2">
