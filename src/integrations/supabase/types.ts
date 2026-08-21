@@ -956,6 +956,8 @@ export type Database = {
           notes: string | null
           role: Database["public"]["Enums"]["app_role"]
           status: string
+          token_expires_at: string | null
+          token_hash: string | null
           updated_at: string
           updated_by: string | null
         }
@@ -972,6 +974,8 @@ export type Database = {
           notes?: string | null
           role?: Database["public"]["Enums"]["app_role"]
           status?: string
+          token_expires_at?: string | null
+          token_hash?: string | null
           updated_at?: string
           updated_by?: string | null
         }
@@ -988,6 +992,8 @@ export type Database = {
           notes?: string | null
           role?: Database["public"]["Enums"]["app_role"]
           status?: string
+          token_expires_at?: string | null
+          token_hash?: string | null
           updated_at?: string
           updated_by?: string | null
         }

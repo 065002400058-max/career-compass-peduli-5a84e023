@@ -38,7 +38,7 @@ import {
   XCircle,
 } from "lucide-react";
 
-type Role = "santri" | "alumni" | "mitra" | "admin";
+type Role = "santri" | "alumni" | "admin";
 
 type Invitation = {
   id: string;
@@ -50,10 +50,12 @@ type Invitation = {
   identity_number: string | null;
   expires_at: string | null;
   accepted_at: string | null;
+  last_sent_at: string | null;
   created_at: string;
 };
 
-const ROLES: Role[] = ["santri", "alumni", "mitra", "admin"];
+const ROLES: Role[] = ["santri", "alumni", "admin"];
+const ROLE_LABEL: Record<Role, string> = { santri: "Santri", alumni: "Alumni", admin: "Admin" };
 const STATUS_LABEL: Record<string, string> = {
   menunggu: "Menunggu",
   terkirim: "Terkirim",
@@ -63,6 +65,21 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 const EMPTY = { email: "", full_name: "", identity_number: "", role: "santri" as Role, notes: "" };
+
+// Baca pesan asli dari Edge Function (invoke hanya melaporkan "non-2xx").
+const readFnError = async (error: unknown): Promise<{ message: string; payload: Record<string, unknown> }> => {
+  const ctx = (error as { context?: { text?: () => Promise<string> } })?.context;
+  if (ctx?.text) {
+    try {
+      const raw = await ctx.text();
+      const parsed = JSON.parse(raw) as Record<string, unknown>;
+      return { message: String(parsed.error ?? raw), payload: parsed };
+    } catch {
+      // fallthrough
+    }
+  }
+  return { message: (error as Error)?.message ?? "Terjadi kesalahan", payload: {} };
+};
 
 const InvitationsManager = () => {
   const qc = useQueryClient();
@@ -117,31 +134,42 @@ const InvitationsManager = () => {
   const invalidate = () => qc.invalidateQueries({ queryKey: ["admin-invitations"] });
 
   const sendInvite = async (email: string, full_name: string, role: Role, notes?: string, identity_number?: string) => {
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanName = full_name.trim();
+    if (!cleanName) {
+      toast.error("Nama lengkap wajib diisi");
+      return false;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+      toast.error("Format email tidak valid");
+      return false;
+    }
+
     setSending(true);
     setLastLink(null);
     try {
       const { data, error } = await supabase.functions.invoke("invite-user", {
-        body: {
-          email,
-          full_name,
-          role,
-          redirect_to: `${window.location.origin}/reset-password`,
-        },
+        body: { email: cleanEmail, full_name: cleanName, role },
       });
-      if (error) throw error;
+
+      if (error) {
+        const { message, payload } = await readFnError(error);
+        if (payload.already_registered) toast.info(message);
+        else if (payload.cooldown) toast.warning(message);
+        else toast.error(message);
+        return false;
+      }
       if ((data as { error?: string })?.error) throw new Error((data as { error: string }).error);
 
-      const res = data as { already_registered?: boolean; email_sent?: boolean; action_link?: string | null; warning?: string | null };
+      const res = data as { email_sent?: boolean; action_link?: string | null; warning?: string | null };
       const extra: Record<string, string> = {};
       if (notes) extra.notes = notes;
       if (identity_number) extra.identity_number = identity_number;
       if (Object.keys(extra).length) {
-        await supabase.from("invitations").update(extra).eq("email", email.trim().toLowerCase());
+        await supabase.from("invitations").update(extra).eq("email", cleanEmail);
       }
-      if (res.already_registered) {
-        toast.info("Email ini sudah memiliki akun aktif.");
-      } else if (res.email_sent) {
-        toast.success(`Undangan terkirim ke ${email}`);
+      if (res.email_sent) {
+        toast.success(`Undangan terkirim ke ${cleanEmail}`);
       } else {
         setLastLink(res.action_link ?? null);
         toast.warning(res.warning ?? "Undangan dibuat, bagikan link aktivasi secara manual.");
@@ -248,7 +276,7 @@ const InvitationsManager = () => {
             Pendaftaran publik ditutup. Akun hanya aktif setelah admin mengundang emailnya.
           </p>
           <p className="text-[11px] text-muted-foreground mt-1">
-            Format CSV: <code>email, nama_lengkap, peran, nomor_identitas, catatan</code>
+            Format CSV: <code>email, nama_lengkap, peran (santri/alumni/admin), nomor_identitas, catatan</code>
           </p>
         </div>
         <div className="flex gap-2">
@@ -354,7 +382,7 @@ const InvitationsManager = () => {
         >
           <option value="all">Semua Peran</option>
           {ROLES.map((r) => (
-            <option key={r} value={r}>{r}</option>
+            <option key={r} value={r}>{ROLE_LABEL[r]}</option>
           ))}
         </select>
         <select
@@ -405,7 +433,7 @@ const InvitationsManager = () => {
                   <h4 className="font-heading font-semibold text-sm text-foreground truncate">
                     {r.full_name || r.email}
                   </h4>
-                  <Badge variant="outline" className="text-[10px] rounded-full capitalize">{r.role}</Badge>
+                  <Badge variant="outline" className="text-[10px] rounded-full">{ROLE_LABEL[r.role] ?? r.role}</Badge>
                   <Badge
                     className="text-[10px] rounded-full"
                     variant={r.status === "aktif" ? "default" : "secondary"}
@@ -460,7 +488,7 @@ const InvitationsManager = () => {
           <DialogHeader>
             <DialogTitle className="font-heading">Undang Pengguna</DialogTitle>
             <DialogDescription>
-              Sistem mengirim email undangan berisi link pembuatan password.
+              Sistem mengirim email undangan berisi tautan aktivasi (berlaku 24 jam) untuk membuat password.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={submit} className="space-y-3">
@@ -476,9 +504,10 @@ const InvitationsManager = () => {
               />
             </div>
             <div className="space-y-1.5">
-              <Label>Nama Lengkap</Label>
+              <Label>Nama Lengkap *</Label>
               <Input
                 aria-label="Nama lengkap undangan"
+                required
                 value={form.full_name}
                 onChange={(e) => set("full_name", e.target.value)}
                 placeholder="Nama lengkap"
@@ -502,7 +531,7 @@ const InvitationsManager = () => {
                 onChange={(e) => set("role", e.target.value)}
               >
                 {ROLES.map((r) => (
-                  <option key={r} value={r} className="capitalize">{r}</option>
+                  <option key={r} value={r}>{ROLE_LABEL[r]}</option>
                 ))}
               </select>
             </div>
