@@ -86,11 +86,12 @@ const Auth = () => {
     // 2) Status akun diambil dari database, bukan localStorage
     const { data: profile } = await supabase
       .from("profiles")
-      .select("account_status")
+      .select("account_status, must_change_password")
       .eq("id", signIn.user!.id)
       .maybeSingle();
 
-    const status = (profile as { account_status?: string } | null)?.account_status ?? "active";
+    const prof = profile as { account_status?: string; must_change_password?: boolean } | null;
+    const status = prof?.account_status ?? "active";
     if (status !== "active") {
       await supabase.auth.signOut();
       toast({
@@ -106,6 +107,17 @@ const Auth = () => {
     }
 
     await guard(mail, "success");
+
+    if (prof?.must_change_password) {
+      toast({
+        title: "Ganti password terlebih dahulu",
+        description: "Untuk keamanan akun, buat password baru Anda sebelum melanjutkan.",
+      });
+      navigate("/ganti-password-awal", { replace: true });
+      setLoading(false);
+      return;
+    }
+
     toast({ title: "Login Berhasil", description: "Selamat datang kembali!" });
     navigate("/", { replace: true });
     setLoading(false);
