@@ -8,7 +8,7 @@ import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/s
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
-import { streamChatAi, type QuotaInfo } from "@/lib/chatStream";
+import { streamChatAi } from "@/lib/chatStream";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -156,7 +156,7 @@ const Chat = () => {
 
     try {
       const historyForAI: Msg[] = [...messages.map((m: any) => ({ role: m.role, content: m.content })), { role: "user", content: text }];
-      const reply = await streamChatAi(historyForAI as any, threadMode, (partial) => setStreamText(partial), undefined, setQuota);
+      const reply = await streamChatAi(historyForAI as any, threadMode, (partial) => setStreamText(partial));
       setStreamText("");
       await supabase.from("chat_messages").insert({ thread_id: threadId, user_id: user.id, role: "assistant", content: reply });
       await supabase.from("chat_threads").update({ updated_at: new Date().toISOString() }).eq("id", threadId);
