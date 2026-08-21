@@ -279,15 +279,6 @@ const Chat = () => {
                   })}
                 </div>
               </div>
-              {user && quota && (
-                <Badge
-                  variant={quota.remaining <= 0 ? "destructive" : quota.remaining <= 10 ? "secondary" : "outline"}
-                  className="shrink-0 text-[10px] sm:text-xs whitespace-nowrap"
-                  title={`Kuota pesan AI bulan ini: ${quota.used} dari ${quota.limit} terpakai`}
-                >
-                  Sisa {quota.remaining}/{quota.limit} pesan
-                </Badge>
-              )}
             </div>
 
             <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto p-4 md:p-6 space-y-4">
