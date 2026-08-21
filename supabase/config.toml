@@ -1,7 +1,9 @@
 project_id = "leyqeacwutuslhyteofs"
 
-[functions.login-guard]
-verify_jwt = false
-
-[functions.activate-invitation]
-verify_jwt = false
+[functions]
+  [functions.activate-invitation]
+    verify_jwt = false
+  [functions.auth-email-hook]
+    verify_jwt = false
+  [functions.login-guard]
+    verify_jwt = false
