@@ -101,29 +101,21 @@ Deno.serve(async (req) => {
 
     const user = userRes?.data?.user ?? null;
 
-    // ---- Kuota pesan AI per akun (default 75 pesan / bulan, reset otomatis tiap bulan) ----
-    let quota: any = null;
-    if (user) {
-      const { data: q, error: qErr } = await supabase.rpc("consume_ai_quota", { _user_id: user.id });
-      if (qErr) console.error("quota error:", qErr);
-      quota = q ?? null;
-      if (quota && quota.allowed === false) {
-        return new Response(
-          JSON.stringify({
-            error: `Kuota AI kamu bulan ini sudah habis (${quota.used}/${quota.limit} pesan). Kuota akan otomatis kembali awal bulan depan. Hubungi admin bila butuh tambahan.`,
-            quota,
-          }),
-          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-        );
-      }
+    // ---- Filter konten seksual / tidak pantas: jawab dengan teguran islami yang lembut ----
+    const SEXUAL_PATTERN =
+      /(seks|sex|bercinta|bokep|porno|pornhub|xnxx|hentai|telanjang|bugil|nude|masturbasi|coli|onani|zina|birahi|nafsu syahwat|penis|vagina|kemaluan|payudara|toket|memek|ngentot|jilmek|blowjob|hubungan intim|threesome|bdsm|foreplay|orgasme|libido)/i;
+    if (SEXUAL_PATTERN.test(lastUserMsg)) {
+      return new Response(
+        JSON.stringify({
+          reply:
+            "Astaghfirullahal'azhim 🤲\n\nMaaf, pertanyaan seperti itu tidak bisa saya jawab. AI PEDULI adalah asisten karier & pendidikan di lingkungan pesantren, jadi mari kita jaga adab dan kesucian hati bersama-sama.\n\n> _\"Dan janganlah kamu mendekati zina; sesungguhnya zina itu adalah suatu perbuatan yang keji dan suatu jalan yang buruk.\"_ — **QS. Al-Isra': 32**\n\nBeberapa saran:\n- Perbanyak istighfar dan alihkan pikiran dengan kegiatan bermanfaat (olahraga, tilawah, belajar).\n- Bila kamu merasa sulit mengendalikan dorongan ini, tidak perlu malu — kamu bisa bicara rahasia dengan konselor lewat menu **Konseling**.\n\nSaya siap membantu untuk hal lain: pilihan jurusan, beasiswa, lowongan kerja, persiapan tes, atau curhat soal kondisi mental. 😊",
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
     }
-    const quotaHeaders = quota
-      ? {
-          "X-AI-Quota-Used": String(quota.used ?? 0),
-          "X-AI-Quota-Limit": String(quota.limit ?? 0),
-          "X-AI-Quota-Remaining": String(quota.remaining ?? 0),
-        }
-      : {};
+    const quota: any = null;
+    const quotaHeaders: Record<string, string> = {};
+
 
 
     // Data personal user (satu batch paralel, hanya jika login).
