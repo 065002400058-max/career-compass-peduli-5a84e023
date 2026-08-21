@@ -40,17 +40,6 @@ const Chat = () => {
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const isAdmin = hasRole("admin");
 
-  const { data: quota } = useQuery<QuotaInfo | null>({
-    queryKey: ["ai-quota", user?.id],
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc("ai_quota_status");
-      if (error) return null;
-      return data as unknown as QuotaInfo;
-    },
-    enabled: !!user,
-  });
-  const quotaExhausted = !!user && !!quota && quota.remaining <= 0;
-  const setQuota = (q: QuotaInfo) => qc.setQueryData(["ai-quota", user?.id], q);
 
   const { data: threads = [] } = useQuery({
     queryKey: ["chat-threads", user?.id],
