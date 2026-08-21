@@ -364,16 +364,6 @@ const Chat = () => {
                   {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                 </Button>
               </div>
-              {user && quota && quota.remaining > 0 && quota.remaining <= 10 && (
-                <p className="mt-2 text-[11px] text-amber-600">
-                  Kuota AI kamu hampir habis: sisa {quota.remaining} pesan bulan ini.
-                </p>
-              )}
-              {quotaExhausted && (
-                <p className="mt-2 text-[11px] text-destructive">
-                  Kuota AI bulan ini sudah habis ({quota?.used}/{quota?.limit} pesan). Kuota kembali otomatis awal bulan depan, atau hubungi admin.
-                </p>
-              )}
             </div>
           </main>
 
