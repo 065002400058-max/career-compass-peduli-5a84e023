@@ -134,31 +134,42 @@ const InvitationsManager = () => {
   const invalidate = () => qc.invalidateQueries({ queryKey: ["admin-invitations"] });
 
   const sendInvite = async (email: string, full_name: string, role: Role, notes?: string, identity_number?: string) => {
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanName = full_name.trim();
+    if (!cleanName) {
+      toast.error("Nama lengkap wajib diisi");
+      return false;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+      toast.error("Format email tidak valid");
+      return false;
+    }
+
     setSending(true);
     setLastLink(null);
     try {
       const { data, error } = await supabase.functions.invoke("invite-user", {
-        body: {
-          email,
-          full_name,
-          role,
-          redirect_to: `${window.location.origin}/reset-password`,
-        },
+        body: { email: cleanEmail, full_name: cleanName, role },
       });
-      if (error) throw error;
+
+      if (error) {
+        const { message, payload } = await readFnError(error);
+        if (payload.already_registered) toast.info(message);
+        else if (payload.cooldown) toast.warning(message);
+        else toast.error(message);
+        return false;
+      }
       if ((data as { error?: string })?.error) throw new Error((data as { error: string }).error);
 
-      const res = data as { already_registered?: boolean; email_sent?: boolean; action_link?: string | null; warning?: string | null };
+      const res = data as { email_sent?: boolean; action_link?: string | null; warning?: string | null };
       const extra: Record<string, string> = {};
       if (notes) extra.notes = notes;
       if (identity_number) extra.identity_number = identity_number;
       if (Object.keys(extra).length) {
-        await supabase.from("invitations").update(extra).eq("email", email.trim().toLowerCase());
+        await supabase.from("invitations").update(extra).eq("email", cleanEmail);
       }
-      if (res.already_registered) {
-        toast.info("Email ini sudah memiliki akun aktif.");
-      } else if (res.email_sent) {
-        toast.success(`Undangan terkirim ke ${email}`);
+      if (res.email_sent) {
+        toast.success(`Undangan terkirim ke ${cleanEmail}`);
       } else {
         setLastLink(res.action_link ?? null);
         toast.warning(res.warning ?? "Undangan dibuat, bagikan link aktivasi secara manual.");
