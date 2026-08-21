@@ -100,6 +100,31 @@ Deno.serve(async (req) => {
 
     const user = userRes?.data?.user ?? null;
 
+    // ---- Kuota pesan AI per akun (default 75 pesan / bulan, reset otomatis tiap bulan) ----
+    let quota: any = null;
+    if (user) {
+      const { data: q, error: qErr } = await supabase.rpc("consume_ai_quota", { _user_id: user.id });
+      if (qErr) console.error("quota error:", qErr);
+      quota = q ?? null;
+      if (quota && quota.allowed === false) {
+        return new Response(
+          JSON.stringify({
+            error: `Kuota AI kamu bulan ini sudah habis (${quota.used}/${quota.limit} pesan). Kuota akan otomatis kembali awal bulan depan. Hubungi admin bila butuh tambahan.`,
+            quota,
+          }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+    }
+    const quotaHeaders = quota
+      ? {
+          "X-AI-Quota-Used": String(quota.used ?? 0),
+          "X-AI-Quota-Limit": String(quota.limit ?? 0),
+          "X-AI-Quota-Remaining": String(quota.remaining ?? 0),
+        }
+      : {};
+
+
     // Data personal user (satu batch paralel, hanya jika login).
     let userContext = "";
     if (user) {
