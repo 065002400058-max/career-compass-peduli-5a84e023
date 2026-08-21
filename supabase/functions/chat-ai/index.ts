@@ -5,6 +5,7 @@ const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Expose-Headers": "X-AI-Quota-Used, X-AI-Quota-Limit, X-AI-Quota-Remaining",
 };
 
 const MODE_PROMPTS: Record<string, string> = {
@@ -99,6 +100,31 @@ Deno.serve(async (req) => {
       ]);
 
     const user = userRes?.data?.user ?? null;
+
+    // ---- Kuota pesan AI per akun (default 75 pesan / bulan, reset otomatis tiap bulan) ----
+    let quota: any = null;
+    if (user) {
+      const { data: q, error: qErr } = await supabase.rpc("consume_ai_quota", { _user_id: user.id });
+      if (qErr) console.error("quota error:", qErr);
+      quota = q ?? null;
+      if (quota && quota.allowed === false) {
+        return new Response(
+          JSON.stringify({
+            error: `Kuota AI kamu bulan ini sudah habis (${quota.used}/${quota.limit} pesan). Kuota akan otomatis kembali awal bulan depan. Hubungi admin bila butuh tambahan.`,
+            quota,
+          }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+    }
+    const quotaHeaders = quota
+      ? {
+          "X-AI-Quota-Used": String(quota.used ?? 0),
+          "X-AI-Quota-Limit": String(quota.limit ?? 0),
+          "X-AI-Quota-Remaining": String(quota.remaining ?? 0),
+        }
+      : {};
+
 
     // Data personal user (satu batch paralel, hanya jika login).
     let userContext = "";
@@ -206,6 +232,7 @@ KONTEKS DATA REAL-TIME:${context || "\n(Tidak ada data spesifik dimuat)"}`;
           return new Response(resp.body, {
             headers: {
               ...corsHeaders,
+              ...quotaHeaders,
               "Content-Type": "text/event-stream",
               "Cache-Control": "no-cache",
               Connection: "keep-alive",
@@ -254,8 +281,8 @@ KONTEKS DATA REAL-TIME:${context || "\n(Tidak ada data spesifik dimuat)"}`;
     const reply = data.choices?.[0]?.message?.content ?? "Maaf, tidak ada jawaban.";
     await maybeCreateReferral().catch((e) => console.error("referral error:", e));
 
-    return new Response(JSON.stringify({ reply }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    return new Response(JSON.stringify({ reply, quota }), {
+      headers: { ...corsHeaders, ...quotaHeaders, "Content-Type": "application/json" },
     });
   } catch (e: any) {
     console.error("chat-ai error:", e);

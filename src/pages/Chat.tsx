@@ -8,7 +8,7 @@ import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/s
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
-import { streamChatAi } from "@/lib/chatStream";
+import { streamChatAi, type QuotaInfo } from "@/lib/chatStream";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -39,6 +39,18 @@ const Chat = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const isAdmin = hasRole("admin");
+
+  const { data: quota } = useQuery<QuotaInfo | null>({
+    queryKey: ["ai-quota", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("ai_quota_status");
+      if (error) return null;
+      return data as unknown as QuotaInfo;
+    },
+    enabled: !!user,
+  });
+  const quotaExhausted = !!user && !!quota && quota.remaining <= 0;
+  const setQuota = (q: QuotaInfo) => qc.setQueryData(["ai-quota", user?.id], q);
 
   const { data: threads = [] } = useQuery({
     queryKey: ["chat-threads", user?.id],
@@ -114,6 +126,10 @@ const Chat = () => {
   const handleSend = async () => {
     const text = input.trim();
     if (!text || sending) return;
+    if (quotaExhausted) {
+      toast.error(`Kuota AI bulan ini sudah habis (${quota?.used}/${quota?.limit} pesan). Reset otomatis awal bulan depan.`);
+      return;
+    }
 
     if (!user) {
       const newMsgs: Msg[] = [...guestMessages, { role: "user", content: text }];
@@ -155,7 +171,7 @@ const Chat = () => {
 
     try {
       const historyForAI: Msg[] = [...messages.map((m: any) => ({ role: m.role, content: m.content })), { role: "user", content: text }];
-      const reply = await streamChatAi(historyForAI as any, threadMode, (partial) => setStreamText(partial));
+      const reply = await streamChatAi(historyForAI as any, threadMode, (partial) => setStreamText(partial), undefined, setQuota);
       setStreamText("");
       await supabase.from("chat_messages").insert({ thread_id: threadId, user_id: user.id, role: "assistant", content: reply });
       await supabase.from("chat_threads").update({ updated_at: new Date().toISOString() }).eq("id", threadId);
@@ -263,6 +279,15 @@ const Chat = () => {
                   })}
                 </div>
               </div>
+              {user && quota && (
+                <Badge
+                  variant={quota.remaining <= 0 ? "destructive" : quota.remaining <= 10 ? "secondary" : "outline"}
+                  className="shrink-0 text-[10px] sm:text-xs whitespace-nowrap"
+                  title={`Kuota pesan AI bulan ini: ${quota.used} dari ${quota.limit} terpakai`}
+                >
+                  Sisa {quota.remaining}/{quota.limit} pesan
+                </Badge>
+              )}
             </div>
 
             <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto p-4 md:p-6 space-y-4">
@@ -331,14 +356,24 @@ const Chat = () => {
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }
                   }}
-                  placeholder="Tulis pertanyaan kamu..."
+                  placeholder={quotaExhausted ? "Kuota pesan AI bulan ini sudah habis" : "Tulis pertanyaan kamu..."}
                   className="min-h-[44px] max-h-32 resize-none"
-                  disabled={sending}
+                  disabled={sending || quotaExhausted}
                 />
-                <Button onClick={handleSend} disabled={sending || !input.trim()} size="icon" className="h-11 w-11 shrink-0">
+                <Button onClick={handleSend} disabled={sending || quotaExhausted || !input.trim()} size="icon" className="h-11 w-11 shrink-0">
                   {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                 </Button>
               </div>
+              {user && quota && quota.remaining > 0 && quota.remaining <= 10 && (
+                <p className="mt-2 text-[11px] text-amber-600">
+                  Kuota AI kamu hampir habis: sisa {quota.remaining} pesan bulan ini.
+                </p>
+              )}
+              {quotaExhausted && (
+                <p className="mt-2 text-[11px] text-destructive">
+                  Kuota AI bulan ini sudah habis ({quota?.used}/{quota?.limit} pesan). Kuota kembali otomatis awal bulan depan, atau hubungi admin.
+                </p>
+              )}
             </div>
           </main>
 

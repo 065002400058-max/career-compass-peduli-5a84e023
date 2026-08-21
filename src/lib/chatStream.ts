@@ -9,11 +9,14 @@ export type StreamMsg = { role: "user" | "assistant"; content: string };
  * Streaming chat: token AI ditampilkan begitu tiba (tidak menunggu jawaban penuh).
  * Mengembalikan teks final. Bila server tidak mengirim SSE, otomatis fallback JSON.
  */
+export type QuotaInfo = { used: number; limit: number; remaining: number };
+
 export async function streamChatAi(
   messages: StreamMsg[],
   mode: string,
   onDelta: (fullText: string) => void,
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  onQuota?: (q: QuotaInfo) => void
 ): Promise<string> {
   const { data } = await supabase.auth.getSession();
   const accessToken = data.session?.access_token;
@@ -31,9 +34,19 @@ export async function streamChatAi(
 
   if (!res.ok) throw new Error("Layanan AI sedang sibuk. Coba lagi sebentar.");
 
+  const limitHeader = res.headers.get("X-AI-Quota-Limit");
+  if (limitHeader && onQuota) {
+    onQuota({
+      used: Number(res.headers.get("X-AI-Quota-Used") ?? 0),
+      limit: Number(limitHeader),
+      remaining: Number(res.headers.get("X-AI-Quota-Remaining") ?? 0),
+    });
+  }
+
   const contentType = res.headers.get("Content-Type") ?? "";
   if (!contentType.includes("text/event-stream")) {
     const json = await res.json();
+    if (json?.quota && onQuota) onQuota(json.quota);
     if (json?.error) throw new Error(json.error);
     const reply = json?.reply ?? "";
     onDelta(reply);
