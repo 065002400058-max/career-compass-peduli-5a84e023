@@ -38,7 +38,7 @@ import {
   XCircle,
 } from "lucide-react";
 
-type Role = "santri" | "alumni" | "mitra" | "admin";
+type Role = "santri" | "alumni" | "admin";
 
 type Invitation = {
   id: string;
@@ -50,10 +50,12 @@ type Invitation = {
   identity_number: string | null;
   expires_at: string | null;
   accepted_at: string | null;
+  last_sent_at: string | null;
   created_at: string;
 };
 
-const ROLES: Role[] = ["santri", "alumni", "mitra", "admin"];
+const ROLES: Role[] = ["santri", "alumni", "admin"];
+const ROLE_LABEL: Record<Role, string> = { santri: "Santri", alumni: "Alumni", admin: "Admin" };
 const STATUS_LABEL: Record<string, string> = {
   menunggu: "Menunggu",
   terkirim: "Terkirim",
@@ -63,6 +65,21 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 const EMPTY = { email: "", full_name: "", identity_number: "", role: "santri" as Role, notes: "" };
+
+// Baca pesan asli dari Edge Function (invoke hanya melaporkan "non-2xx").
+const readFnError = async (error: unknown): Promise<{ message: string; payload: Record<string, unknown> }> => {
+  const ctx = (error as { context?: { text?: () => Promise<string> } })?.context;
+  if (ctx?.text) {
+    try {
+      const raw = await ctx.text();
+      const parsed = JSON.parse(raw) as Record<string, unknown>;
+      return { message: String(parsed.error ?? raw), payload: parsed };
+    } catch {
+      // fallthrough
+    }
+  }
+  return { message: (error as Error)?.message ?? "Terjadi kesalahan", payload: {} };
+};
 
 const InvitationsManager = () => {
   const qc = useQueryClient();
