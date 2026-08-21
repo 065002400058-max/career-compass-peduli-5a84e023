@@ -8,6 +8,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import AiAssistantButton from "@/components/AiAssistantButton";
 import IdleTimeoutGuard from "@/components/IdleTimeoutGuard";
+import ForcePasswordChangeGuard from "@/components/auth/ForcePasswordChangeGuard";
 import Index from "./pages/Index";
 import Jobs from "./pages/Jobs";
 import Alumni from "./pages/Alumni";
@@ -18,6 +19,7 @@ import Admin from "./pages/Admin";
 import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
 import Activate from "./pages/Activate";
+import ChangeInitialPassword from "./pages/ChangeInitialPassword";
 import Chat from "./pages/Chat";
 import CbtList from "./pages/CbtList";
 import CbtTake from "./pages/CbtTake";
@@ -43,6 +45,7 @@ const App = () => (
         <BrowserRouter>
           <Navbar />
           <IdleTimeoutGuard />
+          <ForcePasswordChangeGuard />
           <RobotsController />
           <Routes>
             <Route path="/" element={<Index />} />
@@ -56,6 +59,7 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/aktivasi" element={<Activate />} />
+            <Route path="/ganti-password-awal" element={<ChangeInitialPassword />} />
             <Route path="/chat" element={<Chat />} />
             <Route path="/cbt" element={<CbtList />} />
             <Route path="/cbt/:id" element={<CbtTake />} />

@@ -1242,6 +1242,7 @@ export type Database = {
           id: string
           invited_at: string | null
           major: string | null
+          must_change_password: boolean
           origin: string | null
           phone: string | null
           position: string | null
@@ -1267,6 +1268,7 @@ export type Database = {
           id?: string
           invited_at?: string | null
           major?: string | null
+          must_change_password?: boolean
           origin?: string | null
           phone?: string | null
           position?: string | null
@@ -1292,6 +1294,7 @@ export type Database = {
           id?: string
           invited_at?: string | null
           major?: string | null
+          must_change_password?: boolean
           origin?: string | null
           phone?: string | null
           position?: string | null
@@ -1751,6 +1754,7 @@ export type Database = {
           question_id: string
         }[]
       }
+      clear_must_change_password: { Args: never; Returns: boolean }
       consume_ai_quota: { Args: { _user_id: string }; Returns: Json }
       has_role: {
         Args: {

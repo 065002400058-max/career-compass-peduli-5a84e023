@@ -10,10 +10,11 @@ interface AuthContextType {
   user: User | null;
   roles: AppRole[];
   loading: boolean;
+  mustChangePassword: boolean;
   signOut: () => Promise<void>;
   hasRole: (role: AppRole) => boolean;
   refreshRoles: () => Promise<void>;
-
+  refreshProfileFlags: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -24,6 +25,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [roles, setRoles] = useState<AppRole[]>([]);
   const [authLoading, setAuthLoading] = useState(true);
   const [rolesLoading, setRolesLoading] = useState(false);
+  const [mustChangePassword, setMustChangePassword] = useState(false);
 
   // Selesai memuat hanya jika sesi DAN peran sudah diketahui,
   // supaya halaman ber-guard (mis. /admin) tidak salah redirect.
@@ -36,6 +38,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       .select("role")
       .eq("user_id", userId);
     setRoles(data?.map((r) => r.role) ?? []);
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("must_change_password")
+      .eq("id", userId)
+      .maybeSingle();
+    setMustChangePassword(
+      Boolean((profile as { must_change_password?: boolean } | null)?.must_change_password),
+    );
     setRolesLoading(false);
   };
 
@@ -49,6 +59,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           setTimeout(() => fetchRoles(session.user!.id), 0);
         } else {
           setRoles([]);
+          setMustChangePassword(false);
           setRolesLoading(false);
         }
         setAuthLoading(false);
@@ -78,8 +89,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (user?.id) await fetchRoles(user.id);
   };
 
+  const refreshProfileFlags = async () => {
+    if (user?.id) await fetchRoles(user.id);
+  };
+
   return (
-    <AuthContext.Provider value={{ session, user, roles, loading, signOut, hasRole, refreshRoles }}>
+    <AuthContext.Provider value={{ session, user, roles, loading, mustChangePassword, signOut, hasRole, refreshRoles, refreshProfileFlags }}>
       {children}
 
     </AuthContext.Provider>

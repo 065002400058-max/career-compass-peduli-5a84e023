@@ -1,6 +1,11 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
-import { inviteEmailText, inviteSubject, renderInviteEmail, type InviteRole } from "../_shared/invite-email.ts";
+import {
+  credentialsEmailText,
+  credentialsSubject,
+  renderCredentialsEmail,
+  type InviteRole,
+} from "../_shared/invite-email.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -15,25 +20,57 @@ const json = (body: unknown, status = 200) =>
 
 const DEFAULT_APP_URL = "https://pedulismartcareer-daarululuumlido.com";
 const APP_URL = (Deno.env.get("APP_URL") ?? DEFAULT_APP_URL).replace(/\/+$/, "");
+const LOGIN_URL = `${APP_URL}/auth`;
 const ROLES: InviteRole[] = ["santri", "alumni", "admin"];
 const RESEND_COOLDOWN_MS = 90_000;
-const TOKEN_TTL_MS = 24 * 3600 * 1000;
 
-const sha256 = async (value: string) => {
-  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
-  return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
+/** Rate limit sederhana per-admin: maksimal 20 pembuatan akun per 10 menit. */
+const RATE_WINDOW_MS = 10 * 60 * 1000;
+const RATE_MAX = 20;
+const rateBucket = new Map<string, number[]>();
+const rateLimited = (adminId: string) => {
+  const now = Date.now();
+  const hits = (rateBucket.get(adminId) ?? []).filter((t) => now - t < RATE_WINDOW_MS);
+  if (hits.length >= RATE_MAX) {
+    rateBucket.set(adminId, hits);
+    return true;
+  }
+  hits.push(now);
+  rateBucket.set(adminId, hits);
+  return false;
 };
 
-const randomToken = () =>
-  Array.from(crypto.getRandomValues(new Uint8Array(32)))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
+/**
+ * Password sementara acak & unik (16 karakter) — dibuat hanya di backend.
+ * Menjamin minimal 1 huruf besar, huruf kecil, angka, dan simbol.
+ * Tidak memakai pola nama/email/role.
+ */
+const generateTempPassword = () => {
+  const upper = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+  const lower = "abcdefghijkmnopqrstuvwxyz";
+  const digits = "23456789";
+  const symbols = "!@#$%*?&+=";
+  const all = upper + lower + digits + symbols;
+
+  const pick = (set: string, n = 1) => {
+    const bytes = crypto.getRandomValues(new Uint32Array(n));
+    return Array.from(bytes, (b) => set[b % set.length]).join("");
+  };
+
+  const chars = (pick(upper) + pick(lower) + pick(digits) + pick(symbols) + pick(all, 12)).split("");
+  // Fisher-Yates dengan sumber acak kriptografis
+  for (let i = chars.length - 1; i > 0; i--) {
+    const r = crypto.getRandomValues(new Uint32Array(1))[0] % (i + 1);
+    [chars[i], chars[r]] = [chars[r], chars[i]];
+  }
+  return chars.join("");
+};
 
 const sendViaSmtp = async (to: string, subject: string, html: string, text: string) => {
   const hostname = Deno.env.get("SMTP_HOST");
   const user = Deno.env.get("SMTP_USER");
   const pass = Deno.env.get("SMTP_PASS");
-  if (!hostname || !user || !pass) return { sent: false, reason: "SMTP belum dikonfigurasi" };
+  if (!hostname || !user || !pass) return { sent: false as const, reason: "SMTP belum dikonfigurasi" };
 
   const port = Number(Deno.env.get("SMTP_PORT") ?? "465");
   const from =
@@ -75,7 +112,11 @@ Deno.serve(async (req) => {
       _user_id: userData.user.id,
       _role: "admin",
     });
-    if (!isAdmin) return json({ error: "Hanya admin yang dapat mengirim undangan" }, 403);
+    if (!isAdmin) return json({ error: "Hanya admin yang dapat membuat akun pengguna" }, 403);
+
+    if (rateLimited(userData.user.id)) {
+      return json({ error: "Terlalu banyak pembuatan akun. Silakan coba lagi beberapa menit lagi." }, 429);
+    }
 
     const body = await req.json().catch(() => ({}));
     const email = String(body.email ?? "").trim().toLowerCase();
@@ -86,27 +127,13 @@ Deno.serve(async (req) => {
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json({ error: "Format email tidak valid" }, 400);
     if (!ROLES.includes(role)) return json({ error: "Peran tidak valid" }, 400);
 
-    // 1) Email yang sudah punya akun aktif tidak boleh diundang lagi
-    const { data: existingProfile } = await admin
-      .from("profiles")
-      .select("id, account_status")
-      .eq("email", email)
-      .maybeSingle();
-    if (existingProfile && (existingProfile as { account_status?: string }).account_status === "active") {
-      return json({ already_registered: true, error: "Email ini sudah memiliki akun aktif." }, 409);
-    }
-
-    // 2) Cooldown pengiriman ulang
+    // Cooldown kirim ulang berbasis catatan undangan
     const { data: current } = await admin
       .from("invitations")
       .select("id, status, last_sent_at")
       .eq("email", email)
       .maybeSingle();
-
     const prev = current as { id: string; status: string; last_sent_at: string | null } | null;
-    if (prev && prev.status === "aktif") {
-      return json({ already_registered: true, error: "Email ini sudah memiliki akun aktif." }, 409);
-    }
     if (prev?.last_sent_at) {
       const waited = Date.now() - new Date(prev.last_sent_at).getTime();
       if (waited < RESEND_COOLDOWN_MS) {
@@ -114,20 +141,73 @@ Deno.serve(async (req) => {
           {
             cooldown: true,
             retry_after: Math.ceil((RESEND_COOLDOWN_MS - waited) / 1000),
-            error:
-              "Undangan untuk email ini masih aktif. Anda dapat mengirim ulang undangan setelah masa tunggu berakhir.",
+            error: "Email akun untuk alamat ini baru saja dikirim. Silakan tunggu sebelum mengirim ulang.",
           },
           429,
         );
       }
     }
 
-    // 3) Token baru (token lama otomatis tidak berlaku karena hash ditimpa)
-    const rawToken = randomToken();
-    const tokenHash = await sha256(rawToken);
-    const now = new Date();
+    // Password sementara unik untuk setiap akun / setiap pengiriman ulang
+    const tempPassword = generateTempPassword();
 
-    const { data: invitation, error: invErr } = await admin
+    // Cari akun yang sudah ada berdasarkan email (hindari akun duplikat)
+    let userId: string | null = null;
+    let reused = false;
+
+    const { data: createdUser, error: createErr } = await admin.auth.admin.createUser({
+      email,
+      password: tempPassword,
+      email_confirm: true,
+      user_metadata: { full_name: fullName, role },
+    });
+
+    if (createErr) {
+      if (!/already|exist|registered|duplicate/i.test(createErr.message)) {
+        return json({ error: `Gagal membuat akun: ${createErr.message}` }, 400);
+      }
+      // Akun sudah ada → cabut password lama dengan menetapkan password sementara baru
+      const { data: list } = await admin.auth.admin.listUsers({ page: 1, perPage: 200 });
+      userId = list?.users?.find((u) => (u.email ?? "").toLowerCase() === email)?.id ?? null;
+      if (!userId) {
+        const { data: prof } = await admin.from("profiles").select("id").eq("email", email).maybeSingle();
+        userId = (prof as { id: string } | null)?.id ?? null;
+      }
+      if (!userId) return json({ error: "Akun sudah ada namun tidak dapat ditemukan." }, 409);
+
+      const { error: updErr } = await admin.auth.admin.updateUserById(userId, {
+        password: tempPassword,
+        email_confirm: true,
+      });
+      if (updErr) return json({ error: `Gagal memperbarui password sementara: ${updErr.message}` }, 400);
+      reused = true;
+    } else {
+      userId = createdUser.user?.id ?? null;
+    }
+    if (!userId) return json({ error: "Gagal membuat akun" }, 400);
+
+    // Profil & peran ditetapkan server-side
+    const nowIso = new Date().toISOString();
+    await admin
+      .from("profiles")
+      .upsert(
+        {
+          id: userId,
+          full_name: fullName,
+          email,
+          role,
+          account_status: "active",
+          must_change_password: true,
+          activated_at: nowIso,
+        },
+        { onConflict: "id" },
+      );
+
+    await admin.from("user_roles").upsert({ user_id: userId, role }, { onConflict: "user_id,role" });
+    await admin.from("user_roles").delete().eq("user_id", userId).neq("role", role);
+
+    // Catatan undangan (tanpa menyimpan password dalam bentuk apa pun)
+    const { data: invitation } = await admin
       .from("invitations")
       .upsert(
         {
@@ -137,23 +217,28 @@ Deno.serve(async (req) => {
           status: "terkirim",
           invited_by: userData.user.id,
           updated_by: userData.user.id,
-          token_hash: tokenHash,
-          token_expires_at: new Date(now.getTime() + TOKEN_TTL_MS).toISOString(),
-          last_sent_at: now.toISOString(),
-          invited_at: now.toISOString(),
+          token_hash: null,
+          token_expires_at: null,
+          last_sent_at: nowIso,
+          invited_at: nowIso,
           accepted_at: null,
-          expires_at: new Date(now.getTime() + TOKEN_TTL_MS).toISOString(),
+          expires_at: new Date(Date.now() + 30 * 24 * 3600 * 1000).toISOString(),
         },
         { onConflict: "email" },
       )
-      .select("id, email, full_name, role, status, created_at, last_sent_at, token_expires_at")
+      .select("id, email, full_name, role, status, created_at, last_sent_at")
       .maybeSingle();
-    if (invErr) return json({ error: `Gagal menyimpan undangan: ${invErr.message}` }, 400);
 
-    const actionUrl = `${APP_URL}/aktivasi?token=${rawToken}`;
-    const subject = inviteSubject(role);
-    const html = renderInviteEmail({ role, fullName, actionUrl, appUrl: APP_URL });
-    const text = inviteEmailText({ role, fullName, actionUrl });
+    const subject = credentialsSubject(role);
+    const html = renderCredentialsEmail({
+      role,
+      fullName,
+      email,
+      password: tempPassword,
+      loginUrl: LOGIN_URL,
+      appUrl: APP_URL,
+    });
+    const text = credentialsEmailText({ role, fullName, email, password: tempPassword, loginUrl: LOGIN_URL });
 
     let emailSent = false;
     let warning: string | null = null;
@@ -162,22 +247,30 @@ Deno.serve(async (req) => {
       emailSent = res.sent;
       if (!res.sent) {
         warning =
-          "SMTP pengirim belum dikonfigurasi. Bagikan tautan aktivasi berikut kepada penerima secara manual.";
+          "SMTP pengirim belum dikonfigurasi sehingga email gagal terkirim. Password sementara di bawah hanya ditampilkan satu kali — sampaikan kepada penerima secara aman.";
       }
     } catch (e) {
-      warning = `Email gagal terkirim (${(e as Error).message}). Bagikan tautan aktivasi berikut secara manual.`;
+      warning = `Email gagal terkirim (${(e as Error).message}). Password sementara di bawah hanya ditampilkan satu kali — sampaikan kepada penerima secara aman.`;
     }
 
-    // Log aman: tanpa token, tanpa password
+    // Log aman: tanpa password, tanpa email lengkap
     console.log(
-      JSON.stringify({ event: "invitation_sent", role, email_domain: email.split("@")[1], email_sent: emailSent }),
+      JSON.stringify({
+        event: reused ? "account_credentials_reissued" : "account_created",
+        role,
+        email_domain: email.split("@")[1],
+        email_sent: emailSent,
+      }),
     );
 
     return json({
       success: true,
       email_sent: emailSent,
       warning,
-      action_link: emailSent ? null : actionUrl,
+      reused,
+      // Hanya dikirim bila email gagal terkirim; tidak pernah disimpan di database.
+      temp_password: emailSent ? null : tempPassword,
+      login_url: LOGIN_URL,
       invitation,
     });
   } catch (e) {
