@@ -7,7 +7,6 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import AiAssistantButton from "@/components/AiAssistantButton";
-import IdleTimeoutGuard from "@/components/IdleTimeoutGuard";
 import ForcePasswordChangeGuard from "@/components/auth/ForcePasswordChangeGuard";
 import Index from "./pages/Index";
 import Jobs from "./pages/Jobs";
@@ -44,7 +43,6 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Navbar />
-          <IdleTimeoutGuard />
           <ForcePasswordChangeGuard />
           <RobotsController />
           <Routes>
