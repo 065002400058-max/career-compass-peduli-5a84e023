@@ -73,12 +73,19 @@ const sendViaSmtp = async (to: string, subject: string, html: string, text: stri
   if (!hostname || !user || !pass) return { sent: false as const, reason: "SMTP belum dikonfigurasi" };
 
   const port = Number(Deno.env.get("SMTP_PORT") ?? "465");
-  const from =
-    Deno.env.get("SMTP_FROM") ??
-    `Career Center PEDULI <no-reply@pedulismartcareer-daarululuumlido.com>`;
+  // SMTP_SECURE=true/1/ssl memaksa SSL/TLS; default mengikuti port (465 = TLS).
+  const secureEnv = (Deno.env.get("SMTP_SECURE") ?? "").trim().toLowerCase();
+  const useTls = secureEnv
+    ? ["true", "1", "ssl", "tls"].includes(secureEnv)
+    : port === 465;
+
+  const fromAddress =
+    Deno.env.get("SMTP_FROM") ?? "admin@pedulismartcareer-daarululuumlido.com";
+  const fromName = Deno.env.get("SMTP_FROM_NAME") ?? "Smart Career Center PEDULI";
+  const from = fromAddress.includes("<") ? fromAddress : `${fromName} <${fromAddress}>`;
 
   const client = new SMTPClient({
-    connection: { hostname, port, tls: port === 465, auth: { username: user, password: pass } },
+    connection: { hostname, port, tls: useTls, auth: { username: user, password: pass } },
   });
   try {
     await client.send({ from, to, subject, content: text, html });
