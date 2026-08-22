@@ -244,6 +244,9 @@ Deno.serve(async (req) => {
       )
       .select("id, email, full_name, role, status, created_at, last_sent_at")
       .maybeSingle();
+    if (invErr) {
+      console.error("Gagal menyimpan catatan undangan", { code: invErr.code, message: invErr.message });
+    }
 
     const subject = credentialsSubject(role);
     const html = renderCredentialsEmail({
