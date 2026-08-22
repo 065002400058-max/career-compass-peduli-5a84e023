@@ -67,7 +67,7 @@ const IdleTimeoutGuard = () => {
       return;
     }
 
-    // Saat aplikasi dibuka kembali: jika sudah lewat 3 menit, wajib login lagi.
+    // Saat aplikasi dibuka kembali: jika sudah lewat 30 menit, wajib login lagi.
     const stored = Number(window.localStorage.getItem(LAST_ACTIVITY_KEY) ?? 0);
     if (stored && Date.now() - stored > IDLE_MS) {
       doLogout();
