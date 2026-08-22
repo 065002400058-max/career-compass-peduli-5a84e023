@@ -259,12 +259,15 @@ Deno.serve(async (req) => {
     let emailSent = false;
     let warning: string | null = null;
     try {
-      const res = await sendViaSmtp(email, subject, html, text);
-      emailSent = res.sent;
-      if (!res.sent) {
-        warning =
-          "SMTP pengirim belum dikonfigurasi sehingga email gagal terkirim. Password sementara di bawah hanya ditampilkan satu kali — sampaikan kepada penerima secara aman.";
-      }
+      await enqueueCredentialsEmail(
+        admin,
+        email,
+        subject,
+        html,
+        text,
+        `invite-credentials-${userId}-${Date.now()}`,
+      );
+      emailSent = true;
     } catch (e) {
       warning = `Email gagal terkirim (${(e as Error).message}). Password sementara di bawah hanya ditampilkan satu kali — sampaikan kepada penerima secara aman.`;
     }
