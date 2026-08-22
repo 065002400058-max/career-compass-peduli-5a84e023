@@ -75,7 +75,7 @@ const AdminSettings = ({ onNavigate }: { onNavigate?: (key: string) => void }) =
         <ul className="space-y-2 text-[12.5px] text-muted-foreground">
           <li>• Pendaftaran hanya melalui undangan admin (invite-only).</li>
           <li>• Kunci otomatis 30 detik setelah 5 kali gagal login.</li>
-          <li>• Sesi berakhir otomatis setelah 3 menit tidak aktif.</li>
+          <li>• Sesi login tetap aktif saat membuka tab baru atau memuat ulang aplikasi.</li>
           <li>• Akses data dibatasi per peran (admin, alumni, mitra, santri).</li>
         </ul>
         <Button variant="outline" size="sm" className="mt-3" onClick={() => onNavigate?.("invitations")}>
