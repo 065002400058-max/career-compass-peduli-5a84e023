@@ -223,7 +223,7 @@ Deno.serve(async (req) => {
     await admin.from("user_roles").delete().eq("user_id", userId).neq("role", role);
 
     // Catatan undangan (tanpa menyimpan password dalam bentuk apa pun)
-    const { data: invitation } = await admin
+    const { data: invitation, error: invErr } = await admin
       .from("invitations")
       .upsert(
         {
