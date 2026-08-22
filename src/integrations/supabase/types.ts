@@ -1038,6 +1038,7 @@ export type Database = {
           full_name: string | null
           id: string
           identity_number: string | null
+          invited_at: string | null
           invited_by: string | null
           last_sent_at: string | null
           notes: string | null
@@ -1056,6 +1057,7 @@ export type Database = {
           full_name?: string | null
           id?: string
           identity_number?: string | null
+          invited_at?: string | null
           invited_by?: string | null
           last_sent_at?: string | null
           notes?: string | null
@@ -1074,6 +1076,7 @@ export type Database = {
           full_name?: string | null
           id?: string
           identity_number?: string | null
+          invited_at?: string | null
           invited_by?: string | null
           last_sent_at?: string | null
           notes?: string | null
