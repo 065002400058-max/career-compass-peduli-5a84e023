@@ -41,7 +41,7 @@ const IdleTimeoutGuard = () => {
     clearAll();
     setWarn(false);
     await signOut();
-    toast.info("Sesi berakhir otomatis karena tidak ada aktivitas selama 3 menit.");
+    toast.info("Sesi berakhir otomatis karena tidak ada aktivitas selama 30 menit.");
     navigate("/auth", { replace: true });
   }, [clearAll, navigate, signOut]);
 
