@@ -13,9 +13,9 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 
-const IDLE_MS = 3 * 60 * 1000; // auto logout setelah 3 menit tanpa aktivitas
+const IDLE_MS = 30 * 60 * 1000; // auto logout setelah 30 menit tanpa aktivitas
 const LAST_ACTIVITY_KEY = "peduli:last_activity";
-const WARNING_MS = 30 * 1000; // peringatan 30 detik sebelum logout
+const WARNING_MS = 60 * 1000; // peringatan 60 detik sebelum logout
 
 const EVENTS = ["mousedown", "click", "mousemove", "keydown", "touchstart", "scroll", "visibilitychange"];
 
@@ -41,7 +41,7 @@ const IdleTimeoutGuard = () => {
     clearAll();
     setWarn(false);
     await signOut();
-    toast.info("Sesi berakhir otomatis karena tidak ada aktivitas selama 3 menit.");
+    toast.info("Sesi berakhir otomatis karena tidak ada aktivitas selama 30 menit.");
     navigate("/auth", { replace: true });
   }, [clearAll, navigate, signOut]);
 
@@ -67,7 +67,7 @@ const IdleTimeoutGuard = () => {
       return;
     }
 
-    // Saat aplikasi dibuka kembali: jika sudah lewat 3 menit, wajib login lagi.
+    // Saat aplikasi dibuka kembali: jika sudah lewat 30 menit, wajib login lagi.
     const stored = Number(window.localStorage.getItem(LAST_ACTIVITY_KEY) ?? 0);
     if (stored && Date.now() - stored > IDLE_MS) {
       doLogout();
