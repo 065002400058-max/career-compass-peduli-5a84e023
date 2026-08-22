@@ -1,5 +1,4 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
 import {
   credentialsEmailText,
   credentialsSubject,
@@ -66,37 +65,47 @@ const generateTempPassword = () => {
   return chars.join("");
 };
 
-const sendViaSmtp = async (to: string, subject: string, html: string, text: string) => {
-  const hostname = Deno.env.get("SMTP_HOST");
-  const user = Deno.env.get("SMTP_USER");
-  const pass = Deno.env.get("SMTP_PASS");
-  if (!hostname || !user || !pass) return { sent: false as const, reason: "SMTP belum dikonfigurasi" };
+// Pengiriman email lewat antrean Lovable (transactional_emails) yang diproses
+// oleh process-email-queue. Koneksi SMTP langsung tidak dipakai karena port
+// SMTP outbound (25/465/587) diblokir di edge runtime — koneksi hang lalu timeout.
+const SENDER_DOMAIN = "notify.pedulismartcareer-daarululuumlido.com";
+const FROM_ADDRESS = "Smart Career Center PEDULI <noreply@pedulismartcareer-daarululuumlido.com>";
 
-  const port = Number(Deno.env.get("SMTP_PORT") ?? "465");
-  // SMTP_SECURE=true/1/ssl memaksa SSL/TLS; default mengikuti port (465 = TLS).
-  const secureEnv = (Deno.env.get("SMTP_SECURE") ?? "").trim().toLowerCase();
-  const useTls = secureEnv
-    ? ["true", "1", "ssl", "tls"].includes(secureEnv)
-    : port === 465;
+const enqueueCredentialsEmail = async (
+  admin: ReturnType<typeof createClient>,
+  to: string,
+  subject: string,
+  html: string,
+  text: string,
+  idempotencyKey: string,
+) => {
+  const messageId = crypto.randomUUID();
 
-  const fromAddress =
-    Deno.env.get("SMTP_FROM") ?? "admin@pedulismartcareer-daarululuumlido.com";
-  const fromName = Deno.env.get("SMTP_FROM_NAME") ?? "Smart Career Center PEDULI";
-  const from = fromAddress.includes("<") ? fromAddress : `${fromName} <${fromAddress}>`;
-
-  const client = new SMTPClient({
-    connection: { hostname, port, tls: useTls, auth: { username: user, password: pass } },
+  // Catat pending dulu agar ada jejak walau enqueue gagal.
+  await admin.from("email_send_log").insert({
+    message_id: messageId,
+    template_name: "account_credentials",
+    recipient_email: to,
+    status: "pending",
   });
-  try {
-    await client.send({ from, to, subject, content: text, html });
-    return { sent: true as const };
-  } finally {
-    try {
-      await client.close();
-    } catch {
-      // abaikan error penutupan koneksi
-    }
-  }
+
+  const { error } = await admin.rpc("enqueue_email", {
+    queue_name: "transactional_emails",
+    payload: {
+      message_id: messageId,
+      to,
+      from: FROM_ADDRESS,
+      sender_domain: SENDER_DOMAIN,
+      subject,
+      html,
+      text,
+      purpose: "transactional",
+      label: "account_credentials",
+      idempotency_key: idempotencyKey,
+      queued_at: new Date().toISOString(),
+    },
+  });
+  if (error) throw new Error(error.message);
 };
 
 Deno.serve(async (req) => {
@@ -250,12 +259,15 @@ Deno.serve(async (req) => {
     let emailSent = false;
     let warning: string | null = null;
     try {
-      const res = await sendViaSmtp(email, subject, html, text);
-      emailSent = res.sent;
-      if (!res.sent) {
-        warning =
-          "SMTP pengirim belum dikonfigurasi sehingga email gagal terkirim. Password sementara di bawah hanya ditampilkan satu kali — sampaikan kepada penerima secara aman.";
-      }
+      await enqueueCredentialsEmail(
+        admin,
+        email,
+        subject,
+        html,
+        text,
+        `invite-credentials-${userId}-${Date.now()}`,
+      );
+      emailSent = true;
     } catch (e) {
       warning = `Email gagal terkirim (${(e as Error).message}). Password sementara di bawah hanya ditampilkan satu kali — sampaikan kepada penerima secara aman.`;
     }

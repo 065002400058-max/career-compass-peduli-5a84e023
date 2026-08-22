@@ -496,7 +496,7 @@ const InvitationsManager = () => {
           <DialogHeader>
             <DialogTitle className="font-heading">Undang Pengguna</DialogTitle>
             <DialogDescription>
-              Sistem mengirim email undangan berisi tautan aktivasi (berlaku 24 jam) untuk membuat password.
+              Sistem membuat akun dan mengirim email berisi password sementara. Pengguna wajib mengganti password saat login pertama.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={submit} className="space-y-3">
