@@ -28,21 +28,22 @@ type AuditRow = Database["public"]["Tables"]["login_access_audit"]["Row"];
 const ROLE_LABEL: Record<AppRole, string> = { santri: "Santri", alumni: "Alumni", mitra: "Mitra", admin: "Admin" };
 
 const ACTION_LABEL: Record<string, string> = {
-  add: "Ditambahkan",
-  update_role: "Role diubah",
-  update_profile: "Data diubah",
-  activate: "Diaktifkan",
-  deactivate: "Dinonaktifkan",
-  delete: "Dihapus",
+  email_added: "Ditambahkan",
+  email_removed: "Dihapus",
+  role_changed: "Role diubah",
+  updated: "Data diubah",
+  activated: "Diaktifkan",
+  deactivated: "Dinonaktifkan",
+  login_check: "Pemeriksaan login",
   login_allowed: "Login diizinkan",
-  login_denied_not_registered: "Login ditolak (belum terdaftar)",
+  login_denied_unregistered: "Login ditolak (belum terdaftar)",
   login_denied_inactive: "Login ditolak (nonaktif)",
   login_denied_expired: "Login ditolak (kedaluwarsa)",
   login_denied_rate_limited: "Login ditolak (rate limit)",
 };
 
-type Form = { email: string; full_name: string; role: AppRole; status: "aktif" | "nonaktif"; expires_at: string };
-const EMPTY: Form = { email: "", full_name: "", role: "santri", status: "aktif", expires_at: "" };
+type Form = { email: string; full_name: string; role: AppRole; status: "active" | "inactive"; expires_at: string };
+const EMPTY: Form = { email: "", full_name: "", role: "santri", status: "active", expires_at: "" };
 
 const fmtDate = (v: string | null) =>
   v ? new Date(v).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" }) : "—";
@@ -100,7 +101,7 @@ const LoginAccessManager = () => {
       email: r.email,
       full_name: r.full_name ?? "",
       role: r.role,
-      status: r.status === "aktif" ? "aktif" : "nonaktif",
+      status: r.status === "active" ? "active" : "inactive",
       expires_at: r.expires_at ? r.expires_at.slice(0, 10) : "",
     });
     setOpen(true);
@@ -133,10 +134,10 @@ const LoginAccessManager = () => {
   };
 
   const toggleStatus = async (r: Row) => {
-    const next = r.status === "aktif" ? "nonaktif" : "aktif";
+    const next = r.status === "active" ? "inactive" : "active";
     const { error } = await supabase.from("allowed_login_emails").update({ status: next }).eq("id", r.id);
     if (error) { toast.error(error.message); return; }
-    toast.success(next === "aktif" ? "Akses diaktifkan" : "Akses dinonaktifkan");
+    toast.success(next === "active" ? "Akses diaktifkan" : "Akses dinonaktifkan");
     void queryClient.invalidateQueries({ queryKey: ["allowed-login-emails"] });
     void queryClient.invalidateQueries({ queryKey: ["login-access-audit"] });
   };
@@ -208,15 +209,15 @@ const LoginAccessManager = () => {
                         <td className="px-4 py-2.5 text-muted-foreground">{r.full_name ?? "—"}</td>
                         <td className="px-4 py-2.5"><Badge variant="secondary">{ROLE_LABEL[r.role]}</Badge></td>
                         <td className="px-4 py-2.5">
-                          <Badge variant={r.status === "aktif" && !expired ? "default" : "destructive"}>
-                            {r.status !== "aktif" ? "Nonaktif" : expired ? "Kedaluwarsa" : "Aktif"}
+                          <Badge variant={r.status === "active" && !expired ? "default" : "destructive"}>
+                            {r.status !== "active" ? "Nonaktif" : expired ? "Kedaluwarsa" : "Aktif"}
                           </Badge>
                         </td>
                         <td className="px-4 py-2.5 text-muted-foreground">{fmtDate(r.expires_at)}</td>
                         <td className="px-4 py-2.5">
                           <div className="flex justify-end gap-1">
-                            <Button variant="ghost" size="icon" title={r.status === "aktif" ? "Nonaktifkan" : "Aktifkan"} onClick={() => toggleStatus(r)}>
-                              {r.status === "aktif" ? <ShieldX className="h-4 w-4 text-destructive" /> : <ShieldCheck className="h-4 w-4 text-primary" />}
+                            <Button variant="ghost" size="icon" title={r.status === "active" ? "Nonaktifkan" : "Aktifkan"} onClick={() => toggleStatus(r)}>
+                              {r.status === "active" ? <ShieldX className="h-4 w-4 text-destructive" /> : <ShieldCheck className="h-4 w-4 text-primary" />}
                             </Button>
                             <Button variant="ghost" size="icon" title="Ubah" onClick={() => openEdit(r)}>
                               <Pencil className="h-4 w-4" />
@@ -314,11 +315,11 @@ const LoginAccessManager = () => {
               </div>
               <div className="space-y-1.5">
                 <Label>Status</Label>
-                <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v as "aktif" | "nonaktif" })}>
+                <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v as "active" | "inactive" })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="aktif">Aktif</SelectItem>
-                    <SelectItem value="nonaktif">Nonaktif</SelectItem>
+                    <SelectItem value="active">Aktif</SelectItem>
+                    <SelectItem value="inactive">Nonaktif</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
