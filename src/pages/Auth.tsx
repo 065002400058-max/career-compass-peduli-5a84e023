@@ -326,16 +326,18 @@ const Auth = () => {
                 : <ShieldX className="h-7 w-7 text-destructive" />}
             </div>
             <AlertDialogTitle className="text-center text-lg">
-              {accessDenied === "not_registered" ? "Maaf, Email Belum Terdaftar" : "Akses Tidak Aktif"}
+              {accessDenied === "rate_limited"
+                ? "Terlalu Banyak Percobaan"
+                : accessDenied === "error"
+                  ? "Terjadi Kesalahan"
+                  : "Akses Belum Tersedia"}
             </AlertDialogTitle>
             <AlertDialogDescription className="text-center leading-relaxed">
-              {accessDenied === "not_registered"
-                ? "Email Google yang Anda gunakan belum terdaftar pada Smart Career Center PEDULI. Silakan hubungi administrator untuk mendapatkan akses."
-                : accessDenied === "rate_limited"
-                  ? "Terlalu banyak percobaan login. Silakan tunggu beberapa saat lalu coba lagi."
-                  : accessDenied === "error"
-                    ? "Terjadi kesalahan saat memeriksa akses Anda. Silakan coba lagi."
-                    : "Akses akun Anda sedang tidak aktif atau telah berakhir. Silakan hubungi administrator Smart Career Center PEDULI."}
+              {accessDenied === "rate_limited"
+                ? "Terlalu banyak percobaan login. Silakan tunggu beberapa saat lalu coba lagi."
+                : accessDenied === "error"
+                  ? "Terjadi kesalahan saat memeriksa akses Anda. Silakan coba lagi."
+                  : "Maaf, alamat email Google Anda belum terdaftar atau belum diaktifkan oleh administrator Smart Career Center PEDULI."}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

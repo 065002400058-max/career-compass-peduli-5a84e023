@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -15,96 +16,129 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 import {
   Copy,
+  Info,
+  Link2,
   Loader2,
-  Mail,
+  MessageCircle,
   RefreshCw,
   Search,
-  Send,
-  Trash2,
+  ShieldCheck,
+  ShieldX,
   Upload,
   UserPlus,
-  XCircle,
 } from "lucide-react";
+import type { Database } from "@/integrations/supabase/types";
 
-type Role = "santri" | "alumni" | "admin";
-
-type Invitation = {
-  id: string;
-  email: string;
-  full_name: string | null;
-  role: Role;
-  status: string;
-  notes: string | null;
-  identity_number: string | null;
-  expires_at: string | null;
-  accepted_at: string | null;
-  last_sent_at: string | null;
-  created_at: string;
+type AppRole = Database["public"]["Enums"]["app_role"];
+type BaseRow = Database["public"]["Tables"]["allowed_login_emails"]["Row"];
+// Kolom pelacakan baru (invited_at, first_login_at, dst.) ditambahkan via migrasi;
+// digabung manual agar aman terhadap regenerasi tipe otomatis.
+type AccessRow = BaseRow & {
+  invited_at?: string | null;
+  invited_by?: string | null;
+  first_login_at?: string | null;
+  last_login_at?: string | null;
+  email_notice_status?: string | null;
 };
 
-const ROLES: Role[] = ["santri", "alumni", "admin"];
-const ROLE_LABEL: Record<Role, string> = { santri: "Santri", alumni: "Alumni", admin: "Admin" };
-const STATUS_LABEL: Record<string, string> = {
-  menunggu: "Menunggu",
-  terkirim: "Terkirim",
-  aktif: "Aktif",
-  dibatalkan: "Dibatalkan",
-  kedaluwarsa: "Kedaluwarsa",
+type InviteRole = "santri" | "alumni" | "admin";
+const ROLES: InviteRole[] = ["santri", "alumni", "admin"];
+const ROLE_LABEL: Record<InviteRole, string> = { santri: "Santri", alumni: "Alumni", admin: "Admin" };
+
+const LOGIN_URL = "https://pedulismartcareer-daarululuumlido.com/auth";
+
+const NOTICE_LABEL: Record<string, string> = {
+  email_queued: "Email: dalam antrean pengiriman",
+  email_sent: "Email: terkirim",
+  email_failed: "Email: gagal terkirim",
 };
 
-const EMPTY = { email: "", full_name: "", identity_number: "", role: "santri" as Role, notes: "" };
+const fmtDate = (v: string | null | undefined) =>
+  v ? new Date(v).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" }) : null;
+const fmtDateTime = (v: string | null | undefined) =>
+  v
+    ? new Date(v).toLocaleString("id-ID", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    : null;
 
 // Baca pesan asli dari Edge Function (invoke hanya melaporkan "non-2xx").
-const readFnError = async (error: unknown): Promise<{ message: string; payload: Record<string, unknown> }> => {
+const readFnError = async (error: unknown): Promise<string> => {
   const ctx = (error as { context?: { text?: () => Promise<string> } })?.context;
   if (ctx?.text) {
     try {
       const raw = await ctx.text();
       const parsed = JSON.parse(raw) as Record<string, unknown>;
-      return { message: String(parsed.error ?? raw), payload: parsed };
+      return String(parsed.error ?? raw);
     } catch {
       // fallthrough
     }
   }
-  return { message: (error as Error)?.message ?? "Terjadi kesalahan", payload: {} };
+  return (error as Error)?.message ?? "Terjadi kesalahan";
 };
+
+type RegisterResult = {
+  ok: boolean;
+  reused?: boolean;
+  email_status?: string;
+  message?: string;
+};
+
+/** Panggil backend pendaftaran akses (allowlist Login Google). */
+const callRegisterAccess = async (
+  email: string,
+  fullName: string,
+  role: InviteRole,
+  sendNotice: boolean,
+): Promise<RegisterResult> => {
+  try {
+    const { data, error } = await supabase.functions.invoke("register-access", {
+      body: { email, full_name: fullName, role, send_notice: sendNotice },
+    });
+    if (error) return { ok: false, message: await readFnError(error) };
+    const res = data as { error?: string; reused?: boolean; email_status?: string } | null;
+    if (res?.error) return { ok: false, message: res.error };
+    return { ok: true, reused: res?.reused, email_status: res?.email_status };
+  } catch (e) {
+    return { ok: false, message: (e as Error).message };
+  }
+};
+
+const EMPTY_FORM = { email: "", full_name: "", role: "santri" as InviteRole, send_notice: false };
 
 const InvitationsManager = () => {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState(EMPTY);
+  const [form, setForm] = useState(EMPTY_FORM);
   const [sending, setSending] = useState(false);
   const [search, setSearch] = useState("");
   const [fRole, setFRole] = useState<string>("all");
   const [fStatus, setFStatus] = useState<string>("all");
-  const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [lastLink, setLastLink] = useState<string | null>(null);
   const [importing, setImporting] = useState(false);
   const [importLog, setImportLog] = useState<string[]>([]);
 
-  const set = (k: keyof typeof EMPTY, v: string) => setForm((f) => ({ ...f, [k]: v }));
-
-  const { data: rows = [], isLoading, isError, refetch } = useQuery({
-    queryKey: ["admin-invitations"],
+  const { data: rows = [], isLoading, isError, refetch, isFetching } = useQuery({
+    queryKey: ["admin-access-invites"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("invitations")
+        .from("allowed_login_emails")
         .select("*")
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return (data ?? []) as Invitation[];
+      return (data ?? []) as AccessRow[];
     },
   });
 
@@ -112,116 +146,94 @@ const InvitationsManager = () => {
     const q = search.trim().toLowerCase();
     return rows.filter((r) => {
       if (fRole !== "all" && r.role !== fRole) return false;
-      if (fStatus !== "all" && r.status !== fStatus) return false;
+      if (fStatus === "active" && r.status !== "active") return false;
+      if (fStatus === "inactive" && r.status === "active") return false;
+      if (fStatus === "logged" && !r.last_login_at) return false;
+      if (fStatus === "never" && r.last_login_at) return false;
       if (!q) return true;
-      return (
-        r.email.toLowerCase().includes(q) ||
-        (r.full_name ?? "").toLowerCase().includes(q)
-      );
+      return r.email.toLowerCase().includes(q) || (r.full_name ?? "").toLowerCase().includes(q);
     });
   }, [rows, search, fRole, fStatus]);
 
   const counts = useMemo(
     () => ({
       total: rows.length,
-      aktif: rows.filter((r) => r.status === "aktif").length,
-      terkirim: rows.filter((r) => r.status === "terkirim").length,
-      menunggu: rows.filter((r) => r.status === "menunggu").length,
+      aktif: rows.filter((r) => r.status === "active").length,
+      sudahLogin: rows.filter((r) => r.last_login_at).length,
+      belumLogin: rows.filter((r) => !r.last_login_at).length,
     }),
     [rows],
   );
 
-  const invalidate = () => qc.invalidateQueries({ queryKey: ["admin-invitations"] });
+  const invalidate = () => {
+    qc.invalidateQueries({ queryKey: ["admin-access-invites"] });
+    qc.invalidateQueries({ queryKey: ["allowed-login-emails"] });
+    qc.invalidateQueries({ queryKey: ["login-access-audit"] });
+  };
 
-  const sendInvite = async (email: string, full_name: string, role: Role, notes?: string, identity_number?: string) => {
-    const cleanEmail = email.trim().toLowerCase();
-    const cleanName = full_name.trim();
-    if (!cleanName) {
-      toast.error("Nama lengkap wajib diisi");
-      return false;
-    }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
-      toast.error("Format email tidak valid");
-      return false;
-    }
-
-    setSending(true);
-    setLastLink(null);
+  const copyLoginLink = async () => {
     try {
-      const { data, error } = await supabase.functions.invoke("invite-user", {
-        body: { email: cleanEmail, full_name: cleanName, role },
-      });
-
-      if (error) {
-        const { message, payload } = await readFnError(error);
-        if (payload.already_registered) toast.info(message);
-        else if (payload.cooldown) toast.warning(message);
-        else toast.error(message);
-        return false;
-      }
-      if ((data as { error?: string })?.error) throw new Error((data as { error: string }).error);
-
-      const res = data as {
-        email_sent?: boolean;
-        temp_password?: string | null;
-        warning?: string | null;
-        reused?: boolean;
-      };
-      const extra: Record<string, string> = {};
-      if (notes) extra.notes = notes;
-      if (identity_number) extra.identity_number = identity_number;
-      if (Object.keys(extra).length) {
-        await supabase.from("invitations").update(extra).eq("email", cleanEmail);
-      }
-      if (res.email_sent) {
-        toast.success(`Akun dibuat, email berisi password sementara terkirim ke ${cleanEmail}`);
-      } else {
-        setLastLink(res.temp_password ?? null);
-        toast.warning(
-          res.warning ??
-            "Akun dibuat, namun email gagal terkirim. Sampaikan password sementara di bawah secara aman.",
-        );
-      }
-      invalidate();
-      return true;
-    } catch (e) {
-      toast.error(`Gagal mengirim undangan: ${(e as Error).message}`);
-      return false;
-    } finally {
-      setSending(false);
+      await navigator.clipboard.writeText(LOGIN_URL);
+      toast.success("Tautan login disalin. Bagikan kepada pengguna melalui WhatsApp atau media lain.");
+    } catch {
+      toast.error(`Gagal menyalin. Salin manual: ${LOGIN_URL}`);
     }
+  };
+
+  const shareWhatsApp = (row?: AccessRow) => {
+    const text = row
+      ? `Assalamu'alaikum, ${row.full_name || row.email}.\n\nAkses Smart Career Center PEDULI telah didaftarkan untuk email ${row.email} sebagai ${ROLE_LABEL[row.role as InviteRole] ?? row.role}. Silakan masuk dengan akun Google menggunakan email tersebut melalui:\n${LOGIN_URL}`
+      : `Silakan masuk ke Smart Career Center PEDULI dengan akun Google Anda melalui:\n${LOGIN_URL}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener");
   };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (sending) return;
-    const ok = await sendInvite(form.email, form.full_name, form.role, form.notes, form.identity_number);
-    if (ok) {
-      setForm(EMPTY);
-      setOpen(false);
+    const cleanEmail = form.email.trim().toLowerCase();
+    const cleanName = form.full_name.trim();
+    if (!cleanName) return toast.error("Nama lengkap wajib diisi");
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) return toast.error("Format email tidak valid");
+
+    setSending(true);
+    const res = await callRegisterAccess(cleanEmail, cleanName, form.role, form.send_notice);
+    setSending(false);
+
+    if (!res.ok) return toast.error(res.message ?? "Gagal mendaftarkan akses");
+
+    if (res.reused) {
+      toast.info("Email sudah terdaftar — data akses diperbarui dan diaktifkan kembali.");
+    } else {
+      toast.success(
+        "Akses berhasil didaftarkan. Pengguna sekarang dapat masuk menggunakan akun Google dengan alamat email tersebut.",
+      );
     }
-  };
+    if (res.email_status === "email_failed") {
+      toast.warning(
+        "Akses berhasil didaftarkan, tetapi email pemberitahuan belum terkirim. Silakan bagikan tautan login secara manual.",
+      );
+    } else if (res.email_status === "email_queued") {
+      toast.info("Email pemberitahuan masuk antrean pengiriman.");
+    }
 
-  const cancelInvite = async (row: Invitation) => {
-    const { error } = await supabase
-      .from("invitations")
-      .update({ status: "dibatalkan" })
-      .eq("id", row.id);
-    if (error) return toast.error(error.message);
-    toast.success("Undangan dibatalkan");
+    setForm(EMPTY_FORM);
+    setOpen(false);
     invalidate();
   };
 
-  const removeInvite = async () => {
-    if (!deleteId) return;
-    const { error } = await supabase.from("invitations").delete().eq("id", deleteId);
-    setDeleteId(null);
+  const toggleStatus = async (r: AccessRow) => {
+    const next = r.status === "active" ? "inactive" : "active";
+    const { error } = await supabase.from("allowed_login_emails").update({ status: next }).eq("id", r.id);
     if (error) return toast.error(error.message);
-    toast.success("Undangan dihapus");
+    toast.success(
+      next === "active"
+        ? `${r.email} diaktifkan — sekarang dapat login dengan Google.`
+        : `${r.email} dinonaktifkan — tidak dapat login.`,
+    );
     invalidate();
   };
 
-  // Import CSV: kolom email, nama_lengkap, peran, nomor_identitas, catatan
+  // Import CSV: kolom email, nama_lengkap, peran
   const importCsv = async (file: File) => {
     setImporting(true);
     setImportLog([]);
@@ -238,8 +250,6 @@ const InvitationsManager = () => {
       if (iEmail < 0) throw new Error("Kolom 'email' tidak ditemukan pada header CSV");
       const iName = idx("nama_lengkap", "nama", "full_name");
       const iRole = idx("peran", "role");
-      const iIdent = idx("nomor_identitas", "nis", "nim", "identity_number");
-      const iNotes = idx("catatan", "notes");
 
       let ok = 0;
       for (const line of lines.slice(1)) {
@@ -249,23 +259,24 @@ const InvitationsManager = () => {
           log.push(`Dilewati (email tidak valid): ${line.slice(0, 40)}`);
           continue;
         }
-        const roleRaw = (iRole >= 0 ? c[iRole] : "").toLowerCase() as Role;
-        const role = (ROLES as string[]).includes(roleRaw) ? roleRaw : ("santri" as Role);
-        const sent = await sendInvite(
-          email,
-          iName >= 0 ? c[iName] ?? "" : "",
-          role,
-          iNotes >= 0 ? c[iNotes] : undefined,
-          iIdent >= 0 ? c[iIdent] : undefined,
-        );
-        if (sent) {
-          ok += 1;
-          log.push(`Berhasil: ${email} (${role})`);
-        } else {
-          log.push(`Gagal: ${email}`);
+        const roleRaw = (iRole >= 0 ? c[iRole] : "").toLowerCase() as InviteRole;
+        const role = (ROLES as string[]).includes(roleRaw) ? roleRaw : ("santri" as InviteRole);
+        const name = iName >= 0 ? c[iName] ?? "" : "";
+        if (!name) {
+          log.push(`Dilewati (nama kosong): ${email}`);
+          continue;
         }
+        const res = await callRegisterAccess(email, name, role, false);
+        if (res.ok) {
+          ok += 1;
+          log.push(`Berhasil: ${email} (${ROLE_LABEL[role]})`);
+        } else {
+          log.push(`Gagal: ${email} — ${res.message}`);
+        }
+        // Jeda kecil agar tidak memicu rate limit backend
+        await new Promise((r) => setTimeout(r, 250));
       }
-      toast.success(`Import selesai: ${ok} undangan diproses`);
+      toast.success(`Import selesai: ${ok} email didaftarkan ke daftar akses`);
       invalidate();
     } catch (e) {
       toast.error(`Import gagal: ${(e as Error).message}`);
@@ -277,22 +288,21 @@ const InvitationsManager = () => {
 
   return (
     <div className="space-y-4 min-w-0">
-      <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-700 dark:text-amber-400">
-        <strong>Deprecated:</strong> Alur login utama sekarang menggunakan{" "}
-        <strong>Login dengan Google</strong> melalui menu <strong>Kelola Akses Login</strong>.
-        Pengiriman email undangan dan password sementara sudah dinonaktifkan; halaman ini
-        hanya untuk melihat riwayat undangan lama.
-      </div>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <h2 className="font-heading text-xl font-bold text-foreground">Undangan Akun (Legacy)</h2>
+          <h2 className="font-heading text-xl font-bold text-foreground">Undangan Akun</h2>
           <p className="text-sm text-muted-foreground">
-            Riwayat undangan lama berbasis email &amp; password sementara.
+            Daftarkan email agar pengguna dapat masuk dengan akun Google. Tanpa password sementara.
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={() => refetch()}>
-            <RefreshCw className="h-4 w-4 mr-1.5" /> Muat Ulang
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isFetching}>
+            {isFetching ? (
+              <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
+            ) : (
+              <RefreshCw className="h-4 w-4 mr-1.5" />
+            )}
+            Muat Ulang
           </Button>
           <Button size="sm" variant="outline" asChild disabled={importing}>
             <label className="cursor-pointer">
@@ -306,7 +316,7 @@ const InvitationsManager = () => {
                 type="file"
                 accept=".csv,text/csv"
                 className="hidden"
-                aria-label="Import undangan dari CSV"
+                aria-label="Import daftar akses dari CSV"
                 onChange={(e) => {
                   const f = e.target.files?.[0];
                   e.target.value = "";
@@ -316,18 +326,43 @@ const InvitationsManager = () => {
             </label>
           </Button>
           <Button size="sm" onClick={() => setOpen(true)}>
-            <UserPlus className="h-4 w-4 mr-1.5" /> Undang Pengguna
+            <UserPlus className="h-4 w-4 mr-1.5" /> Daftarkan Akses
           </Button>
         </div>
       </div>
 
+      {/* Alur singkat */}
+      <div className="rounded-2xl border border-primary/20 bg-primary/5 px-4 py-3 flex gap-2">
+        <Info className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+        <p className="text-xs text-muted-foreground leading-relaxed">
+          Email yang didaftarkan langsung masuk daftar akses Login Google dan berstatus{" "}
+          <strong>Aktif</strong>. Setelah itu bagikan tautan login di bawah kepada pengguna —
+          mereka masuk dengan akun Google sesuai email tersebut. Email pemberitahuan hanya
+          notifikasi tambahan dan bukan syarat login.
+        </p>
+      </div>
+
+      {/* Tautan login untuk dibagikan */}
+      <Card className="rounded-2xl border-primary/30">
+        <CardContent className="p-4 flex flex-wrap items-center gap-2">
+          <Link2 className="h-4 w-4 text-primary shrink-0" />
+          <code className="text-xs break-all flex-1 min-w-0 bg-muted rounded-lg p-2">{LOGIN_URL}</code>
+          <Button size="sm" variant="outline" onClick={copyLoginLink}>
+            <Copy className="h-4 w-4 mr-1.5" /> Salin Tautan Login
+          </Button>
+          <Button size="sm" variant="outline" onClick={() => shareWhatsApp()}>
+            <MessageCircle className="h-4 w-4 mr-1.5" /> Bagikan via WhatsApp
+          </Button>
+        </CardContent>
+      </Card>
+
       {/* Ringkasan */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {[
-          { label: "Total Undangan", value: counts.total },
-          { label: "Sudah Aktif", value: counts.aktif },
-          { label: "Terkirim", value: counts.terkirim },
-          { label: "Menunggu", value: counts.menunggu },
+          { label: "Total Terdaftar", value: counts.total },
+          { label: "Aktif", value: counts.aktif },
+          { label: "Sudah Login", value: counts.sudahLogin },
+          { label: "Belum Login", value: counts.belumLogin },
         ].map((c) => (
           <Card key={c.label} className="rounded-2xl">
             <CardContent className="p-4">
@@ -338,37 +373,18 @@ const InvitationsManager = () => {
         ))}
       </div>
 
-      {lastLink && (
-        <Card className="rounded-2xl border-primary/30">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm">Password sementara (tampil sekali)</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-wrap items-center gap-2">
-            <code className="text-xs break-all flex-1 min-w-0 bg-muted rounded-lg p-2">{lastLink}</code>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => {
-                navigator.clipboard.writeText(lastLink);
-                toast.success("Password sementara disalin");
-              }}
-            >
-              <Copy className="h-4 w-4 mr-1.5" /> Salin
-            </Button>
-          </CardContent>
-        </Card>
-      )}
-
       {importLog.length > 0 && (
         <Card className="rounded-2xl">
-          <CardHeader className="pb-2 flex-row items-center justify-between">
-            <CardTitle className="text-sm">Hasil Import CSV</CardTitle>
-            <Button size="sm" variant="ghost" onClick={() => setImportLog([])}>Tutup</Button>
-          </CardHeader>
-          <CardContent className="max-h-48 overflow-y-auto space-y-1">
-            {importLog.map((l, i) => (
-              <p key={i} className="text-[11px] text-muted-foreground break-words">{l}</p>
-            ))}
+          <CardContent className="p-4 space-y-2">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-medium text-foreground">Hasil Import CSV</p>
+              <Button size="sm" variant="ghost" onClick={() => setImportLog([])}>Tutup</Button>
+            </div>
+            <div className="max-h-48 overflow-y-auto space-y-1">
+              {importLog.map((l, i) => (
+                <p key={i} className="text-[11px] text-muted-foreground break-words">{l}</p>
+              ))}
+            </div>
           </CardContent>
         </Card>
       )}
@@ -378,7 +394,7 @@ const InvitationsManager = () => {
         <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            aria-label="Cari undangan"
+            aria-label="Cari akses"
             placeholder="Cari email atau nama..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -403,13 +419,14 @@ const InvitationsManager = () => {
           onChange={(e) => setFStatus(e.target.value)}
         >
           <option value="all">Semua Status</option>
-          {Object.keys(STATUS_LABEL).map((s) => (
-            <option key={s} value={s}>{STATUS_LABEL[s]}</option>
-          ))}
+          <option value="active">Aktif</option>
+          <option value="inactive">Nonaktif</option>
+          <option value="logged">Sudah Login</option>
+          <option value="never">Belum Login</option>
         </select>
       </div>
 
-      {/* Daftar */}
+      {/* Daftar akses */}
       {isLoading ? (
         <div className="space-y-2">
           {[1, 2, 3].map((i) => (
@@ -419,7 +436,7 @@ const InvitationsManager = () => {
       ) : isError ? (
         <Card className="rounded-2xl">
           <CardContent className="p-8 text-center text-sm text-muted-foreground">
-            Gagal memuat data undangan.
+            Gagal memuat daftar akses.
             <div className="mt-3">
               <Button size="sm" variant="outline" onClick={() => refetch()}>Coba lagi</Button>
             </div>
@@ -428,8 +445,7 @@ const InvitationsManager = () => {
       ) : filtered.length === 0 ? (
         <Card className="rounded-2xl">
           <CardContent className="p-8 text-center text-sm text-muted-foreground">
-            <Mail className="h-10 w-10 mx-auto mb-3 opacity-40" />
-            Belum ada undangan. Klik "Undang Pengguna" untuk menambahkan email santri atau alumni.
+            Belum ada email yang cocok. Klik "Daftarkan Akses" untuk menambahkan email santri, alumni, atau admin.
           </CardContent>
         </Card>
       ) : (
@@ -444,48 +460,51 @@ const InvitationsManager = () => {
                   <h4 className="font-heading font-semibold text-sm text-foreground truncate">
                     {r.full_name || r.email}
                   </h4>
-                  <Badge variant="outline" className="text-[10px] rounded-full">{ROLE_LABEL[r.role] ?? r.role}</Badge>
-                  <Badge
-                    className="text-[10px] rounded-full"
-                    variant={r.status === "aktif" ? "default" : "secondary"}
-                  >
-                    {STATUS_LABEL[r.status] ?? r.status}
+                  <Badge variant="outline" className="text-[10px] rounded-full">
+                    {ROLE_LABEL[r.role as InviteRole] ?? r.role}
                   </Badge>
+                  {r.status === "active" ? (
+                    <Badge className="text-[10px] rounded-full">Aktif</Badge>
+                  ) : (
+                    <Badge variant="destructive" className="text-[10px] rounded-full">Nonaktif</Badge>
+                  )}
+                  {r.last_login_at ? (
+                    <Badge variant="secondary" className="text-[10px] rounded-full">Sudah Login</Badge>
+                  ) : (
+                    <Badge variant="outline" className="text-[10px] rounded-full">Belum Login</Badge>
+                  )}
                 </div>
                 <p className="text-xs text-muted-foreground truncate">{r.email}</p>
-                {r.identity_number && (
-                  <p className="text-[11px] text-muted-foreground">No. Identitas: {r.identity_number}</p>
-                )}
                 <p className="text-[11px] text-muted-foreground">
-                  Dibuat {new Date(r.created_at).toLocaleDateString("id-ID")}
-                  {r.accepted_at && ` · Aktif ${new Date(r.accepted_at).toLocaleDateString("id-ID")}`}
+                  {fmtDate(r.invited_at ?? r.created_at) && `Didaftarkan ${fmtDate(r.invited_at ?? r.created_at)}`}
+                  {fmtDateTime(r.last_login_at) && ` · Login terakhir ${fmtDateTime(r.last_login_at)}`}
                 </p>
-              </div>
-              <div className="flex gap-2 shrink-0">
-                {r.status !== "aktif" && (
-                  <>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      disabled={sending}
-                      onClick={() => sendInvite(r.email, r.full_name ?? "", r.role, undefined, r.identity_number ?? undefined)}
-                    >
-                      <Send className="h-4 w-4 mr-1.5" /> Kirim Ulang
-                    </Button>
-                    {r.status !== "dibatalkan" && (
-                      <Button size="sm" variant="outline" onClick={() => cancelInvite(r)}>
-                        <XCircle className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </>
+                {r.email_notice_status && r.email_notice_status !== "none" && (
+                  <p className="text-[11px] text-muted-foreground">
+                    {NOTICE_LABEL[r.email_notice_status] ?? r.email_notice_status}
+                  </p>
                 )}
+              </div>
+              <div className="flex gap-1.5 shrink-0">
                 <Button
-                  size="sm"
-                  variant="outline"
-                  className="text-destructive border-destructive/30"
-                  onClick={() => setDeleteId(r.id)}
+                  size="icon"
+                  variant="ghost"
+                  title="Bagikan tautan login via WhatsApp"
+                  onClick={() => shareWhatsApp(r)}
                 >
-                  <Trash2 className="h-4 w-4" />
+                  <MessageCircle className="h-4 w-4 text-primary" />
+                </Button>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  title={r.status === "active" ? "Nonaktifkan akses" : "Aktifkan akses"}
+                  onClick={() => toggleStatus(r)}
+                >
+                  {r.status === "active" ? (
+                    <ShieldX className="h-4 w-4 text-destructive" />
+                  ) : (
+                    <ShieldCheck className="h-4 w-4 text-primary" />
+                  )}
                 </Button>
               </div>
             </div>
@@ -493,93 +512,71 @@ const InvitationsManager = () => {
         </div>
       )}
 
-      {/* Dialog undang */}
+      {/* Dialog pendaftaran akses */}
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-md rounded-2xl">
+        <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle className="font-heading">Undang Pengguna</DialogTitle>
+            <DialogTitle>Daftarkan Akses</DialogTitle>
             <DialogDescription>
-              Sistem membuat akun dan mengirim email berisi password sementara. Pengguna wajib mengganti password saat login pertama.
+              Email ini langsung dapat masuk menggunakan akun Google yang sesuai. Role diambil dari
+              pengaturan di sini, bukan dari Google.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={submit} className="space-y-3">
             <div className="space-y-1.5">
-              <Label>Email *</Label>
+              <Label htmlFor="invite-email">Alamat Email</Label>
               <Input
-                aria-label="Email undangan"
+                id="invite-email"
                 type="email"
-                required
+                placeholder="nama@gmail.com"
                 value={form.email}
-                onChange={(e) => set("email", e.target.value)}
-                placeholder="nama@email.com"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Nama Lengkap *</Label>
-              <Input
-                aria-label="Nama lengkap undangan"
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
                 required
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="invite-name">Nama Lengkap</Label>
+              <Input
+                id="invite-name"
+                placeholder="Nama pengguna"
                 value={form.full_name}
-                onChange={(e) => set("full_name", e.target.value)}
-                placeholder="Nama lengkap"
+                onChange={(e) => setForm({ ...form, full_name: e.target.value })}
+                required
               />
             </div>
             <div className="space-y-1.5">
-              <Label>Nomor Identitas (NIS/NIM)</Label>
-              <Input
-                aria-label="Nomor identitas undangan"
-                value={form.identity_number}
-                onChange={(e) => set("identity_number", e.target.value)}
-                placeholder="Opsional"
+              <Label>Role</Label>
+              <Select value={form.role} onValueChange={(v) => setForm({ ...form, role: v as InviteRole })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {ROLES.map((r) => (
+                    <SelectItem key={r} value={r}>{ROLE_LABEL[r]}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <label className="flex items-start gap-2.5 rounded-xl border border-border p-3 cursor-pointer">
+              <Checkbox
+                checked={form.send_notice}
+                onCheckedChange={(v) => setForm({ ...form, send_notice: v === true })}
+                className="mt-0.5"
               />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Peran</Label>
-              <select
-                aria-label="Peran undangan"
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
-                value={form.role}
-                onChange={(e) => set("role", e.target.value)}
-              >
-                {ROLES.map((r) => (
-                  <option key={r} value={r}>{ROLE_LABEL[r]}</option>
-                ))}
-              </select>
-            </div>
-            <div className="space-y-1.5">
-              <Label>Catatan</Label>
-              <Input
-                aria-label="Catatan undangan"
-                value={form.notes}
-                onChange={(e) => set("notes", e.target.value)}
-                placeholder="Opsional"
-              />
-            </div>
+              <span className="text-xs text-muted-foreground leading-relaxed">
+                <span className="font-medium text-foreground">Kirim email pemberitahuan (opsional)</span>
+                <br />
+                Hanya notifikasi tambahan — bukan syarat login. Jika pengiriman gagal, akses tetap
+                berlaku dan Anda dapat membagikan tautan login secara manual.
+              </span>
+            </label>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setOpen(false)}>Batal</Button>
               <Button type="submit" disabled={sending}>
-                {sending ? <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> : <Send className="h-4 w-4 mr-1.5" />}
-                Kirim Undangan
+                {sending && <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />} Daftarkan Akses
               </Button>
             </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
-
-      <AlertDialog open={!!deleteId} onOpenChange={(o) => !o && setDeleteId(null)}>
-        <AlertDialogContent className="rounded-2xl">
-          <AlertDialogHeader>
-            <AlertDialogTitle>Hapus undangan?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Undangan akan dihapus. Akun yang sudah aktif tidak terpengaruh.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Batal</AlertDialogCancel>
-            <AlertDialogAction onClick={removeInvite}>Hapus</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 };
