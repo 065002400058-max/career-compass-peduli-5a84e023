@@ -173,8 +173,8 @@ const Auth = () => {
         <div className="text-center mb-8">
           <img
             src={logo}
-            alt="Smart Career Center PEDULI"
-            className="h-14 w-auto mx-auto mb-4"
+            alt="Smart Career Center PEDULI — Pesantren Daarul 'Uluum Lido, Yayasan Salsabila, Universitas Trisakti, Diktisaintek Berdampak, BiMA, Tut Wuri Handayani"
+            className="h-11 w-auto max-w-full mx-auto mb-4 object-contain"
             loading="lazy"
           />
           <h1 className="text-2xl font-heading font-bold text-foreground">
