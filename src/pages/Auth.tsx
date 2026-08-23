@@ -71,22 +71,63 @@ const Auth = () => {
     return () => clearTimeout(t);
   }, [lockLeft]);
 
+  // Bersihkan parameter OAuth sensitif dari URL setelah callback diproses
+  useEffect(() => {
+    if (authLoading) return;
+    const url = new URL(window.location.href);
+    const sensitive = ["code", "state", "error", "error_description", "error_code", "provider_token", "provider_refresh_token"];
+    let dirty = false;
+    for (const key of sensitive) {
+      if (url.searchParams.has(key)) {
+        url.searchParams.delete(key);
+        dirty = true;
+      }
+    }
+    const hashDirty = /access_token|refresh_token|error=/.test(window.location.hash);
+    if (dirty || hashDirty) {
+      window.history.replaceState(null, "", url.pathname + url.search);
+    }
+  }, [authLoading]);
+
   const handleGoogle = async () => {
-    setLoading(true);
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: `${window.location.origin}/auth`,
-    });
-    if (result.error) {
+    // Preview editor berjalan di dalam iframe. Google menolak halaman OAuth
+    // dimuat di dalam iframe (X-Frame-Options: DENY → ERR_BLOCKED_BY_RESPONSE),
+    // jadi dari dalam iframe alur login dibuka di tab top-level baru.
+    if (window.self !== window.top) {
+      const win = window.open(`${window.location.origin}/auth`, "_blank", "noopener,noreferrer");
       toast({
-        title: "Login Google Gagal",
-        description: "Tidak dapat terhubung ke Google. Silakan coba lagi.",
-        variant: "destructive",
+        title: "Login dibuka di tab baru",
+        description: win
+          ? "Silakan lanjutkan \"Masuk dengan Google\" di tab yang baru terbuka."
+          : "Pop-up diblokir browser. Izinkan pop-up untuk situs ini, lalu coba lagi.",
       });
-      setLoading(false);
       return;
     }
-    if (result.redirected) return; // browser menuju Google; kembali ke /auth dengan session
-    setLoading(false);
+
+    setLoading(true);
+    try {
+      const result = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: `${window.location.origin}/auth`,
+      });
+      if (result.redirected) return; // full-page redirect menuju Google
+      if (result.error) throw result.error;
+      setLoading(false);
+    } catch {
+      // Popup gagal/diblokir → fallback: full-page redirect resmi provider Google
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo: `${window.location.origin}/auth` },
+      });
+      if (error) {
+        toast({
+          title: "Login Google Gagal",
+          description: "Pop-up diblokir dan pengalihan gagal. Izinkan pop-up lalu coba lagi.",
+          variant: "destructive",
+        });
+        setLoading(false);
+      }
+      // Tanpa error → browser redirect penuh ke Google; tombol dibiarkan loading
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
