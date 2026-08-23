@@ -13,7 +13,8 @@ import {
 import { Eye, EyeOff, Info, Loader2, Lock, LogIn, Mail, MailX, ShieldX } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { z } from "zod";
-const logo = "/favicon.png";
+// Logo gabungan resmi enam institusi/mitra (file: public/logo-gabungan.png)
+const logo = "/logo-gabungan.png";
 
 const emailSchema = z.string().trim().email("Format email tidak valid");
 const passwordSchema = z.string().min(6, "Password minimal 6 karakter");
@@ -172,8 +173,8 @@ const Auth = () => {
         <div className="text-center mb-8">
           <img
             src={logo}
-            alt="Smart Career Center PEDULI"
-            className="h-14 w-auto mx-auto mb-4"
+            alt="Smart Career Center PEDULI — Pesantren Daarul 'Uluum Lido, Yayasan Salsabila, Universitas Trisakti, Diktisaintek Berdampak, BiMA, Tut Wuri Handayani"
+            className="h-11 w-auto max-w-full mx-auto mb-4 object-contain"
             loading="lazy"
           />
           <h1 className="text-2xl font-heading font-bold text-foreground">
