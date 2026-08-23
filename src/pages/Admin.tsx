@@ -8,7 +8,7 @@ import { Sheet, SheetContent } from "@/components/ui/sheet";
 import {
   Users, Briefcase, Building2, CheckCircle, XCircle, Brain, HeartPulse, GraduationCap,
   Award, MoreHorizontal, TrendingUp, FileDown, Bell, Menu, LayoutDashboard, UserCircle,
-  ChevronDown, ArrowRight, User as UserIcon, MailPlus, Bot,
+  ChevronDown, ArrowRight, User as UserIcon, MailPlus, Bot, KeyRound,
 } from "lucide-react";
 import AdminSidebar, { AdminNavItem } from "@/components/admin/AdminSidebar";
 import SantriCenter from "@/components/admin/SantriCenter";
@@ -27,6 +27,7 @@ import EventsManager from "@/components/admin/EventsManager";
 import AiHistoryViewer from "@/components/admin/AiHistoryViewer";
 import CounselingManager from "@/components/admin/CounselingManager";
 import AdminSettings from "@/components/admin/AdminSettings";
+import LoginAccessManager from "@/components/admin/LoginAccessManager";
 
 
 const MAIN_NAV: AdminNavItem[] = [
@@ -210,6 +211,7 @@ const Admin = () => {
       case "referrals": return <ReferralManager />;
       case "reports": return <UsageReports />;
       case "invitations": return <InvitationsManager />;
+      case "access": return <LoginAccessManager />;
       case "ai-history": return <AiHistoryViewer />;
       case "counseling": return <CounselingManager />;
       case "settings": return <AdminSettings onNavigate={select} />;
@@ -235,7 +237,7 @@ const Admin = () => {
         { label: "Layanan & Tes", items: [tool("screening"), tool("cbt"), tool("psikotes"), { key: "counseling", label: "Konseling", icon: HeartPulse }, tool("referrals")] },
         { label: "Karier & Kemitraan", items: [tool("jobs"), tool("partners"), tool("events"), tool("universities"), tool("scholarships")] },
         { label: "Laporan", items: [tool("reports"), tool("ai-history")] },
-        { label: "Akun & Akses", items: [tool("invitations")] },
+        { label: "Akun & Akses", items: [{ key: "access", label: "Kelola Akses Login", icon: KeyRound }, tool("invitations")] },
 
         { label: "Pengaturan", items: [{ key: "settings", label: "Pengaturan", icon: MoreHorizontal }] },
       ]}
