@@ -76,9 +76,14 @@ export type Database = {
           created_at: string
           created_by: string | null
           email: string
+          email_notice_status: string
           expires_at: string | null
+          first_login_at: string | null
           full_name: string
           id: string
+          invited_at: string | null
+          invited_by: string | null
+          last_login_at: string | null
           role: Database["public"]["Enums"]["app_role"]
           status: string
           updated_at: string
@@ -87,9 +92,14 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           email: string
+          email_notice_status?: string
           expires_at?: string | null
+          first_login_at?: string | null
           full_name?: string
           id?: string
+          invited_at?: string | null
+          invited_by?: string | null
+          last_login_at?: string | null
           role?: Database["public"]["Enums"]["app_role"]
           status?: string
           updated_at?: string
@@ -98,9 +108,14 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           email?: string
+          email_notice_status?: string
           expires_at?: string | null
+          first_login_at?: string | null
           full_name?: string
           id?: string
+          invited_at?: string | null
+          invited_by?: string | null
+          last_login_at?: string | null
           role?: Database["public"]["Enums"]["app_role"]
           status?: string
           updated_at?: string
