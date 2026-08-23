@@ -1972,6 +1972,14 @@ export type Database = {
         }
         Returns: number
       }
+      psikotes_answer_options: {
+        Args: { _test_id: string }
+        Returns: {
+          answer_text: string
+          id: string
+          question_id: string
+        }[]
+      }
       public_stats: { Args: never; Returns: Json }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }
@@ -1996,6 +2004,10 @@ export type Database = {
           _university?: string
         }
         Returns: string
+      }
+      submit_psikotes_attempt: {
+        Args: { _answers: Json; _test_id: string }
+        Returns: Json
       }
     }
     Enums: {
