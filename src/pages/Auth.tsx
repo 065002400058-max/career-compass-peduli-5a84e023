@@ -13,7 +13,8 @@ import {
 import { Eye, EyeOff, Info, Loader2, Lock, LogIn, Mail, MailX, ShieldX } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { z } from "zod";
-const logo = "/favicon.png";
+// Logo gabungan resmi enam institusi/mitra (file: public/logo-gabungan.png)
+const logo = "/logo-gabungan.png";
 
 const emailSchema = z.string().trim().email("Format email tidak valid");
 const passwordSchema = z.string().min(6, "Password minimal 6 karakter");
