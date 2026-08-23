@@ -71,6 +71,42 @@ export type Database = {
         }
         Relationships: []
       }
+      allowed_login_emails: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          email: string
+          expires_at: string | null
+          full_name: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          email: string
+          expires_at?: string | null
+          full_name?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          email?: string
+          expires_at?: string | null
+          full_name?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       alumni: {
         Row: {
           company: string | null
@@ -1201,6 +1237,42 @@ export type Database = {
           },
         ]
       }
+      login_access_audit: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          id: string
+          new_role: Database["public"]["Enums"]["app_role"] | null
+          new_status: string | null
+          old_role: Database["public"]["Enums"]["app_role"] | null
+          old_status: string | null
+          target_email: string
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          id?: string
+          new_role?: Database["public"]["Enums"]["app_role"] | null
+          new_status?: string | null
+          old_role?: Database["public"]["Enums"]["app_role"] | null
+          old_status?: string | null
+          target_email?: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          id?: string
+          new_role?: Database["public"]["Enums"]["app_role"] | null
+          new_status?: string | null
+          old_role?: Database["public"]["Enums"]["app_role"] | null
+          old_status?: string | null
+          target_email?: string
+        }
+        Relationships: []
+      }
       login_attempts: {
         Row: {
           created_at: string
@@ -1868,6 +1940,7 @@ export type Database = {
           question_id: string
         }[]
       }
+      check_login_access: { Args: never; Returns: Json }
       clear_must_change_password: { Args: never; Returns: boolean }
       consume_ai_quota: { Args: { _user_id: string }; Returns: Json }
       delete_email: {
@@ -1899,6 +1972,14 @@ export type Database = {
         }
         Returns: number
       }
+      psikotes_answer_options: {
+        Args: { _test_id: string }
+        Returns: {
+          answer_text: string
+          id: string
+          question_id: string
+        }[]
+      }
       public_stats: { Args: never; Returns: Json }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }
@@ -1923,6 +2004,10 @@ export type Database = {
           _university?: string
         }
         Returns: string
+      }
+      submit_psikotes_attempt: {
+        Args: { _answers: Json; _test_id: string }
+        Returns: Json
       }
     }
     Enums: {

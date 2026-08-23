@@ -1,244 +1,308 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
-import { LogIn, Mail, Lock, ArrowLeft, Eye, EyeOff, ShieldCheck, Timer } from "lucide-react";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription,
+  AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Eye, EyeOff, Info, Loader2, Lock, LogIn, Mail, MailX, ShieldX } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
+import { z } from "zod";
+const logo = "/favicon.png";
 
-const GENERIC_ERROR = "Email atau password salah.";
+const emailSchema = z.string().trim().email("Format email tidak valid");
+const passwordSchema = z.string().min(6, "Password minimal 6 karakter");
 
-/** Penjaga login berjalan di server (Edge Function), bukan hanya di frontend. */
-const guard = async (email: string, action: "check" | "failure" | "success") => {
+const LOCK_KEY = "login_lock";
+const LOCK_THRESHOLD = 5;
+const LOCK_MS = 5 * 60 * 1000;
+
+type LockState = { fails: number; until: number | null };
+
+const readLock = (email: string): LockState => {
   try {
-    const { data } = await supabase.functions.invoke("login-guard", { body: { email, action } });
-    return (data ?? {}) as { locked?: boolean; retry_after?: number; attempts_left?: number };
+    const raw = localStorage.getItem(`${LOCK_KEY}:${email}`);
+    if (!raw) return { fails: 0, until: null };
+    const parsed = JSON.parse(raw) as LockState;
+    if (parsed.until && parsed.until < Date.now()) return { fails: 0, until: null };
+    return parsed;
   } catch {
-    return {};
+    return { fails: 0, until: null };
   }
 };
 
+const writeLock = (email: string, state: LockState) =>
+  localStorage.setItem(`${LOCK_KEY}:${email}`, JSON.stringify(state));
+
+const clearLock = (email: string) => localStorage.removeItem(`${LOCK_KEY}:${email}`);
+
+const GoogleIcon = () => (
+  <svg viewBox="0 0 24 24" className="h-4 w-4 mr-2" aria-hidden="true">
+    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+  </svg>
+);
+
 const Auth = () => {
-  const [isForgotPassword, setIsForgotPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [lockLeft, setLockLeft] = useState(0);
   const navigate = useNavigate();
-  const { toast } = useToast();
+  const { user, loading: authLoading, roles, accessDenied, clearAccessDenied } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [lockLeft, setLockLeft] = useState(0);
+  const [showPassword, setShowPassword] = useState(false);
+  const [formData, setFormData] = useState({ email: "", password: "" });
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  // Setelah autentikasi berhasil & akses diizinkan backend → arahkan sesuai role database
+  useEffect(() => {
+    if (authLoading || !user || accessDenied) return;
+    navigate(roles.includes("admin") ? "/admin" : "/dashboard", { replace: true });
+  }, [authLoading, user, accessDenied, roles, navigate]);
 
-  // Countdown hanya tampilan; keputusan lock tetap dari backend.
   useEffect(() => {
     if (lockLeft <= 0) return;
-    const t = window.setInterval(() => setLockLeft((s) => Math.max(0, s - 1)), 1000);
-    return () => window.clearInterval(t);
+    const t = setTimeout(() => setLockLeft((s) => s - 1), 1000);
+    return () => clearTimeout(t);
   }, [lockLeft]);
 
-  const lockedToast = (secs: number) =>
-    toast({
-      title: "Login dikunci sementara",
-      description: `Terlalu banyak percobaan login. Silakan coba kembali dalam ${secs} detik.`,
-      variant: "destructive",
+  const handleGoogle = async () => {
+    setLoading(true);
+    const result = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: `${window.location.origin}/auth`,
     });
+    if (result.error) {
+      toast({
+        title: "Login Google Gagal",
+        description: "Tidak dapat terhubung ke Google. Silakan coba lagi.",
+        variant: "destructive",
+      });
+      setLoading(false);
+      return;
+    }
+    if (result.redirected) return; // browser menuju Google; kembali ke /auth dengan session
+    setLoading(false);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const mail = email.trim().toLowerCase();
-    if (lockLeft > 0) return lockedToast(lockLeft);
-    setLoading(true);
+    const email = formData.email.trim().toLowerCase();
 
-    // 1) Cek status lock di server
-    const pre = await guard(mail, "check");
-    if (pre.locked) {
-      setLockLeft(pre.retry_after ?? 30);
-      lockedToast(pre.retry_after ?? 30);
-      setLoading(false);
+    const lock = readLock(email);
+    if (lock.until && lock.until > Date.now()) {
+      setLockLeft(Math.ceil((lock.until - Date.now()) / 1000));
+      toast({
+        title: "Terlalu banyak percobaan",
+        description: "Silakan coba lagi beberapa menit lagi.",
+        variant: "destructive",
+      });
       return;
     }
 
-    const { data: signIn, error } = await supabase.auth.signInWithPassword({
-      email: mail,
-      password: password.trim(),
+    try {
+      emailSchema.parse(email);
+      passwordSchema.parse(formData.password);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast({ title: "Validasi Gagal", description: error.errors[0].message, variant: "destructive" });
+        return;
+      }
+    }
+
+    setLoading(true);
+
+    const { data: signInData, error } = await supabase.auth.signInWithPassword({
+      email,
+      password: formData.password,
     });
 
     if (error) {
-      const res = await guard(mail, "failure");
-      if (res.locked) {
-        setLockLeft(res.retry_after ?? 30);
-        lockedToast(res.retry_after ?? 30);
-      } else {
-        toast({
-          title: "Login Gagal",
-          description:
-            typeof res.attempts_left === "number"
-              ? `${GENERIC_ERROR} Sisa percobaan: ${res.attempts_left}.`
-              : GENERIC_ERROR,
-          variant: "destructive",
-        });
-      }
-      setLoading(false);
-      return;
-    }
+      const fails = lock.fails + 1;
+      const until = fails >= LOCK_THRESHOLD ? Date.now() + LOCK_MS : null;
+      writeLock(email, { fails, until });
+      if (until) setLockLeft(Math.ceil(LOCK_MS / 1000));
 
-    // 2) Status akun diambil dari database, bukan localStorage
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("account_status, must_change_password")
-      .eq("id", signIn.user!.id)
-      .maybeSingle();
-
-    const prof = profile as { account_status?: string; must_change_password?: boolean } | null;
-    const status = prof?.account_status ?? "active";
-    if (status !== "active") {
-      await supabase.auth.signOut();
       toast({
-        title: "Akun belum dapat digunakan",
-        description:
-          status === "invited"
-            ? "Akun Anda belum diaktifkan. Silakan periksa email undangan Anda."
-            : "Akun Anda dinonaktifkan. Silakan hubungi admin Career Center PEDULI.",
+        title: "Login Gagal",
+        description: until
+          ? "Terlalu banyak percobaan gagal. Akun dikunci 5 menit."
+          : "Email atau password salah.",
         variant: "destructive",
       });
       setLoading(false);
       return;
     }
 
-    await guard(mail, "success");
+    clearLock(email);
 
-    if (prof?.must_change_password) {
+    // Legacy: akun undangan lama yang wajib ganti password
+    const metaFlag = Boolean(signInData.user?.user_metadata?.must_change_password);
+    let profileFlag = false;
+    if (signInData.user) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("must_change_password")
+        .eq("id", signInData.user.id)
+        .maybeSingle();
+      profileFlag = Boolean(profile?.must_change_password);
+    }
+    if (metaFlag || profileFlag) {
       toast({
-        title: "Ganti password terlebih dahulu",
-        description: "Untuk keamanan akun, buat password baru Anda sebelum melanjutkan.",
+        title: "Ganti password dulu",
+        description: "Demi keamanan, ganti password sementara Anda sebelum melanjutkan.",
       });
-      navigate("/ganti-password-awal", { replace: true });
       setLoading(false);
+      navigate("/ganti-password", { replace: true });
       return;
     }
 
     toast({ title: "Login Berhasil", description: "Selamat datang kembali!" });
-    navigate("/", { replace: true });
-    setLoading(false);
+    // Pengalihan sesuai role ditangani useEffect di atas setelah pemeriksaan akses backend selesai
   };
 
-  const handleForgotPassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
-      redirectTo: `${window.location.origin}/reset-password`,
-    });
-
-    // Pesan netral: tidak membocorkan apakah email terdaftar.
-    toast({
-      title: "Permintaan diterima",
-      description: "Jika email tersebut terdaftar, instruksi pemulihan akun telah dikirim.",
-    });
-    setLoading(false);
-  };
-
-  if (isForgotPassword) {
-    return (
-      <div className="min-h-screen gradient-bg-subtle flex items-center justify-center px-4">
-        <div className="glass-card rounded-2xl p-8 w-full max-w-md">
-          <div className="text-center mb-8">
-            <div className="h-14 w-14 rounded-xl gradient-bg flex items-center justify-center mx-auto mb-4">
-              <Mail className="h-6 w-6 text-primary-foreground" />
-            </div>
-            <h1 className="font-heading text-2xl font-bold text-foreground">Lupa Password</h1>
-            <p className="text-muted-foreground text-sm mt-1">Masukkan email Anda untuk menerima link reset password.</p>
-          </div>
-          <form onSubmit={handleForgotPassword} className="space-y-4">
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} className="pl-10" required />
-            </div>
-            <Button type="submit" className="w-full" disabled={loading}>{loading ? "Mengirim..." : "Kirim Link Reset"}</Button>
-          </form>
-          <div className="mt-6 text-center">
-            <button onClick={() => setIsForgotPassword(false)} className="inline-flex items-center gap-1 text-sm text-primary hover:underline">
-              <ArrowLeft className="h-3.5 w-3.5" /> Kembali ke Login
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const lockSecondsLeft = lockLeft;
 
   return (
     <div className="min-h-screen gradient-bg-subtle flex items-center justify-center px-4 py-10">
       <div className="glass-card rounded-2xl p-8 w-full max-w-md">
-        <div className="text-center mb-6">
-          <div className="h-14 w-14 rounded-xl gradient-bg flex items-center justify-center mx-auto mb-4">
-            <span className="text-primary-foreground font-heading font-bold text-lg">SC</span>
-          </div>
-          <h1 className="font-heading text-2xl font-bold text-foreground">Masuk ke Akun</h1>
-          <p className="text-muted-foreground text-sm mt-1">
-            Masuk untuk mengakses Smart Career Center PEDULI
+        <div className="text-center mb-8">
+          <img
+            src={logo}
+            alt="Smart Career Center PEDULI"
+            className="h-14 w-auto mx-auto mb-4"
+            loading="lazy"
+          />
+          <h1 className="text-2xl font-heading font-bold text-foreground">
+            Selamat Datang
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Masuk ke Smart Career Center PEDULI
           </p>
         </div>
 
+        {/* Login utama: Google — email harus sudah didaftarkan admin */}
+        <Button type="button" variant="outline" className="w-full h-11" onClick={handleGoogle} disabled={loading}>
+          {loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <GoogleIcon />}
+          Masuk dengan Google
+        </Button>
+        <p className="text-[11px] text-muted-foreground text-center mt-2 mb-4">
+          Gunakan akun Google dengan email yang telah didaftarkan oleh administrator.
+        </p>
+
+        <div className="relative mb-4">
+          <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-border" /></div>
+          <div className="relative flex justify-center text-[11px] uppercase">
+            <span className="bg-card px-2 text-muted-foreground">atau masuk dengan email</span>
+          </div>
+        </div>
+
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-1.5">
-            <Label>Email *</Label>
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} className="pl-10" required />
+              <Input
+                id="email"
+                type="email"
+                placeholder="nama@email.com"
+                className="pl-9"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                required
+              />
             </div>
           </div>
-          <div className="space-y-1.5">
-            <Label>Password *</Label>
+
+          <div className="space-y-2">
+            <Label htmlFor="password">Password</Label>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
+                id="password"
                 type={showPassword ? "text" : "password"}
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="pl-10 pr-10"
+                placeholder="••••••••"
+                className="pl-9 pr-10"
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 required
-                minLength={6}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword((v) => !v)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 aria-label={showPassword ? "Sembunyikan password" : "Tampilkan password"}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
               >
                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
           </div>
 
-          <div className="text-right">
-            <button type="button" onClick={() => setIsForgotPassword(true)} className="text-xs text-primary hover:underline">
-              Lupa password?
-            </button>
-          </div>
-
-          {lockLeft > 0 && (
-            <div className="flex items-center gap-2 rounded-xl border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive">
-              <Timer className="h-3.5 w-3.5 shrink-0" />
-              Terlalu banyak percobaan login. Silakan coba kembali dalam{" "}
-              <span className="font-semibold">{lockLeft} detik</span>.
-            </div>
-          )}
-
-          <Button type="submit" className="w-full" disabled={loading || lockLeft > 0}>
-            {loading ? "Memproses..." : lockLeft > 0 ? `Tunggu ${lockLeft}s` : (<><LogIn className="h-4 w-4 mr-2" />Masuk</>)}
+          <Button type="submit" className="w-full" disabled={loading || lockSecondsLeft > 0}>
+            {loading ? (
+              "Memproses..."
+            ) : lockSecondsLeft > 0 ? (
+              `Tunggu ${lockSecondsLeft}s`
+            ) : (
+              <>
+                <LogIn className="h-4 w-4 mr-2" />
+                Masuk
+              </>
+            )}
           </Button>
         </form>
 
-        <div className="mt-6 rounded-xl border border-border bg-muted/40 p-4 text-xs text-muted-foreground">
-          <p className="flex items-center gap-1.5 font-medium text-foreground mb-1">
-            <ShieldCheck className="h-3.5 w-3.5 text-primary" /> Akun berbasis undangan
+        <div className="mt-6 space-y-3">
+          <div className="rounded-xl border border-primary/20 bg-primary/5 p-3 flex gap-2">
+            <Info className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+            <p className="text-[11px] text-muted-foreground leading-relaxed">
+              Pendaftaran publik ditutup. Hanya email yang telah didaftarkan
+              administrator yang dapat masuk.
+            </p>
+          </div>
+          <p className="text-xs text-muted-foreground text-center">
+            Belum punya akses? Hubungi administrator pesantren.
           </p>
-          Pendaftaran publik ditutup. Hanya email yang telah didaftarkan admin yang dapat mengaktifkan akun.
-          Silakan hubungi admin Career Center PEDULI untuk mendapatkan undangan, lalu buat password melalui link
-          aktivasi yang dikirim ke email Anda.
+          <p className="text-xs text-center">
+            <Link to="/" className="text-primary hover:underline">
+              ← Kembali ke Beranda
+            </Link>
+          </p>
         </div>
       </div>
+
+      {/* Dialog penolakan akses — setelah autentikasi Google, email dicek di backend */}
+      <AlertDialog open={!!accessDenied} onOpenChange={(o) => !o && clearAccessDenied()}>
+        <AlertDialogContent className="max-w-sm">
+          <AlertDialogHeader>
+            <div className="h-14 w-14 rounded-full bg-destructive/10 flex items-center justify-center mx-auto mb-3">
+              {accessDenied === "not_registered"
+                ? <MailX className="h-7 w-7 text-destructive" />
+                : <ShieldX className="h-7 w-7 text-destructive" />}
+            </div>
+            <AlertDialogTitle className="text-center text-lg">
+              {accessDenied === "not_registered" ? "Maaf, Email Belum Terdaftar" : "Akses Tidak Aktif"}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-center leading-relaxed">
+              {accessDenied === "not_registered"
+                ? "Email Google yang Anda gunakan belum terdaftar pada Smart Career Center PEDULI. Silakan hubungi administrator untuk mendapatkan akses."
+                : accessDenied === "rate_limited"
+                  ? "Terlalu banyak percobaan login. Silakan tunggu beberapa saat lalu coba lagi."
+                  : accessDenied === "error"
+                    ? "Terjadi kesalahan saat memeriksa akses Anda. Silakan coba lagi."
+                    : "Akses akun Anda sedang tidak aktif atau telah berakhir. Silakan hubungi administrator Smart Career Center PEDULI."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction className="w-full" onClick={clearAccessDenied}>
+              Kembali ke Halaman Login
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

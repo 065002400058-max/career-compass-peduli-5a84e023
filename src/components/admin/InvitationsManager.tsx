@@ -277,14 +277,17 @@ const InvitationsManager = () => {
 
   return (
     <div className="space-y-4 min-w-0">
+      <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-700 dark:text-amber-400">
+        <strong>Deprecated:</strong> Alur login utama sekarang menggunakan{" "}
+        <strong>Login dengan Google</strong> melalui menu <strong>Kelola Akses Login</strong>.
+        Pengiriman email undangan dan password sementara sudah dinonaktifkan; halaman ini
+        hanya untuk melihat riwayat undangan lama.
+      </div>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <h2 className="font-heading text-xl font-bold text-foreground">Undangan Akun</h2>
+          <h2 className="font-heading text-xl font-bold text-foreground">Undangan Akun (Legacy)</h2>
           <p className="text-sm text-muted-foreground">
-            Pendaftaran publik ditutup. Akun hanya aktif setelah admin mengundang emailnya.
-          </p>
-          <p className="text-[11px] text-muted-foreground mt-1">
-            Format CSV: <code>email, nama_lengkap, peran (santri/alumni/admin), nomor_identitas, catatan</code>
+            Riwayat undangan lama berbasis email &amp; password sementara.
           </p>
         </div>
         <div className="flex gap-2">

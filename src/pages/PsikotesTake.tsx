@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { HeartPulse, ArrowLeft, Info } from "lucide-react";
 import { toast } from "sonner";
 import { decodeId } from "@/lib/publicId";
-import { detectScreeningKind, itemScore, interpretScreening, POSITIVE_MESSAGE, DISCLAIMER } from "@/lib/psikotesScoring";
+import { POSITIVE_MESSAGE, DISCLAIMER } from "@/lib/psikotesScoring";
 
 const PsikotesTake = () => {
   const { id: rawId } = useParams();
@@ -31,10 +31,15 @@ const PsikotesTake = () => {
   const { data, isLoading } = useQuery({
     queryKey: ["psi-take", id],
     queryFn: async () => {
+      // Opsi jawaban lewat fungsi sanitasi (tanpa kolom score) agar bobot
+      // jawaban tidak pernah dikirim ke browser. Skor dihitung di server.
       const { data: test } = await supabase.from("psikotes_tests").select("*, psikotes_categories(name)").eq("id", id).single();
-      const { data: qs } = await supabase.from("psikotes_questions").select("*, psikotes_answers(*)").eq("test_id", id).order("order_index");
-      const { data: rs } = await supabase.from("psikotes_results").select("*").eq("test_id", id);
-      return { test, questions: qs ?? [], results: rs ?? [] };
+      const { data: qs } = await supabase.from("psikotes_questions").select("*").eq("test_id", id).order("order_index");
+      const { data: opts } = await supabase.rpc("psikotes_answer_options", { _test_id: id as string });
+      const byQuestion: Record<string, { id: string; answer_text: string }[]> = {};
+      (opts ?? []).forEach((o) => { (byQuestion[o.question_id] ??= []).push({ id: o.id, answer_text: o.answer_text }); });
+      const questions = (qs ?? []).map((q: any) => ({ ...q, options: byQuestion[q.id] ?? [] }));
+      return { test, questions };
     },
     enabled: !!id && !!user,
   });
@@ -43,43 +48,19 @@ const PsikotesTake = () => {
     if (!data?.test || !user) return;
     if (result || submittingRef.current) return;
     submittingRef.current = true; // cegah simpan ganda saat tombol ditekan berkali-kali
-    const kind = detectScreeningKind(data.test.title, (data.test as any).psikotes_categories?.name);
-    let total = 0;
-    const answerData: any[] = [];
-    (data.questions as any[]).forEach((q, idx) => {
-      const chosen = q.psikotes_answers.find((a: any) => a.id === answers[q.id]);
-      const raw = chosen?.score ?? 0;
-      const scored = itemScore(kind, idx + 1, raw);
-      total += scored;
-      answerData.push({ question_id: q.id, answer_id: chosen?.id, score: raw, scored });
-    });
-
-    const interpreted = interpretScreening(kind, total, (data.questions as any[]).length || 6);
-    let level: string, conclusion: string, recommendation: string, displayScore: string;
-
-    if (interpreted) {
-      level = interpreted.level;
-      conclusion = interpreted.conclusion;
-      recommendation = interpreted.recommendation;
-      displayScore = interpreted.displayScore;
-    } else {
-      const matched = (data.results as any[]).find(r => total >= r.min_score && total <= r.max_score);
-      level = matched?.level ?? "Hasil Screening";
-      conclusion = matched?.conclusion ?? "Berdasarkan hasil screening, skor Anda telah tercatat pada sistem.";
-      recommendation = matched?.recommendation ?? "Jika Anda merasa perlu berbicara lebih lanjut, Anda dapat menghubungi konselor kami.";
-      displayScore = String(total);
-    }
-
-    const { error } = await supabase.from("psikotes_attempts").insert({
-      user_id: user.id, test_id: data.test.id, total_score: total,
-      level, conclusion, recommendation, answers: answerData,
+    // Skor & interpretasi dihitung di server (submit_psikotes_attempt) —
+    // bobot jawaban tidak pernah dikirim ke browser.
+    const { data: res, error } = await supabase.rpc("submit_psikotes_attempt", {
+      _test_id: data.test.id,
+      _answers: answers,
     });
     if (error) {
       submittingRef.current = false;
       toast.error("Gagal menyimpan");
       return;
     }
-    setResult({ score: displayScore, level, conclusion, recommendation });
+    const r = res as { display_score: number; level: string; conclusion: string; recommendation: string };
+    setResult({ score: String(r.display_score), level: r.level, conclusion: r.conclusion, recommendation: r.recommendation });
     ["me-psikotes", "me-cbt", "me-referrals", "santri-center", "screening-insights", "monitoring"].forEach((k) =>
       qc.invalidateQueries({ queryKey: [k] })
     );
@@ -169,7 +150,7 @@ const PsikotesTake = () => {
               </CardHeader>
               <CardContent>
                 <RadioGroup value={answers[q.id] ?? ""} onValueChange={(v) => setAnswers((p) => ({ ...p, [q.id]: v }))}>
-                  {q.psikotes_answers.map((a: any) => (
+                  {q.options.map((a: any) => (
                     <Label key={a.id} htmlFor={a.id} className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-muted cursor-pointer transition-colors">
                       <RadioGroupItem value={a.id} id={a.id} />
                       <span className="text-sm">{a.answer_text}</span>
