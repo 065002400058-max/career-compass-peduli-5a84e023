@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import GenderAvatar from "@/components/shared/GenderAvatar";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchAllRows } from "@/lib/fetchAllRows";
 import {
   Table,
   TableBody,
@@ -22,8 +23,7 @@ const Alumni = () => {
   const { data: alumni = [], isLoading } = useQuery({
     queryKey: ["alumni"],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("alumni_directory");
-      if (error) throw error;
+      const data = await fetchAllRows(() => supabase.rpc("alumni_directory"));
       return (data ?? []).sort((a: any, b: any) => (b.graduation_year ?? 0) - (a.graduation_year ?? 0));
     },
   });

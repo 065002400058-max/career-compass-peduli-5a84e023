@@ -14,6 +14,7 @@ import {
 } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
 import { alumniSummary, cleanVal } from "@/lib/alumniStatus";
+import { fetchAllRows } from "@/lib/fetchAllRows";
 import { useAlumniRealtime } from "@/hooks/useAlumniRealtime";
 
 const COLORS = ["#059669", "#0ea5e9", "#8b5cf6", "#f59e0b", "#94a3b8"];
@@ -23,7 +24,8 @@ const AlumniInsight = () => {
   useAlumniRealtime();
   const { data: rows = [] } = useQuery({
     queryKey: ["alumni-dashboard-agg"],
-    queryFn: async () => (await supabase.rpc("alumni_directory")).data ?? [],
+    // Ambil semua baris (batas default server ±1.000 baris per request)
+    queryFn: async () => fetchAllRows(() => supabase.rpc("alumni_directory")),
   });
 
   const s = alumniSummary(rows as any[]);

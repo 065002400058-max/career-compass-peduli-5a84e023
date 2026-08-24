@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import GraduateStatusCard from "@/components/shared/GraduateStatusCard";
+import { fetchAllRows } from "@/lib/fetchAllRows";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   alumniStatus,
@@ -126,11 +127,7 @@ const AlumniDashboard = () => {
 
   const { data: rows = [], dataUpdatedAt } = useQuery({
     queryKey: ["alumni-dashboard-agg"],
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc("alumni_directory");
-      if (error) throw error;
-      return data ?? [];
-    },
+    queryFn: async () => fetchAllRows(() => supabase.rpc("alumni_directory")),
   });
 
   const { data: profile } = useQuery({

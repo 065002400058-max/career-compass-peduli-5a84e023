@@ -19,8 +19,9 @@ import GenderAvatar from "@/components/shared/GenderAvatar";
 import { exportToExcel, exportToPDF } from "@/lib/exportUtils";
 import { toast } from "sonner";
 import {
-  alumniStatus, alumniSummary, hasTracer, cleanVal, ALUMNI_NOT_FILLED, ALUMNI_STATUS_ORDER, getStatusLabel,
+  alumniStatus, alumniSummary, hasTracer, cleanVal, ALUMNI_NOT_FILLED, ALUMNI_STATUS_ORDER, getStatusLabel, jobFieldOf,
 } from "@/lib/alumniStatus";
+import { fetchAllRows } from "@/lib/fetchAllRows";
 
 import {
   PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar as RBar, XAxis, YAxis, CartesianGrid,
@@ -214,8 +215,9 @@ const AlumniCenter = () => {
 
   const { data: alumni, isLoading } = useQuery({
     queryKey: ["admin-recent-alumni"],
+    // Ambil SEMUA record (melewati batas ±1.000 baris per request PostgREST)
     queryFn: async () =>
-      (await supabase.from("alumni").select("*").order("graduation_year", { ascending: false })).data ?? [],
+      fetchAllRows(() => supabase.from("alumni").select("*").order("graduation_year", { ascending: false })),
   });
 
   const { data: eduRows = [] } = useQuery({
@@ -292,10 +294,11 @@ const AlumniCenter = () => {
   }, [rows]);
 
   /* ---- dashboard derived data (real data) ---- */
-  const topN = (key: string, n = 6) => {
+  const topN = (keyOrGetter: string | ((a: AlumniRow) => string | null), n = 6) => {
+    const get = typeof keyOrGetter === "function" ? keyOrGetter : (a: AlumniRow) => val(a[keyOrGetter]);
     const m = new Map<string, number>();
     rows.forEach((a) => {
-      const v = val(a[key]);
+      const v = get(a);
       if (v) m.set(v, (m.get(v) ?? 0) + 1);
     });
     const all = Array.from(m, ([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
@@ -316,7 +319,8 @@ const AlumniCenter = () => {
       belum: summary.counts['mencari_kerja'] || 0,
       belumMengisi: summary.belumMengisi,
       status: statusBreakdown.filter((d) => d.value > 0),
-      jobField: topN("job_field"),
+      // Bidang pekerjaan dinormalisasi dari `position` per-record (kolom job_field nyaris kosong di DB)
+      jobField: topN(jobFieldOf),
       workCity: topN("work_city"),
       campus: topN("university"),
       companyType: topN("company_type", 4),
@@ -373,7 +377,7 @@ const AlumniCenter = () => {
       edu_end_year: edu?.end_year ?? "",
       edu_status: edu?.status ?? "",
       status: getStatusLabel(alumniStatus(a)),
-      job_field: show(a.job_field, ""),
+      job_field: jobFieldOf(a) ?? "",
       company: show(a.company, ""),
       position: show(a.position, ""),
       work_city: show(a.work_city, ""),
@@ -886,7 +890,7 @@ const AlumniCenter = () => {
                     <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
                       {[
                         ["Status Pekerjaan", getStatusLabel(alumniStatus(detail))],
-                        ["Bidang Pekerjaan", show(detail.job_field)],
+                        ["Bidang Pekerjaan", show(jobFieldOf(detail))],
                         ["Perusahaan / Instansi", show(detail.company)],
                         ["Jabatan", show(detail.position)],
                         ["Lokasi Pekerjaan", [val(detail.work_city), val(detail.work_province), val(detail.work_country)].filter(Boolean).join(", ") || show(detail.location)],
