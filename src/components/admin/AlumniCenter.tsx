@@ -37,7 +37,7 @@ import {
 const DONUT_COLORS = ["#16A34A", "#3B82F6", "#8B5CF6", "#F59E0B", "#F97316", "#EF4444", "#9CA3AF"];
 
 const CardBox = ({ title, subtitle, right, children, className = "" }: any) => (
-  <div className={`rounded-xl border border-border bg-card p-4 shadow-[0_1px_2px_rgba(0,0,0,0.03)] ${className}`}>
+  <div className={`min-w-0 rounded-xl border border-border bg-card p-4 shadow-[0_1px_2px_rgba(0,0,0,0.03)] ${className}`}>
     <div className="flex items-start justify-between gap-2 mb-3">
       <div>
         <h3 className="font-heading text-[14px] font-semibold text-foreground leading-tight">{title}</h3>
@@ -530,7 +530,7 @@ const AlumniCenter = () => {
 
           {/* Bottom grid */}
           <div className="grid gap-3 lg:grid-cols-12">
-            <div className="lg:col-span-7">
+            <div className="min-w-0 lg:col-span-7">
               <CardBox
                 title="Data Alumni Terbaru"
                 right={
@@ -553,14 +553,19 @@ const AlumniCenter = () => {
                         <tr><td colSpan={6} className="py-6 text-center text-muted-foreground">Belum ada data alumni.</td></tr>
                       ) : recent.map((a) => {
                         const st = workStatus(a);
-                        const tone = /belum bekerja/i.test(st)
-                          ? "bg-destructive/10 text-destructive"
-                          : /studi|lanjut/i.test(st) ? "bg-blue-500/10 text-blue-600" : /kerja|wirausaha/i.test(st) ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground";
+                        const tone =
+                          st === "bekerja" || st === "wirausaha"
+                            ? "bg-primary/10 text-primary"
+                            : st === "melanjutkan_studi"
+                              ? "bg-blue-500/10 text-blue-600"
+                              : st === "mencari_kerja"
+                                ? "bg-destructive/10 text-destructive"
+                                : "bg-muted text-muted-foreground";
                         return (
                           <tr key={a.id} className="hover:bg-muted/40 cursor-pointer" onClick={() => openDetail(a)}>
                             <td className="py-2 pr-3 text-foreground whitespace-nowrap">{show(a.name, "-")}</td>
                             <td className="py-2 pr-3 text-muted-foreground">{a.graduation_year ?? "-"}</td>
-                            <td className="py-2 pr-3"><span className={`inline-block rounded-full px-2 py-0.5 text-[10.5px] ${tone}`}>{st}</span></td>
+                            <td className="py-2 pr-3"><span className={`inline-block rounded-full px-2 py-0.5 text-[10.5px] whitespace-nowrap ${tone}`}>{getStatusLabel(st)}</span></td>
                             <td className="py-2 pr-3 text-muted-foreground truncate max-w-[180px]">
                               {[val(a.position), val(a.company) ?? val(a.university)].filter(Boolean).join(" - ") || "-"}
                             </td>
@@ -577,7 +582,7 @@ const AlumniCenter = () => {
               </CardBox>
             </div>
 
-            <div className="lg:col-span-2">
+            <div className="min-w-0 lg:col-span-2">
               <CardBox title="Respon Tracer Study">
                 <ul className="text-[11.5px]">
                   {[
@@ -598,7 +603,7 @@ const AlumniCenter = () => {
               </CardBox>
             </div>
 
-            <div className="lg:col-span-3">
+            <div className="min-w-0 lg:col-span-3">
               <CardBox title="Export Data Alumni" subtitle="Ekspor data tracer study alumni untuk analisis lebih lanjut.">
                 <div className="space-y-2">
                   <button
@@ -660,7 +665,7 @@ const AlumniCenter = () => {
             { v: fJenjang, set: setFJenjang, ph: "Jenjang", opts: uniqSorted(rows, "education_level") },
             { v: fUniversitas, set: setFUniversitas, ph: "Universitas", opts: uniqSorted(rows, "university") },
             { v: fUniStatus, set: setFUniStatus, ph: "Dalam/Luar Negeri", opts: Array.from(new Set(rows.map(uniStatus))).sort() },
-            { v: fKerja, set: setFKerja, ph: "Status Pekerjaan", opts: Array.from(new Set(rows.map(workStatus))).sort() },
+            { v: fKerja, set: setFKerja, ph: "Status Pekerjaan", opts: ALUMNI_STATUS_ORDER.filter((o) => rows.some((r) => workStatus(r) === o)), labels: ALUMNI_STATUS_ORDER.map((o) => ({ value: o, label: getStatusLabel(o) })) },
             { v: fEduLevel, set: setFEduLevel, ph: "Jenjang Kuliah", opts: EDU_LEVELS.map((o) => o.value), labels: EDU_LEVELS },
             { v: fEduType, set: setFEduType, ph: "PTN/PTS", opts: EDU_UNI_TYPES.map((o) => o.value), labels: EDU_UNI_TYPES },
             { v: fEduKampus, set: setFEduKampus, ph: "Kampus (Pendidikan)", opts: Array.from(new Set(eduRows.map((e) => e.university_name).filter(Boolean) as string[])).sort((a, b) => a.localeCompare(b)) },
