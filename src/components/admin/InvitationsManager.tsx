@@ -523,11 +523,10 @@ const InvitationsManager = () => {
                   {fmtDate(r.invited_at ?? r.created_at) && `Didaftarkan ${fmtDate(r.invited_at ?? r.created_at)}`}
                   {fmtDateTime(r.last_login_at) && ` · Login terakhir ${fmtDateTime(r.last_login_at)}`}
                 </p>
-                {r.email_notice_status && r.email_notice_status !== "none" && (
-                  <p className="text-[11px] text-muted-foreground">
-                    {NOTICE_LABEL[r.email_notice_status] ?? r.email_notice_status}
-                  </p>
+                {noticeText(r) && (
+                  <p className="text-[11px] text-muted-foreground">{noticeText(r)}</p>
                 )}
+
               </div>
               <div className="flex gap-1.5 shrink-0">
                 <Button
