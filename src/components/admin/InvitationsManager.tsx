@@ -62,6 +62,16 @@ const NOTICE_LABEL: Record<string, string> = {
   email_failed: "Email: gagal terkirim",
 };
 
+// Status nyata dari log pengiriman (email_send_log) — lebih dipercaya daripada catatan lokal.
+const LOG_LABEL: Record<string, string> = {
+  sent: "Email: terkirim",
+  pending: "Email: dalam antrean pengiriman",
+  failed: "Email: gagal terkirim — domain pengirim email belum aktif",
+  dlq: "Email: gagal terkirim (batas percobaan habis) — domain pengirim email belum aktif",
+  suppressed: "Email: diblokir (alamat masuk daftar blokir)",
+};
+
+
 const fmtDate = (v: string | null | undefined) =>
   v ? new Date(v).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" }) : null;
 const fmtDateTime = (v: string | null | undefined) =>
@@ -141,6 +151,40 @@ const InvitationsManager = () => {
       return (data ?? []) as AccessRow[];
     },
   });
+
+  // Status pengiriman email sebenarnya, per alamat email (log terbaru menang).
+  const { data: emailStatus = {} } = useQuery({
+    queryKey: ["admin-access-email-status"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("email_send_log")
+        .select("recipient_email,status,created_at")
+        .order("created_at", { ascending: false })
+        .limit(1000);
+      if (error) throw error;
+      const map: Record<string, { status: string; created_at: string }> = {};
+      for (const r of data ?? []) {
+        const key = (r.recipient_email ?? "").toLowerCase();
+        if (key && !map[key]) map[key] = { status: r.status, created_at: r.created_at };
+      }
+      return map;
+    },
+    refetchInterval: 30_000,
+  });
+
+  const noticeText = (r: AccessRow) => {
+    const log = emailStatus[r.email.toLowerCase()];
+    if (log) {
+      // Antrean yang tidak bergerak lebih dari 10 menit dianggap gagal (domain pengirim belum aktif).
+      if (log.status === "pending" && Date.now() - new Date(log.created_at).getTime() > 10 * 60 * 1000) {
+        return LOG_LABEL.failed;
+      }
+      return LOG_LABEL[log.status] ?? `Email: ${log.status}`;
+    }
+    if (!r.email_notice_status || r.email_notice_status === "none") return null;
+    return NOTICE_LABEL[r.email_notice_status] ?? r.email_notice_status;
+  };
+
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -479,11 +523,10 @@ const InvitationsManager = () => {
                   {fmtDate(r.invited_at ?? r.created_at) && `Didaftarkan ${fmtDate(r.invited_at ?? r.created_at)}`}
                   {fmtDateTime(r.last_login_at) && ` · Login terakhir ${fmtDateTime(r.last_login_at)}`}
                 </p>
-                {r.email_notice_status && r.email_notice_status !== "none" && (
-                  <p className="text-[11px] text-muted-foreground">
-                    {NOTICE_LABEL[r.email_notice_status] ?? r.email_notice_status}
-                  </p>
+                {noticeText(r) && (
+                  <p className="text-[11px] text-muted-foreground">{noticeText(r)}</p>
                 )}
+
               </div>
               <div className="flex gap-1.5 shrink-0">
                 <Button
