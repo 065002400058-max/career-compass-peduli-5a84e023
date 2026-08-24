@@ -14,6 +14,7 @@ import {
 } from "recharts";
 import { Users, UserCircle, GraduationCap, HeartPulse, Brain, Search, FileSpreadsheet, FileDown, Activity, Target } from "lucide-react";
 import { useAlumniRealtime } from "@/hooks/useAlumniRealtime";
+import { fetchAllRows } from "@/lib/fetchAllRows";
 
 const COLORS = ["#10B981", "#1E3A8A", "#3B82F6", "#8B5CF6", "#F59E0B", "#EF4444", "#06B6D4", "#94A3B8"];
 const fmtDate = (d?: string | null) => (d ? new Date(d).toLocaleDateString("id-ID") : "-");
@@ -154,12 +155,12 @@ function useMonitoringData() {
         }
       });
 
-      const profileMap = new Map((profiles.data ?? []).map((p: any) => [p.user_id ?? p.id, p]));
-      const alumniByUser = new Map((alumni.data ?? []).filter((a: any) => a.user_id).map((a: any) => [a.user_id, a]));
+      const profileMap = new Map(profilesRows.map((p: any) => [p.user_id ?? p.id, p]));
+      const alumniByUser = new Map(alumniRows.filter((a: any) => a.user_id).map((a: any) => [a.user_id, a]));
 
       // kumpulkan semua user id yang punya jejak di sistem
       const ids = new Set<string>();
-      (profiles.data ?? []).forEach((p: any) => ids.add(p.user_id ?? p.id));
+      profilesRows.forEach((p: any) => ids.add(p.user_id ?? p.id));
       (roles.data ?? []).forEach((r: any) => ids.add(r.user_id));
       [...(psiAttempts.data ?? []), ...(cbtAttempts.data ?? []), ...(referrals.data ?? [])].forEach((r: any) => r.user_id && ids.add(r.user_id));
 
@@ -199,7 +200,7 @@ function useMonitoringData() {
         };
       });
 
-      return { users, alumniRecords: alumni.data ?? [] };
+      return { users, alumniRecords: alumniRows };
     },
   });
 }

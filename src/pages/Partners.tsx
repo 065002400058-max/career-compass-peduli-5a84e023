@@ -26,7 +26,7 @@ const Partners = () => {
     queryFn: async () => {
       const [jobs, placed] = await Promise.all([
         supabase.from("jobs").select("id", { count: "exact", head: true }).eq("status", "approved"),
-        supabase.rpc("alumni_directory"),
+        fetchAllRows(() => supabase.rpc("alumni_directory")).then((data) => ({ data })),
       ]);
       const placedCount = ((placed.data as any[]) ?? []).filter((a) => a.company).length;
       return { jobs: jobs.count ?? 0, placed: placedCount };
