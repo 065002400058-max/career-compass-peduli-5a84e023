@@ -152,6 +152,40 @@ const InvitationsManager = () => {
     },
   });
 
+  // Status pengiriman email sebenarnya, per alamat email (log terbaru menang).
+  const { data: emailStatus = {} } = useQuery({
+    queryKey: ["admin-access-email-status"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("email_send_log")
+        .select("recipient_email,status,created_at")
+        .order("created_at", { ascending: false })
+        .limit(1000);
+      if (error) throw error;
+      const map: Record<string, { status: string; created_at: string }> = {};
+      for (const r of data ?? []) {
+        const key = (r.recipient_email ?? "").toLowerCase();
+        if (key && !map[key]) map[key] = { status: r.status, created_at: r.created_at };
+      }
+      return map;
+    },
+    refetchInterval: 30_000,
+  });
+
+  const noticeText = (r: AccessRow) => {
+    const log = emailStatus[r.email.toLowerCase()];
+    if (log) {
+      // Antrean yang tidak bergerak lebih dari 10 menit dianggap gagal (domain pengirim belum aktif).
+      if (log.status === "pending" && Date.now() - new Date(log.created_at).getTime() > 10 * 60 * 1000) {
+        return LOG_LABEL.failed;
+      }
+      return LOG_LABEL[log.status] ?? `Email: ${log.status}`;
+    }
+    if (!r.email_notice_status || r.email_notice_status === "none") return null;
+    return NOTICE_LABEL[r.email_notice_status] ?? r.email_notice_status;
+  };
+
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     return rows.filter((r) => {
