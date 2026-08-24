@@ -62,6 +62,16 @@ const NOTICE_LABEL: Record<string, string> = {
   email_failed: "Email: gagal terkirim",
 };
 
+// Status nyata dari log pengiriman (email_send_log) — lebih dipercaya daripada catatan lokal.
+const LOG_LABEL: Record<string, string> = {
+  sent: "Email: terkirim",
+  pending: "Email: dalam antrean pengiriman",
+  failed: "Email: gagal terkirim — domain pengirim email belum aktif",
+  dlq: "Email: gagal terkirim (batas percobaan habis) — domain pengirim email belum aktif",
+  suppressed: "Email: diblokir (alamat masuk daftar blokir)",
+};
+
+
 const fmtDate = (v: string | null | undefined) =>
   v ? new Date(v).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" }) : null;
 const fmtDateTime = (v: string | null | undefined) =>
