@@ -126,10 +126,11 @@ function useMonitoringData() {
   return useQuery({
     queryKey: ["admin-monitoring"],
     queryFn: async () => {
-      const [roles, profiles, alumni, psiAttempts, psiTests, psiCats, cbtAttempts, cbtTests, referrals] = await Promise.all([
+      // fetchAllRows: lewati batas ±1.000 baris per request PostgREST agar statistik valid
+      const [roles, profilesRows, alumniRows, psiAttempts, psiTests, psiCats, cbtAttempts, cbtTests, referrals] = await Promise.all([
         supabase.from("user_roles").select("user_id, role"),
-        supabase.from("profiles").select("*"),
-        supabase.from("alumni").select("*"),
+        fetchAllRows(() => supabase.from("profiles").select("*")),
+        fetchAllRows(() => supabase.from("alumni").select("*")),
         supabase.from("psikotes_attempts").select("*").order("completed_at", { ascending: false }),
         supabase.from("psikotes_tests").select("id, title, category_id"),
         supabase.from("psikotes_categories").select("id, name"),

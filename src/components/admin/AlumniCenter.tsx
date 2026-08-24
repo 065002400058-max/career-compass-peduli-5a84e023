@@ -377,7 +377,7 @@ const AlumniCenter = () => {
       edu_end_year: edu?.end_year ?? "",
       edu_status: edu?.status ?? "",
       status: getStatusLabel(alumniStatus(a)),
-      job_field: show(a.job_field, ""),
+      job_field: jobFieldOf(a) ?? "",
       company: show(a.company, ""),
       position: show(a.position, ""),
       work_city: show(a.work_city, ""),
@@ -890,7 +890,7 @@ const AlumniCenter = () => {
                     <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
                       {[
                         ["Status Pekerjaan", getStatusLabel(alumniStatus(detail))],
-                        ["Bidang Pekerjaan", show(detail.job_field)],
+                        ["Bidang Pekerjaan", show(jobFieldOf(detail))],
                         ["Perusahaan / Instansi", show(detail.company)],
                         ["Jabatan", show(detail.position)],
                         ["Lokasi Pekerjaan", [val(detail.work_city), val(detail.work_province), val(detail.work_country)].filter(Boolean).join(", ") || show(detail.location)],

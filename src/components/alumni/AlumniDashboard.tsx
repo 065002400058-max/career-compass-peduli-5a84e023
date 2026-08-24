@@ -126,11 +126,7 @@ const AlumniDashboard = () => {
 
   const { data: rows = [], dataUpdatedAt } = useQuery({
     queryKey: ["alumni-dashboard-agg"],
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc("alumni_directory");
-      if (error) throw error;
-      return data ?? [];
-    },
+    queryFn: async () => fetchAllRows(() => supabase.rpc("alumni_directory")),
   });
 
   const { data: profile } = useQuery({
