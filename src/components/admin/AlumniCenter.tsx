@@ -19,8 +19,9 @@ import GenderAvatar from "@/components/shared/GenderAvatar";
 import { exportToExcel, exportToPDF } from "@/lib/exportUtils";
 import { toast } from "sonner";
 import {
-  alumniStatus, alumniSummary, hasTracer, cleanVal, ALUMNI_NOT_FILLED, ALUMNI_STATUS_ORDER, getStatusLabel,
+  alumniStatus, alumniSummary, hasTracer, cleanVal, ALUMNI_NOT_FILLED, ALUMNI_STATUS_ORDER, getStatusLabel, jobFieldOf,
 } from "@/lib/alumniStatus";
+import { fetchAllRows } from "@/lib/fetchAllRows";
 
 import {
   PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar as RBar, XAxis, YAxis, CartesianGrid,
@@ -214,8 +215,9 @@ const AlumniCenter = () => {
 
   const { data: alumni, isLoading } = useQuery({
     queryKey: ["admin-recent-alumni"],
+    // Ambil SEMUA record (melewati batas ±1.000 baris per request PostgREST)
     queryFn: async () =>
-      (await supabase.from("alumni").select("*").order("graduation_year", { ascending: false })).data ?? [],
+      fetchAllRows(() => supabase.from("alumni").select("*").order("graduation_year", { ascending: false })),
   });
 
   const { data: eduRows = [] } = useQuery({
