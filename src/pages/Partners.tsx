@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import PartnersManager from "@/components/admin/PartnersManager";
+import { fetchAllRows } from "@/lib/fetchAllRows";
 
 const Partners = () => {
   const { hasRole } = useAuth();
