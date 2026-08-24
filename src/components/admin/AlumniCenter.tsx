@@ -294,10 +294,11 @@ const AlumniCenter = () => {
   }, [rows]);
 
   /* ---- dashboard derived data (real data) ---- */
-  const topN = (key: string, n = 6) => {
+  const topN = (keyOrGetter: string | ((a: AlumniRow) => string | null), n = 6) => {
+    const get = typeof keyOrGetter === "function" ? keyOrGetter : (a: AlumniRow) => val(a[keyOrGetter]);
     const m = new Map<string, number>();
     rows.forEach((a) => {
-      const v = val(a[key]);
+      const v = get(a);
       if (v) m.set(v, (m.get(v) ?? 0) + 1);
     });
     const all = Array.from(m, ([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
@@ -318,7 +319,8 @@ const AlumniCenter = () => {
       belum: summary.counts['mencari_kerja'] || 0,
       belumMengisi: summary.belumMengisi,
       status: statusBreakdown.filter((d) => d.value > 0),
-      jobField: topN("job_field"),
+      // Bidang pekerjaan dinormalisasi dari `position` per-record (kolom job_field nyaris kosong di DB)
+      jobField: topN(jobFieldOf),
       workCity: topN("work_city"),
       campus: topN("university"),
       companyType: topN("company_type", 4),
