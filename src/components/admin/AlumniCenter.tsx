@@ -37,7 +37,7 @@ import {
 const DONUT_COLORS = ["#16A34A", "#3B82F6", "#8B5CF6", "#F59E0B", "#F97316", "#EF4444", "#9CA3AF"];
 
 const CardBox = ({ title, subtitle, right, children, className = "" }: any) => (
-  <div className={`rounded-xl border border-border bg-card p-4 shadow-[0_1px_2px_rgba(0,0,0,0.03)] ${className}`}>
+  <div className={`min-w-0 rounded-xl border border-border bg-card p-4 shadow-[0_1px_2px_rgba(0,0,0,0.03)] ${className}`}>
     <div className="flex items-start justify-between gap-2 mb-3">
       <div>
         <h3 className="font-heading text-[14px] font-semibold text-foreground leading-tight">{title}</h3>
@@ -530,7 +530,7 @@ const AlumniCenter = () => {
 
           {/* Bottom grid */}
           <div className="grid gap-3 lg:grid-cols-12">
-            <div className="lg:col-span-7">
+            <div className="min-w-0 lg:col-span-7">
               <CardBox
                 title="Data Alumni Terbaru"
                 right={
@@ -577,7 +577,7 @@ const AlumniCenter = () => {
               </CardBox>
             </div>
 
-            <div className="lg:col-span-2">
+            <div className="min-w-0 lg:col-span-2">
               <CardBox title="Respon Tracer Study">
                 <ul className="text-[11.5px]">
                   {[
@@ -598,7 +598,7 @@ const AlumniCenter = () => {
               </CardBox>
             </div>
 
-            <div className="lg:col-span-3">
+            <div className="min-w-0 lg:col-span-3">
               <CardBox title="Export Data Alumni" subtitle="Ekspor data tracer study alumni untuk analisis lebih lanjut.">
                 <div className="space-y-2">
                   <button
