@@ -1,210 +1,157 @@
-import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Bot, Search, User as UserIcon, MessageSquare, RefreshCw } from "lucide-react";
-import ReactMarkdown from "react-markdown";
+import { Bot, Lock, MessageSquare, RefreshCw, Users } from "lucide-react";
+import {
+  Bar, BarChart, CartesianGrid, Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis,
+} from "recharts";
 
-const MODES = ["umum", "kerja", "kuliah", "perguruan_tinggi", "psikotes", "minat_bakat", "alumni"];
+type Stats = {
+  threads: number;
+  messages: number;
+  users: number;
+  active_users_7d: number;
+  messages_7d: number;
+  by_role: Record<string, number>;
+  by_mode: Record<string, number>;
+  daily: { date: string; messages: number }[];
+};
 
-const fmt = (d?: string | null) =>
-  d ? new Date(d).toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" }) : "-";
+const COLORS = ["hsl(var(--primary))", "#2563eb", "#f59e0b", "#ef4444", "#8b5cf6", "#14b8a6"];
 
+const fmtDay = (d: string) =>
+  new Date(d).toLocaleDateString("id-ID", { day: "numeric", month: "short" });
+
+/**
+ * Statistik agregat pemakaian Asisten AI.
+ * Isi percakapan pribadi santri/alumni TIDAK dapat dibuka oleh admin
+ * (dibatasi oleh RLS: hanya pemilik percakapan yang bisa membacanya).
+ */
 const AiHistoryViewer = () => {
-  const [q, setQ] = useState("");
-  const [mode, setMode] = useState("all");
-  const [role, setRole] = useState("all");
-  const [activeId, setActiveId] = useState<string | null>(null);
-
   const { data, isLoading, isError, refetch, isFetching } = useQuery({
-    queryKey: ["admin-ai-threads"],
+    queryKey: ["admin-ai-usage-stats"],
     queryFn: async () => {
-      const { data: threads, error } = await supabase
-        .from("chat_threads")
-        .select("*")
-        .order("updated_at", { ascending: false })
-        .limit(500);
+      const { data, error } = await supabase.rpc("ai_usage_stats");
       if (error) throw error;
-      const ids = [...new Set((threads ?? []).map((t: any) => t.user_id))];
-      const { data: profiles } = ids.length
-        ? await supabase.from("profiles").select("id, full_name, email, role").in("id", ids)
-        : { data: [] as any[] };
-      const map = new Map((profiles ?? []).map((p: any) => [p.id, p]));
-      return (threads ?? []).map((t: any) => ({ ...t, profile: map.get(t.user_id) ?? null }));
+      return data as unknown as Stats;
     },
   });
 
-  const threads = data ?? [];
+  const roleData = Object.entries(data?.by_role ?? {}).map(([name, value]) => ({ name, value }));
+  const modeData = Object.entries(data?.by_mode ?? {}).map(([name, value]) => ({
+    name: name.replace(/_/g, " "),
+    value,
+  }));
+  const daily = data?.daily ?? [];
 
-  const filtered = useMemo(() => {
-    const term = q.trim().toLowerCase();
-    return threads.filter((t: any) => {
-      if (mode !== "all" && t.mode !== mode) return false;
-      if (role !== "all" && (t.profile?.role ?? "santri") !== role) return false;
-      if (!term) return true;
-      return [t.title, t.profile?.full_name, t.profile?.email]
-        .filter(Boolean)
-        .some((v: string) => v.toLowerCase().includes(term));
-    });
-  }, [threads, q, mode, role]);
-
-  const active = filtered.find((t: any) => t.id === activeId) ?? null;
-
-  const { data: messages = [], isLoading: loadingMsg } = useQuery({
-    queryKey: ["admin-ai-messages", activeId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("chat_messages")
-        .select("*")
-        .eq("thread_id", activeId as string)
-        .order("created_at");
-      if (error) throw error;
-
-      // Jejak audit: siapa admin yang membuka percakapan siapa, kapan
-      const { data: me } = await supabase.auth.getUser();
-      if (me?.user) {
-        await supabase.from("ai_access_audit").insert({
-          admin_id: me.user.id,
-          thread_id: activeId as string,
-          target_user_id: (active as any)?.user_id ?? null,
-          action: "view_thread",
-        });
-      }
-
-      return data ?? [];
-    },
-    enabled: !!activeId,
-  });
+  const summary = [
+    { label: "Total Percakapan", value: data?.threads ?? 0, icon: MessageSquare },
+    { label: "Total Pesan", value: data?.messages ?? 0, icon: Bot },
+    { label: "Pengguna Memakai AI", value: data?.users ?? 0, icon: Users },
+    { label: "Aktif 7 Hari", value: data?.active_users_7d ?? 0, icon: Users },
+    { label: "Pesan 7 Hari", value: data?.messages_7d ?? 0, icon: Bot },
+  ];
 
   return (
-    <div className="space-y-4">
-      <div className="rounded-lg border border-border bg-card p-3 md:p-4 flex flex-col sm:flex-row gap-2 sm:items-center">
-        <div className="relative flex-1 min-w-0">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="Cari nama, email, atau judul percakapan..."
-            className="pl-9 h-9"
-          />
+    <div className="space-y-4 min-w-0">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h2 className="font-heading text-xl font-bold text-foreground flex items-center gap-2">
+            <Bot className="h-5 w-5 text-primary" /> Statistik Asisten AI
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Ringkasan pemakaian AI PEDULI berdasarkan peran dan mode layanan.
+          </p>
         </div>
-        <select
-          value={role}
-          onChange={(e) => setRole(e.target.value)}
-          className="h-9 rounded-md border border-border bg-card px-2 text-xs text-foreground"
-          aria-label="Filter peran"
-        >
-          <option value="all">Semua Peran</option>
-          <option value="santri">Santri</option>
-          <option value="alumni">Alumni</option>
-          <option value="mitra">Mitra</option>
-          <option value="admin">Admin</option>
-        </select>
-        <select
-          value={mode}
-          onChange={(e) => setMode(e.target.value)}
-          className="h-9 rounded-md border border-border bg-card px-2 text-xs text-foreground"
-          aria-label="Filter mode"
-        >
-          <option value="all">Semua Mode</option>
-          {MODES.map((m) => (
-            <option key={m} value={m}>{m.replace("_", " ")}</option>
-          ))}
-        </select>
-        <Button variant="outline" size="sm" className="h-9" onClick={() => refetch()} disabled={isFetching}>
-          <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${isFetching ? "animate-spin" : ""}`} /> Muat Ulang
+        <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isFetching}>
+          <RefreshCw className={`h-4 w-4 mr-1.5 ${isFetching ? "animate-spin" : ""}`} /> Muat Ulang
         </Button>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[320px_1fr]">
-        <div className="rounded-lg border border-border bg-card overflow-hidden">
-          <div className="px-3 py-2 text-xs font-semibold bg-muted/40 text-foreground">
-            Percakapan ({filtered.length})
-          </div>
-          <ScrollArea className="h-[420px] lg:h-[560px]">
-            <div className="divide-y divide-border">
-              {isLoading && (
-                <div className="p-3 space-y-2">
-                  {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
-                </div>
-              )}
-              {isError && <p className="p-4 text-sm text-destructive">Gagal memuat histori AI.</p>}
-              {!isLoading && !isError && filtered.length === 0 && (
-                <p className="p-4 text-sm text-muted-foreground">Belum ada percakapan yang cocok.</p>
-              )}
-              {filtered.map((t: any) => (
-                <button
-                  key={t.id}
-                  onClick={() => setActiveId(t.id)}
-                  className={`w-full text-left px-3 py-2.5 transition-colors ${
-                    t.id === activeId ? "bg-accent" : "hover:bg-muted/60"
-                  }`}
-                >
-                  <span className="flex items-center gap-2">
-                    <MessageSquare className="h-3.5 w-3.5 text-primary shrink-0" />
-                    <span className="text-[13px] font-medium text-foreground truncate flex-1">{t.title || "Tanpa judul"}</span>
-                  </span>
-                  <span className="mt-1 flex items-center gap-1.5 flex-wrap">
-                    <span className="text-[11px] text-muted-foreground truncate max-w-[170px]">
-                      {t.profile?.full_name ?? t.profile?.email ?? "Pengguna"}
-                    </span>
-                    <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{t.profile?.role ?? "santri"}</Badge>
-                    <Badge variant="outline" className="text-[10px] px-1.5 py-0">{String(t.mode).replace("_", " ")}</Badge>
-                  </span>
-                  <span className="block text-[10px] text-muted-foreground mt-1">{fmt(t.updated_at)}</span>
-                </button>
-              ))}
-            </div>
-          </ScrollArea>
-        </div>
-
-        <div className="rounded-lg border border-border bg-card flex flex-col overflow-hidden">
-          {!active ? (
-            <div className="h-[420px] lg:h-[560px] flex flex-col items-center justify-center text-center text-muted-foreground gap-2">
-              <Bot className="h-8 w-8 opacity-40" />
-              <p className="text-sm">Pilih percakapan untuk melihat isi histori AI.</p>
-            </div>
-          ) : (
-            <>
-              <div className="px-4 py-3 border-b border-border">
-                <h3 className="font-heading text-sm font-semibold text-foreground truncate">{active.title || "Tanpa judul"}</h3>
-                <p className="text-[11px] text-muted-foreground mt-0.5 flex items-center gap-1.5">
-                  <UserIcon className="h-3 w-3" />
-                  {active.profile?.full_name ?? "Pengguna"} · {active.profile?.email ?? "-"} · dibuat {fmt(active.created_at)}
-                </p>
-              </div>
-              <ScrollArea className="h-[360px] lg:h-[500px]">
-                <div className="p-4 space-y-3">
-                  {loadingMsg && Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-16 w-2/3" />)}
-                  {!loadingMsg && messages.length === 0 && (
-                    <p className="text-sm text-muted-foreground">Percakapan ini belum memiliki pesan.</p>
-                  )}
-                  {messages.map((m: any) => (
-                    <div key={m.id} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
-                      <div
-                        className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-[13px] leading-relaxed ${
-                          m.role === "user"
-                            ? "bg-primary text-primary-foreground rounded-br-sm"
-                            : "bg-muted text-foreground rounded-bl-sm"
-                        }`}
-                      >
-                        <div className="prose prose-sm max-w-none dark:prose-invert [&_*]:!text-inherit">
-                          <ReactMarkdown>{m.content}</ReactMarkdown>
-                        </div>
-                        <p className="text-[10px] opacity-70 mt-1">{fmt(m.created_at)}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </ScrollArea>
-            </>
-          )}
-        </div>
+      <div className="rounded-lg border border-border bg-muted/40 p-3 flex gap-2">
+        <Lock className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+        <p className="text-[12px] text-muted-foreground leading-relaxed">
+          Isi percakapan santri/alumni bersifat privat dan tidak dapat dibuka dari
+          panel admin. Hanya statistik agregat yang ditampilkan di sini.
+        </p>
       </div>
+
+      {isError && (
+        <p className="text-sm text-destructive">Gagal memuat statistik AI.</p>
+      )}
+
+      <div className="grid gap-3 grid-cols-2 lg:grid-cols-5">
+        {summary.map((s) => (
+          <div key={s.label} className="rounded-lg border border-border bg-card p-4 min-w-0">
+            <s.icon className="h-4 w-4 text-primary" />
+            <p className="mt-2 font-heading text-xl font-bold text-foreground">
+              {isLoading ? <Skeleton className="h-6 w-12" /> : s.value.toLocaleString("id-ID")}
+            </p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">{s.label}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Card className="min-w-0">
+          <CardHeader className="pb-2"><CardTitle className="text-base">Pesan 30 Hari Terakhir</CardTitle></CardHeader>
+          <CardContent className="h-[260px]">
+            {isLoading ? <Skeleton className="h-full w-full" /> : daily.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Belum ada pemakaian AI.</p>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={daily}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                  <XAxis dataKey="date" tickFormatter={fmtDay} fontSize={11} />
+                  <YAxis allowDecimals={false} fontSize={11} />
+                  <Tooltip labelFormatter={(v) => fmtDay(String(v))} />
+                  <Bar dataKey="messages" name="Pesan" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="min-w-0">
+          <CardHeader className="pb-2"><CardTitle className="text-base">Pemakaian per Peran</CardTitle></CardHeader>
+          <CardContent className="h-[260px]">
+            {isLoading ? <Skeleton className="h-full w-full" /> : roleData.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Belum ada data.</p>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie data={roleData} dataKey="value" nameKey="name" innerRadius={45} outerRadius={80}>
+                    {roleData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                  </Pie>
+                  <Legend />
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card className="min-w-0">
+        <CardHeader className="pb-2"><CardTitle className="text-base">Percakapan per Mode Layanan</CardTitle></CardHeader>
+        <CardContent className="h-[260px]">
+          {isLoading ? <Skeleton className="h-full w-full" /> : modeData.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Belum ada data.</p>
+          ) : (
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={modeData} layout="vertical" margin={{ left: 30 }}>
+                <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                <XAxis type="number" allowDecimals={false} fontSize={11} />
+                <YAxis type="category" dataKey="name" fontSize={11} width={110} />
+                <Tooltip />
+                <Bar dataKey="value" name="Percakapan" fill="#2563eb" radius={[0, 4, 4, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 };
