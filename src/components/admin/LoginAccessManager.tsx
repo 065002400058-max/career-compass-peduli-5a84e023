@@ -54,6 +54,8 @@ const LoginAccessManager = () => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const [search, setSearch] = useState("");
+  const [roleFilter, setRoleFilter] = useState<"all" | AppRole>("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Row | null>(null);
   const [form, setForm] = useState<Form>(EMPTY);
@@ -88,11 +90,13 @@ const LoginAccessManager = () => {
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return rows ?? [];
-    return (rows ?? []).filter(
-      (r) => r.email.toLowerCase().includes(q) || (r.full_name ?? "").toLowerCase().includes(q),
-    );
-  }, [rows, search]);
+    return (rows ?? []).filter((r) => {
+      if (roleFilter !== "all" && r.role !== roleFilter) return false;
+      if (statusFilter !== "all" && r.status !== statusFilter) return false;
+      if (!q) return true;
+      return r.email.toLowerCase().includes(q) || (r.full_name ?? "").toLowerCase().includes(q);
+    });
+  }, [rows, search, roleFilter, statusFilter]);
 
   const openCreate = () => { setEditing(null); setForm(EMPTY); setOpen(true); };
   const openEdit = (r: Row) => {
@@ -111,6 +115,11 @@ const LoginAccessManager = () => {
     const email = form.email.trim().toLowerCase();
     if (!email || !email.includes("@")) { toast.error("Masukkan alamat email yang valid"); return; }
     if (!form.full_name.trim()) { toast.error("Nama lengkap wajib diisi"); return; }
+    if (form.role === "admin" && editing?.role !== "admin") {
+      toast.error("Peran Admin tidak dapat dibuat dari panel ini");
+      return;
+    }
+    if (form.role === "mitra") { toast.error("Peran Mitra tidak digunakan lagi"); return; }
     setSaving(true);
     const payload = {
       email,
@@ -159,7 +168,7 @@ const LoginAccessManager = () => {
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <h2 className="font-heading text-xl font-bold text-foreground flex items-center gap-2">
-            <KeyRound className="h-5 w-5 text-primary" /> Kelola Akses Login
+            <KeyRound className="h-5 w-5 text-primary" /> Manajemen Akses Pengguna
           </h2>
           <p className="text-sm text-muted-foreground">
             Hanya email di daftar ini yang dapat masuk melalui Google. Role diambil dari database.
@@ -176,9 +185,32 @@ const LoginAccessManager = () => {
         </div>
       </div>
 
-      <div className="relative max-w-sm">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input className="pl-9" placeholder="Cari email atau nama..." value={search} onChange={(e) => setSearch(e.target.value)} />
+      <div className="flex flex-wrap gap-2">
+        <div className="relative flex-1 min-w-[200px] max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input className="pl-9" placeholder="Cari email atau nama..." value={search} onChange={(e) => setSearch(e.target.value)} />
+        </div>
+        <select
+          value={roleFilter}
+          onChange={(e) => setRoleFilter(e.target.value as "all" | AppRole)}
+          className="h-10 rounded-md border border-border bg-card px-2 text-xs text-foreground"
+          aria-label="Filter peran"
+        >
+          <option value="all">Semua Peran</option>
+          <option value="santri">Santri</option>
+          <option value="alumni">Alumni</option>
+          <option value="admin">Admin</option>
+        </select>
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value as "all" | "active" | "inactive")}
+          className="h-10 rounded-md border border-border bg-card px-2 text-xs text-foreground"
+          aria-label="Filter status"
+        >
+          <option value="all">Semua Status</option>
+          <option value="active">Aktif</option>
+          <option value="inactive">Nonaktif</option>
+        </select>
       </div>
 
       <Card>
@@ -196,6 +228,7 @@ const LoginAccessManager = () => {
                     <th className="px-4 py-3 font-medium">Nama</th>
                     <th className="px-4 py-3 font-medium">Role</th>
                     <th className="px-4 py-3 font-medium">Status</th>
+                    <th className="px-4 py-3 font-medium">Login Terakhir</th>
                     <th className="px-4 py-3 font-medium">Kedaluwarsa</th>
                     <th className="px-4 py-3 font-medium text-right">Aksi</th>
                   </tr>
@@ -212,6 +245,9 @@ const LoginAccessManager = () => {
                           <Badge variant={r.status === "active" && !expired ? "default" : "destructive"}>
                             {r.status !== "active" ? "Nonaktif" : expired ? "Kedaluwarsa" : "Aktif"}
                           </Badge>
+                        </td>
+                        <td className="px-4 py-2.5 text-muted-foreground whitespace-nowrap">
+                          {r.last_login_at ? fmtDateTime(r.last_login_at) : "Belum pernah"}
                         </td>
                         <td className="px-4 py-2.5 text-muted-foreground">{fmtDate(r.expires_at)}</td>
                         <td className="px-4 py-2.5">
@@ -288,6 +324,7 @@ const LoginAccessManager = () => {
             <DialogTitle>{editing ? "Ubah Akses Email" : "Tambah Email ke Daftar Akses"}</DialogTitle>
             <DialogDescription>
               Email ini akan diizinkan masuk menggunakan akun Google yang sesuai.
+              Peran Admin tidak dapat dibuat dari panel ini.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
@@ -307,9 +344,9 @@ const LoginAccessManager = () => {
                 <Select value={form.role} onValueChange={(v) => setForm({ ...form, role: v as AppRole })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {(Object.keys(ROLE_LABEL) as AppRole[]).map((r) => (
-                      <SelectItem key={r} value={r}>{ROLE_LABEL[r]}</SelectItem>
-                    ))}
+                    <SelectItem value="santri">Santri</SelectItem>
+                    <SelectItem value="alumni">Alumni</SelectItem>
+                    {editing?.role === "admin" && <SelectItem value="admin">Admin</SelectItem>}
                   </SelectContent>
                 </Select>
               </div>
