@@ -7,6 +7,8 @@ import { Bot, Lock, MessageSquare, RefreshCw, Users } from "lucide-react";
 import {
   Bar, BarChart, CartesianGrid, Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from "recharts";
+import AiConversationMonitor from "@/components/admin/AiConversationMonitor";
+
 
 type Stats = {
   threads: number;
