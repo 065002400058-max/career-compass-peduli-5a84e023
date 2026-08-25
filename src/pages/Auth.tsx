@@ -29,6 +29,33 @@ const Auth = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading, roles, accessDenied, clearAccessDenied } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [showAdmin, setShowAdmin] = useState(false);
+  const [adminEmail, setAdminEmail] = useState("");
+  const [adminPassword, setAdminPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [adminLoading, setAdminLoading] = useState(false);
+
+  // Login administrator dengan email + password. Akses tetap divalidasi backend
+  // (check_login_access) lewat AuthContext, sama seperti jalur Google.
+  const handleAdminLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAdminLoading(true);
+    const { error } = await supabase.auth.signInWithPassword({
+      email: adminEmail.trim().toLowerCase(),
+      password: adminPassword,
+    });
+    setAdminLoading(false);
+    if (error) {
+      toast({
+        title: "Login gagal",
+        description: "Email atau password salah.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setAdminPassword("");
+  };
+
 
   // Setelah autentikasi berhasil & akses diizinkan backend → arahkan sesuai role database
   useEffect(() => {
