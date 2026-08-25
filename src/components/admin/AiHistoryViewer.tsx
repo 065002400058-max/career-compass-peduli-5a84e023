@@ -153,7 +153,10 @@ const AiHistoryViewer = () => {
           )}
         </CardContent>
       </Card>
+
+      <AiConversationMonitor />
     </div>
+
   );
 };
 
