@@ -25,7 +25,7 @@ const AdminSettings = ({ onNavigate }: { onNavigate?: (key: string) => void }) =
   const { data: stats, isLoading } = useQuery({
     queryKey: ["admin-settings-stats"],
     queryFn: async () => {
-      const tables = ["profiles", "alumni", "jobs", "partners", "events", "universities", "scholarships", "counseling", "counseling_referrals", "chat_threads", "chat_messages", "ai_access_audit", "invitations"] as const;
+      const tables = ["profiles", "alumni", "jobs", "partners", "events", "universities", "scholarships", "counseling", "counseling_referrals", "chat_threads", "chat_messages", "ai_access_audit"] as const;
       const results = await Promise.all(
         tables.map(async (t) => {
           const { count } = await supabase.from(t as any).select("id", { count: "exact", head: true });
@@ -55,7 +55,6 @@ const AdminSettings = ({ onNavigate }: { onNavigate?: (key: string) => void }) =
     ["Beasiswa", "scholarships"],
     ["Sesi konseling", "counseling"],
     ["Rujukan konseling", "counseling_referrals"],
-    ["Undangan akun", "invitations"],
   ];
 
   return (
@@ -73,13 +72,13 @@ const AdminSettings = ({ onNavigate }: { onNavigate?: (key: string) => void }) =
 
       <CardBox title="Keamanan & Akses" icon={ShieldCheck} desc="Kebijakan login yang aktif pada aplikasi.">
         <ul className="space-y-2 text-[12.5px] text-muted-foreground">
-          <li>• Pendaftaran hanya melalui undangan admin (invite-only).</li>
-          <li>• Kunci otomatis 30 detik setelah 5 kali gagal login.</li>
+          <li>• Sistem tertutup: login hanya via Google dengan email pada daftar akses.</li>
+          <li>• Tidak ada pendaftaran publik maupun login email/password.</li>
           <li>• Sesi login tetap aktif saat membuka tab baru atau memuat ulang aplikasi.</li>
-          <li>• Akses data dibatasi per peran (admin, alumni, mitra, santri).</li>
+          <li>• Akses data dibatasi per peran (admin, alumni, santri) melalui RLS.</li>
         </ul>
-        <Button variant="outline" size="sm" className="mt-3" onClick={() => onNavigate?.("invitations")}>
-          <MailPlus className="h-4 w-4 mr-1.5" /> Kelola Undangan Akun
+        <Button variant="outline" size="sm" className="mt-3" onClick={() => onNavigate?.("access")}>
+          <MailPlus className="h-4 w-4 mr-1.5" /> Manajemen Akses Pengguna
         </Button>
       </CardBox>
 
