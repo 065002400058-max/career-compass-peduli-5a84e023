@@ -19,7 +19,6 @@ import ScreeningInsights from "@/components/admin/ScreeningInsights";
 import UniversitiesManager from "@/components/admin/UniversitiesManager";
 import ScholarshipManager from "@/components/admin/ScholarshipManager";
 import ReferralManager from "@/components/admin/ReferralManager";
-import InvitationsManager from "@/components/admin/InvitationsManager";
 import UsageReports from "@/components/admin/UsageReports";
 import JobsManager from "@/components/admin/JobsManager";
 import PartnersManager from "@/components/admin/PartnersManager";
@@ -47,7 +46,7 @@ const TOOL_NAV: AdminNavItem[] = [
   { key: "scholarships", label: "Beasiswa", icon: Award },
   { key: "referrals", label: "Rujukan", icon: Users },
   { key: "reports", label: "Laporan Pengguna", icon: FileDown },
-  { key: "invitations", label: "Undangan Akun", icon: MailPlus },
+  { key: "access", label: "Manajemen Akses Pengguna", icon: KeyRound },
   { key: "ai-history", label: "Histori AI", icon: Bot },
 
 ];
@@ -210,7 +209,6 @@ const Admin = () => {
       case "scholarships": return <ScholarshipManager />;
       case "referrals": return <ReferralManager />;
       case "reports": return <UsageReports />;
-      case "invitations": return <InvitationsManager />;
       case "access": return <LoginAccessManager />;
       case "ai-history": return <AiHistoryViewer />;
       case "counseling": return <CounselingManager />;
@@ -237,7 +235,7 @@ const Admin = () => {
         { label: "Layanan & Tes", items: [tool("screening"), tool("cbt"), tool("psikotes"), { key: "counseling", label: "Konseling", icon: HeartPulse }, tool("referrals")] },
         { label: "Karier & Kemitraan", items: [tool("jobs"), tool("partners"), tool("events"), tool("universities"), tool("scholarships")] },
         { label: "Laporan", items: [tool("reports"), tool("ai-history")] },
-        { label: "Akun & Akses", items: [{ key: "access", label: "Kelola Akses Login", icon: KeyRound }, tool("invitations")] },
+        { label: "Akun & Akses", items: [tool("access")] },
 
         { label: "Pengaturan", items: [{ key: "settings", label: "Pengaturan", icon: MoreHorizontal }] },
       ]}

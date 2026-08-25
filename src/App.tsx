@@ -17,7 +17,6 @@ import Events from "./pages/Events";
 import Admin from "./pages/Admin";
 import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
-import Activate from "./pages/Activate";
 import ChangeInitialPassword from "./pages/ChangeInitialPassword";
 import Chat from "./pages/Chat";
 import CbtList from "./pages/CbtList";
@@ -56,7 +55,6 @@ const App = () => (
             <Route path="/admin" element={<Admin />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/aktivasi" element={<Activate />} />
             <Route path="/ganti-password-awal" element={<ChangeInitialPassword />} />
             <Route path="/chat" element={<Chat />} />
             <Route path="/cbt" element={<CbtList />} />

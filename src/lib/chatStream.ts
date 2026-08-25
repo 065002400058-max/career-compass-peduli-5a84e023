@@ -20,19 +20,26 @@ export async function streamChatAi(
 ): Promise<string> {
   const { data } = await supabase.auth.getSession();
   const accessToken = data.session?.access_token;
+  if (!accessToken) {
+    throw new Error("Silakan masuk terlebih dahulu untuk menggunakan AI PEDULI.");
+  }
 
   const res = await fetch(FUNCTIONS_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       apikey: ANON_KEY,
-      Authorization: `Bearer ${accessToken ?? ANON_KEY}`,
+      Authorization: `Bearer ${accessToken}`,
     },
     body: JSON.stringify({ messages, mode, stream: true }),
     signal,
   });
 
-  if (!res.ok) throw new Error("Layanan AI sedang sibuk. Coba lagi sebentar.");
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    throw new Error(body?.error ?? "Layanan AI sedang sibuk. Coba lagi sebentar.");
+  }
+
 
   const limitHeader = res.headers.get("X-AI-Quota-Limit");
   if (limitHeader && onQuota) {

@@ -71,6 +71,24 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_request_log: {
+        Row: {
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       allowed_login_emails: {
         Row: {
           created_at: string
@@ -1914,7 +1932,9 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      ai_access_gate: { Args: { _user_id: string }; Returns: Json }
       ai_quota_status: { Args: { _user_id?: string }; Returns: Json }
+      ai_usage_stats: { Args: never; Returns: Json }
       alumni_directory: {
         Args: never
         Returns: {
@@ -1974,6 +1994,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_active_user: { Args: never; Returns: boolean }
       link_or_create_alumni: {
         Args: { _full_name: string; _md?: Json; _user_id: string }
         Returns: string

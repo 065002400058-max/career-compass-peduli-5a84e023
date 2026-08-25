@@ -53,10 +53,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Pemeriksaan akses dilakukan di backend (fungsi check_login_access):
   // email diambil dari JWT Google yang terverifikasi, role dari database.
   // Jika ditolak → session segera dihapus dan alasan penolakan disimpan.
-  const verifyAccess = async (uid: string): Promise<boolean> => {
-    if (lastVerify.current?.uid === uid && Date.now() - lastVerify.current.at < 60_000) {
+  const verifyAccess = async (uid: string, force = false): Promise<boolean> => {
+    if (!force && lastVerify.current?.uid === uid && Date.now() - lastVerify.current.at < 60_000) {
       return true;
     }
+
     try {
       const { data, error } = await supabase.rpc("check_login_access");
       const status = (data as { status?: string } | null)?.status;
@@ -122,6 +123,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  // Sesi lama tidak boleh melewati status inactive: verifikasi ulang secara
+  // berkala dan saat tab kembali aktif. Jika akses dicabut → session dihapus.
+  useEffect(() => {
+    if (!user) return;
+    const uid = user.id;
+    const recheck = () => void verifyAccess(uid, true);
+    const timer = window.setInterval(recheck, 5 * 60_000);
+    const onVisible = () => {
+      if (document.visibilityState === "visible") recheck();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      window.clearInterval(timer);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [user?.id]);
+
 
   const signOut = async () => {
     lastVerify.current = null;

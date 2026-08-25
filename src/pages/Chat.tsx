@@ -87,6 +87,12 @@ const Chat = () => {
 
   useEffect(() => { inputRef.current?.focus(); }, [activeId]);
 
+  // Sistem tertutup: AI hanya untuk pengguna terdaftar & aktif.
+  useEffect(() => {
+    if (!loading && !user) navigate("/auth", { replace: true });
+  }, [loading, user, navigate]);
+
+
   const handleNew = async () => {
     if (!user) return;
     const { data, error } = await supabase.from("chat_threads").insert({ user_id: user.id, mode: active?.mode ?? "umum" }).select().single();
@@ -117,23 +123,11 @@ const Chat = () => {
     if (!text || sending) return;
 
     if (!user) {
-      const newMsgs: Msg[] = [...guestMessages, { role: "user", content: text }];
-      setGuestMessages(newMsgs);
-      setInput("");
-      setSending(true);
-      try {
-        const reply = await streamChatAi(newMsgs as any, guestMode, (partial) => setStreamText(partial));
-        setGuestMessages([...newMsgs, { role: "assistant", content: reply }]);
-        setStreamText("");
-      } catch (e: any) {
-        setStreamText("");
-        toast.error(e.message || "Gagal mengirim pesan");
-      } finally {
-        setSending(false);
-        setTimeout(() => inputRef.current?.focus(), 50);
-      }
+      toast.error("Silakan masuk terlebih dahulu untuk menggunakan AI PEDULI.");
+      navigate("/auth");
       return;
     }
+
 
     let threadId = activeId;
     let threadMode = active?.mode ?? "umum";

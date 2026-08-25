@@ -56,7 +56,52 @@ Deno.serve(async (req) => {
 
     const lastUserMsg = [...messages].reverse().find((m: any) => m.role === "user")?.content ?? "";
     const authHeader = req.headers.get("Authorization");
-    const token = authHeader?.replace("Bearer ", "");
+    const token = authHeader?.startsWith("Bearer ") ? authHeader.replace("Bearer ", "") : null;
+
+    // ---- GERBANG KEAMANAN: tidak ada AI provider dipanggil tanpa izin valid ----
+    if (!token) {
+      return new Response(JSON.stringify({ error: "Tidak terautentikasi." }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const { data: authData, error: authError } = await supabase.auth.getUser(token);
+    const authedUser = authData?.user ?? null;
+    if (authError || !authedUser) {
+      return new Response(JSON.stringify({ error: "Sesi tidak valid. Silakan masuk kembali." }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Whitelist + status + peran + rate limit (10/menit, 50/jam) — semuanya di server
+    const { data: gate, error: gateError } = await supabase.rpc("ai_access_gate", {
+      _user_id: authedUser.id,
+    });
+    if (gateError) {
+      console.error("ai_access_gate error:", gateError.message);
+      return new Response(JSON.stringify({ error: "Gagal memeriksa izin akses AI." }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    if (!gate?.allowed) {
+      const reason = gate?.reason ?? "forbidden";
+      const rateLimited = reason === "rate_limited_minute" || reason === "rate_limited_hour";
+      const message = rateLimited
+        ? "Terlalu banyak permintaan ke AI. Silakan tunggu sebentar lalu coba lagi."
+        : reason === "inactive"
+          ? "Akses akun Anda dinonaktifkan. Hubungi administrator."
+          : reason === "expired"
+            ? "Masa akses akun Anda sudah berakhir. Hubungi administrator."
+            : "Akun Anda belum terdaftar pada Smart Career Center PEDULI.";
+      console.log(JSON.stringify({ event: "ai_access_denied", reason }));
+      return new Response(JSON.stringify({ error: message, reason }), {
+        status: rateLimited ? 429 : 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     // Tentukan konteks yang perlu dimuat SEBELUM query, lalu jalankan semuanya paralel.
     const needAlumni =
@@ -72,7 +117,7 @@ Deno.serve(async (req) => {
 
     const [userRes, alumniRes, jobsRes, eventsRes, partnersRes, psiTestsRes, cbtTestsRes] =
       await Promise.all([
-        token ? supabase.auth.getUser(token) : Promise.resolve({ data: { user: null } }),
+        Promise.resolve({ data: { user: authedUser } }),
         needAlumni
           ? supabase
               .from("alumni")
@@ -122,7 +167,7 @@ Deno.serve(async (req) => {
     let userContext = "";
     if (user) {
       const [profileRes, psikotesRes, cbtRes, rolesRes] = await Promise.all([
-        supabase.from("profiles").select("full_name,bio").eq("user_id", user.id).maybeSingle(),
+        supabase.from("profiles").select("full_name,bio").eq("id", user.id).maybeSingle(),
         supabase
           .from("psikotes_attempts")
           .select("total_score,level,conclusion,completed_at,psikotes_tests(title)")
@@ -192,7 +237,7 @@ KONTEKS DATA REAL-TIME:${context || "\n(Tidak ada data spesifik dimuat)"}`;
       if (mode !== "psikotes" || !user) return;
       if (!/(bunuh diri|ingin mati|tidak ada harapan|sangat tertekan|depresi berat|self.?harm|menyakiti diri)/i.test(lastUserMsg))
         return;
-      const { data: prof } = await supabase.from("profiles").select("full_name").eq("user_id", user.id).maybeSingle();
+      const { data: prof } = await supabase.from("profiles").select("full_name").eq("id", user.id).maybeSingle();
       await supabase.from("counseling_referrals").insert({
         user_id: user.id,
         user_name: prof?.full_name || user.email || "User",
