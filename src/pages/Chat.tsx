@@ -123,23 +123,11 @@ const Chat = () => {
     if (!text || sending) return;
 
     if (!user) {
-      const newMsgs: Msg[] = [...guestMessages, { role: "user", content: text }];
-      setGuestMessages(newMsgs);
-      setInput("");
-      setSending(true);
-      try {
-        const reply = await streamChatAi(newMsgs as any, guestMode, (partial) => setStreamText(partial));
-        setGuestMessages([...newMsgs, { role: "assistant", content: reply }]);
-        setStreamText("");
-      } catch (e: any) {
-        setStreamText("");
-        toast.error(e.message || "Gagal mengirim pesan");
-      } finally {
-        setSending(false);
-        setTimeout(() => inputRef.current?.focus(), 50);
-      }
+      toast.error("Silakan masuk terlebih dahulu untuk menggunakan AI PEDULI.");
+      navigate("/auth");
       return;
     }
+
 
     let threadId = activeId;
     let threadMode = active?.mode ?? "umum";
