@@ -87,6 +87,12 @@ const Chat = () => {
 
   useEffect(() => { inputRef.current?.focus(); }, [activeId]);
 
+  // Sistem tertutup: AI hanya untuk pengguna terdaftar & aktif.
+  useEffect(() => {
+    if (!loading && !user) navigate("/auth", { replace: true });
+  }, [loading, user, navigate]);
+
+
   const handleNew = async () => {
     if (!user) return;
     const { data, error } = await supabase.from("chat_threads").insert({ user_id: user.id, mode: active?.mode ?? "umum" }).select().single();
