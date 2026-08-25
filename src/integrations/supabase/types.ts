@@ -1933,6 +1933,41 @@ export type Database = {
     }
     Functions: {
       ai_access_gate: { Args: { _user_id: string }; Returns: Json }
+      ai_admin_access_audit: {
+        Args: { _limit?: number }
+        Returns: {
+          action: string
+          admin_name: string
+          created_at: string
+          id: string
+          target_name: string
+          thread_id: string
+        }[]
+      }
+      ai_admin_thread_messages: {
+        Args: { _thread_id: string }
+        Returns: {
+          content: string
+          created_at: string
+          id: string
+          role: string
+        }[]
+      }
+      ai_admin_threads: {
+        Args: { _limit?: number; _search?: string }
+        Returns: {
+          created_at: string
+          last_message_at: string
+          message_count: number
+          mode: string
+          thread_id: string
+          title: string
+          user_email: string
+          user_id: string
+          user_name: string
+          user_role: string
+        }[]
+      }
       ai_quota_status: { Args: { _user_id?: string }; Returns: Json }
       ai_usage_stats: { Args: never; Returns: Json }
       alumni_directory: {
