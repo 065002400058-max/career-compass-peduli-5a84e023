@@ -53,10 +53,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Pemeriksaan akses dilakukan di backend (fungsi check_login_access):
   // email diambil dari JWT Google yang terverifikasi, role dari database.
   // Jika ditolak → session segera dihapus dan alasan penolakan disimpan.
-  const verifyAccess = async (uid: string): Promise<boolean> => {
-    if (lastVerify.current?.uid === uid && Date.now() - lastVerify.current.at < 60_000) {
+  const verifyAccess = async (uid: string, force = false): Promise<boolean> => {
+    if (!force && lastVerify.current?.uid === uid && Date.now() - lastVerify.current.at < 60_000) {
       return true;
     }
+
     try {
       const { data, error } = await supabase.rpc("check_login_access");
       const status = (data as { status?: string } | null)?.status;
