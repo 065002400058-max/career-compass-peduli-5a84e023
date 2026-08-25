@@ -7,6 +7,8 @@ import { Bot, Lock, MessageSquare, RefreshCw, Users } from "lucide-react";
 import {
   Bar, BarChart, CartesianGrid, Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from "recharts";
+import AiConversationMonitor from "@/components/admin/AiConversationMonitor";
+
 
 type Stats = {
   threads: number;
@@ -73,10 +75,11 @@ const AiHistoryViewer = () => {
       <div className="rounded-lg border border-border bg-muted/40 p-3 flex gap-2">
         <Lock className="h-4 w-4 text-primary shrink-0 mt-0.5" />
         <p className="text-[12px] text-muted-foreground leading-relaxed">
-          Isi percakapan santri/alumni bersifat privat dan tidak dapat dibuka dari
-          panel admin. Hanya statistik agregat yang ditampilkan di sini.
+          Admin dapat meninjau isi percakapan sebagai fungsi kontrol dan pengawasan.
+          Setiap kali percakapan dibuka, aktivitas tercatat otomatis pada Audit Akses Admin.
         </p>
       </div>
+
 
       {isError && (
         <p className="text-sm text-destructive">Gagal memuat statistik AI.</p>
@@ -152,7 +155,10 @@ const AiHistoryViewer = () => {
           )}
         </CardContent>
       </Card>
+
+      <AiConversationMonitor />
     </div>
+
   );
 };
 
