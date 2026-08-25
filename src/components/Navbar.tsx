@@ -109,7 +109,7 @@ const Navbar = () => {
       active ? "text-primary" : "text-foreground/80 hover:text-primary"
     }`;
 
-  const AuthActions = ({ full = false, showRegister = false }: { full?: boolean; showRegister?: boolean }) =>
+  const AuthActions = ({ full = false }: { full?: boolean }) =>
     loading ? null : user ? (
       <Button
         variant="outline"
@@ -128,7 +128,7 @@ const Navbar = () => {
         <Button
           variant="outline"
           size="sm"
-          className={full ? "flex-1" : ""}
+          className={full ? "w-full" : ""}
           onClick={() => {
             navigate("/auth");
             setOpen(false);
@@ -136,17 +136,6 @@ const Navbar = () => {
         >
           Masuk
         </Button>
-        {showRegister && !full && (
-          <Button
-            size="sm"
-            onClick={() => {
-              navigate("/auth");
-              setOpen(false);
-            }}
-          >
-            Daftar
-          </Button>
-        )}
       </div>
     );
 
@@ -219,7 +208,7 @@ const Navbar = () => {
                 </Link>
               </Button>
             )}
-            <AuthActions showRegister />
+            <AuthActions />
           </div>
         </div>
       </div>
