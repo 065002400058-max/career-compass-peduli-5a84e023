@@ -124,6 +124,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => subscription.unsubscribe();
   }, []);
 
+  // Sesi lama tidak boleh melewati status inactive: verifikasi ulang secara
+  // berkala dan saat tab kembali aktif. Jika akses dicabut → session dihapus.
+  useEffect(() => {
+    if (!user) return;
+    const uid = user.id;
+    const recheck = () => void verifyAccess(uid, true);
+    const timer = window.setInterval(recheck, 5 * 60_000);
+    const onVisible = () => {
+      if (document.visibilityState === "visible") recheck();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      window.clearInterval(timer);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [user?.id]);
+
+
   const signOut = async () => {
     lastVerify.current = null;
     setAccessDenied(null);
