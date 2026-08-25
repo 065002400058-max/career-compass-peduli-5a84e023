@@ -208,7 +208,7 @@ const Navbar = () => {
                 </Link>
               </Button>
             )}
-            <AuthActions showRegister />
+            <AuthActions />
           </div>
         </div>
       </div>
