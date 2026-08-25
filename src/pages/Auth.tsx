@@ -4,12 +4,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription,
   AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Info, Loader2, MailX, ShieldX } from "lucide-react";
+import { Eye, EyeOff, Info, Loader2, MailX, ShieldCheck, ShieldX } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+
 // Logo gabungan resmi enam institusi/mitra (file: public/logo-gabungan.png)
 const logo = "/logo-gabungan.png";
 
@@ -26,6 +29,33 @@ const Auth = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading, roles, accessDenied, clearAccessDenied } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [showAdmin, setShowAdmin] = useState(false);
+  const [adminEmail, setAdminEmail] = useState("");
+  const [adminPassword, setAdminPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [adminLoading, setAdminLoading] = useState(false);
+
+  // Login administrator dengan email + password. Akses tetap divalidasi backend
+  // (check_login_access) lewat AuthContext, sama seperti jalur Google.
+  const handleAdminLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAdminLoading(true);
+    const { error } = await supabase.auth.signInWithPassword({
+      email: adminEmail.trim().toLowerCase(),
+      password: adminPassword,
+    });
+    setAdminLoading(false);
+    if (error) {
+      toast({
+        title: "Login gagal",
+        description: "Email atau password salah.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setAdminPassword("");
+  };
+
 
   // Setelah autentikasi berhasil & akses diizinkan backend → arahkan sesuai role database
   useEffect(() => {
@@ -139,6 +169,74 @@ const Auth = () => {
           Gunakan akun Google dengan email yang telah didaftarkan oleh administrator.
         </p>
 
+        {/* Jalur khusus Admin: email + password (tersembunyi secara default) */}
+        <div className="mt-5">
+          {!showAdmin ? (
+            <button
+              type="button"
+              onClick={() => setShowAdmin(true)}
+              className="w-full flex items-center justify-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors"
+            >
+              <ShieldCheck className="h-3.5 w-3.5" /> Login Admin
+            </button>
+          ) : (
+            <form onSubmit={handleAdminLogin} className="space-y-3 rounded-xl border border-border/70 bg-muted/30 p-3">
+              <p className="text-[11px] font-medium text-foreground flex items-center gap-1.5">
+                <ShieldCheck className="h-3.5 w-3.5 text-primary" /> Login Administrator
+              </p>
+              <div className="space-y-1.5">
+                <Label htmlFor="admin-email" className="text-[11px]">Email</Label>
+                <Input
+                  id="admin-email"
+                  type="email"
+                  autoComplete="username"
+                  value={adminEmail}
+                  onChange={(e) => setAdminEmail(e.target.value)}
+                  required
+                  className="h-10"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="admin-password" className="text-[11px]">Password</Label>
+                <div className="relative">
+                  <Input
+                    id="admin-password"
+                    type={showPassword ? "text" : "password"}
+                    autoComplete="current-password"
+                    value={adminPassword}
+                    onChange={(e) => setAdminPassword(e.target.value)}
+                    required
+                    className="h-10 pr-10"
+                  />
+                  <button
+                    type="button"
+                    aria-label={showPassword ? "Sembunyikan password" : "Tampilkan password"}
+                    onClick={() => setShowPassword((v) => !v)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Button type="submit" className="flex-1 h-10" disabled={adminLoading}>
+                  {adminLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                  Masuk
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="h-10"
+                  onClick={() => setShowAdmin(false)}
+                  disabled={adminLoading}
+                >
+                  Tutup
+                </Button>
+              </div>
+            </form>
+          )}
+        </div>
+
         <div className="mt-6 space-y-3">
           <div className="rounded-xl border border-primary/20 bg-primary/5 p-3 flex gap-2">
             <Info className="h-4 w-4 text-primary shrink-0 mt-0.5" />
@@ -155,6 +253,7 @@ const Auth = () => {
             <Link to="/" className="text-primary hover:underline">← Kembali ke Beranda</Link>
           </p>
         </div>
+
       </div>
 
       {/* Dialog penolakan akses — setelah autentikasi Google, email dicek di backend */}
