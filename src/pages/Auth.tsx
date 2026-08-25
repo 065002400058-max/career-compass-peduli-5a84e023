@@ -4,12 +4,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription,
   AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Info, Loader2, MailX, ShieldX } from "lucide-react";
+import { Eye, EyeOff, Info, Loader2, MailX, ShieldCheck, ShieldX } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+
 // Logo gabungan resmi enam institusi/mitra (file: public/logo-gabungan.png)
 const logo = "/logo-gabungan.png";
 
