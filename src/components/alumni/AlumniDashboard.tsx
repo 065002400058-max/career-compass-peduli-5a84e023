@@ -36,7 +36,8 @@ import {
   alumniSummary,
   cleanVal,
   hasTracer,
-  ALUMNI_NOT_FILLED,
+  jobFieldOf,
+  
 } from "@/lib/alumniStatus";
 
 /* ---------- helpers ---------- */
@@ -111,12 +112,13 @@ const topN = (rows: any[], key: string, n = 6) => {
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  bekerja: "#059669",
-  "melanjutkan studi": "#3b82f6",
-  "mencari kerja": "#f59e0b",
-  wirausaha: "#f43f5e",
-  [ALUMNI_NOT_FILLED]: "#cbd5e1",
+  Bekerja: "#22c55e",
+  Wirausaha: "#3b82f6",
+  "Melanjutkan Studi": "#8b5cf6",
+  "Mencari Kerja": "#f59e0b",
+  "Belum Mengisi Tracer": "#f97316",
 };
+
 
 /* ---------- component ---------- */
 
@@ -163,9 +165,17 @@ const AlumniDashboard = () => {
   );
 
   const jobFields = useMemo(() => {
-    const src = topN(rows, "job_field", 6);
-    return src.length ? src : topN(rows, "position", 6);
+    const map = new Map<string, number>();
+    rows.forEach((r: any) => {
+      const f = jobFieldOf(r);
+      if (f) map.set(f, (map.get(f) ?? 0) + 1);
+    });
+    return [...map.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 6)
+      .map(([name, value]) => ({ name, value }));
   }, [rows]);
+
   const jobTotal = jobFields.reduce((a, b) => a + b.value, 0);
 
   const locations = useMemo(() => {
