@@ -37,7 +37,7 @@ import {
   cleanVal,
   hasTracer,
   jobFieldOf,
-  ALUMNI_NOT_FILLED,
+  
 } from "@/lib/alumniStatus";
 
 /* ---------- helpers ---------- */
