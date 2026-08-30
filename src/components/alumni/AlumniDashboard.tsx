@@ -163,9 +163,17 @@ const AlumniDashboard = () => {
   );
 
   const jobFields = useMemo(() => {
-    const src = topN(rows, "job_field", 6);
-    return src.length ? src : topN(rows, "position", 6);
+    const map = new Map<string, number>();
+    rows.forEach((r: any) => {
+      const f = jobFieldOf(r);
+      if (f) map.set(f, (map.get(f) ?? 0) + 1);
+    });
+    return [...map.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 6)
+      .map(([name, value]) => ({ name, value }));
   }, [rows]);
+
   const jobTotal = jobFields.reduce((a, b) => a + b.value, 0);
 
   const locations = useMemo(() => {
