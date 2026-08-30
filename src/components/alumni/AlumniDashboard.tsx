@@ -112,12 +112,13 @@ const topN = (rows: any[], key: string, n = 6) => {
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  bekerja: "#059669",
-  "melanjutkan studi": "#3b82f6",
-  "mencari kerja": "#f59e0b",
-  wirausaha: "#f43f5e",
-  [ALUMNI_NOT_FILLED]: "#cbd5e1",
+  Bekerja: "#22c55e",
+  Wirausaha: "#3b82f6",
+  "Melanjutkan Studi": "#8b5cf6",
+  "Mencari Kerja": "#f59e0b",
+  "Belum Mengisi Tracer": "#f97316",
 };
+
 
 /* ---------- component ---------- */
 
