@@ -97,6 +97,18 @@ const LoginAccessManager = () => {
   const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Row | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [clearOpen, setClearOpen] = useState(false);
+  const [clearing, setClearing] = useState(false);
+  const clearAll = async () => {
+    setClearing(true);
+    const { error } = await supabase.from("allowed_login_emails").delete().neq("role", "admin");
+    setClearing(false);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Semua email Santri & Alumni dihapus dari daftar akses");
+    setClearOpen(false);
+    void queryClient.invalidateQueries({ queryKey: ["allowed-login-emails"] });
+    void queryClient.invalidateQueries({ queryKey: ["login-access-audit"] });
+  };
 
   const { data: rows, isLoading, refetch, isFetching } = useQuery({
     queryKey: ["allowed-login-emails"],
@@ -272,6 +284,10 @@ const LoginAccessManager = () => {
           <Button variant="outline" size="sm" onClick={() => fileRef.current?.click()} disabled={importing}>
             {importing ? <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> : <Upload className="h-4 w-4 mr-1.5" />}
             Import CSV
+          </Button>
+          <Button variant="outline" size="sm" className="text-destructive border-destructive/40 hover:bg-destructive/10"
+            onClick={() => setClearOpen(true)} disabled={!(rows ?? []).some((r) => r.role !== "admin")}>
+            <Trash2 className="h-4 w-4 mr-1.5" /> Hapus Semua
           </Button>
           <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isFetching}>
             {isFetching ? <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-1.5" />}
@@ -475,6 +491,24 @@ const LoginAccessManager = () => {
       </Dialog>
 
       {/* Konfirmasi hapus */}
+      <AlertDialog open={clearOpen} onOpenChange={setClearOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Hapus semua data akses?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Semua email Santri & Alumni ({(rows ?? []).filter((r) => r.role !== "admin").length}) akan dihapus dan tidak bisa login lagi. Akun Admin tetap aman.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Batal</AlertDialogCancel>
+            <AlertDialogAction onClick={(e) => { e.preventDefault(); void clearAll(); }} disabled={clearing}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              {clearing && <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />} Hapus Semua
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
