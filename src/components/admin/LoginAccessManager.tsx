@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -17,7 +17,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import {
-  KeyRound, Loader2, Pencil, Plus, RefreshCw, Search, ShieldCheck, ShieldX, Trash2,
+  KeyRound, Loader2, Upload, Download, Pencil, Plus, RefreshCw, Search, ShieldCheck, ShieldX, Trash2,
 } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -50,7 +50,42 @@ const fmtDate = (v: string | null) =>
 const fmtDateTime = (v: string | null) =>
   v ? new Date(v).toLocaleString("id-ID", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "—";
 
+const parseCsv = (text: string): string[][] => {
+  const first = text.split(/\r?\n/)[0] ?? "";
+  const delim = (first.match(/;/g)?.length ?? 0) > (first.match(/,/g)?.length ?? 0) ? ";" : ",";
+  const rows: string[][] = []; let row: string[] = []; let cur = ""; let q = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (q) { if (c === '"') { if (text[i + 1] === '"') { cur += '"'; i++; } else q = false; } else cur += c; }
+    else if (c === '"') q = true;
+    else if (c === delim) { row.push(cur); cur = ""; }
+    else if (c === "\n" || c === "\r") { if (c === "\r" && text[i + 1] === "\n") i++; row.push(cur); rows.push(row); row = []; cur = ""; }
+    else cur += c;
+  }
+  if (cur || row.length) { row.push(cur); rows.push(row); }
+  return rows.filter((r) => r.some((v) => v.trim()));
+};
+
+const norm = (h: string) => h.replace(/^\uFEFF/, "").trim().toLowerCase().replace(/[^a-z]/g, "");
+const findCol = (headers: string[], keys: string[]) => headers.findIndex((h) => keys.some((k) => norm(h).includes(k)));
+const toRole = (v: string): AppRole | null => {
+  const s = v.trim().toLowerCase();
+  if (!s || s.startsWith("santri") || s === "siswa") return "santri";
+  if (s.startsWith("alumni") || s.startsWith("lulus")) return "alumni";
+  return null;
+};
+const toStatus = (v: string): "active" | "inactive" => /non|inactive|tidak|off/.test(v.toLowerCase()) ? "inactive" : "active";
+const toDate = (v: string): string | null => {
+  const s = v.trim(); if (!s) return null;
+  let m = s.match(/^(\d{1,2})[/.-](\d{1,2})[/.-](\d{4})$/);
+  const iso = m ? `${m[3]}-${m[2].padStart(2, "0")}-${m[1].padStart(2, "0")}` : s;
+  const d = new Date(`${iso.slice(0, 10)}T23:59:59`);
+  return isNaN(d.getTime()) ? null : d.toISOString();
+};
+
 const LoginAccessManager = () => {
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [importing, setImporting] = useState(false);
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const [search, setSearch] = useState("");
@@ -142,6 +177,60 @@ const LoginAccessManager = () => {
     void queryClient.invalidateQueries({ queryKey: ["login-access-audit"] });
   };
 
+  const downloadTemplate = () => {
+    const csv = "email,nama,role,status,kedaluwarsa\nnama.santri@gmail.com,Ahmad Fauzi,santri,aktif,\nnama.alumni@gmail.com,Siti Aminah,alumni,aktif,31/12/2026\n";
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" }));
+    a.download = "template-akses-pengguna.csv"; a.click(); URL.revokeObjectURL(a.href);
+  };
+
+  const importCsv = async (file: File) => {
+    setImporting(true);
+    try {
+      const rowsCsv = parseCsv(await file.text());
+      if (rowsCsv.length < 2) { toast.error("File CSV kosong"); return; }
+      const h = rowsCsv[0];
+      const iEmail = findCol(h, ["email", "surel"]);
+      const iName = findCol(h, ["nama", "name"]);
+      const iRole = findCol(h, ["role", "peran"]);
+      const iStatus = findCol(h, ["status"]);
+      const iExp = findCol(h, ["kedaluwarsa", "expire", "berlaku"]);
+      if (iEmail < 0) { toast.error("Kolom 'email' tidak ditemukan di CSV"); return; }
+      const existing = new Set((rows ?? []).map((r) => r.email.toLowerCase()));
+      const seen = new Set<string>();
+      const payload: Database["public"]["Tables"]["allowed_login_emails"]["Insert"][] = [];
+      let skipped = 0, invalid = 0;
+      for (const r of rowsCsv.slice(1)) {
+        const email = (r[iEmail] ?? "").trim().toLowerCase();
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { invalid++; continue; }
+        if (existing.has(email) || seen.has(email)) { skipped++; continue; }
+        const role = toRole(iRole >= 0 ? r[iRole] ?? "" : "");
+        if (!role) { invalid++; continue; }
+        seen.add(email);
+        payload.push({
+          email,
+          full_name: (iName >= 0 ? r[iName] ?? "" : "").trim() || email.split("@")[0],
+          role,
+          status: toStatus(iStatus >= 0 ? r[iStatus] ?? "" : ""),
+          expires_at: iExp >= 0 ? toDate(r[iExp] ?? "") : null,
+          created_by: user?.id ?? null,
+        });
+      }
+      if (payload.length) {
+        for (let i = 0; i < payload.length; i += 200) {
+          const { error } = await supabase.from("allowed_login_emails").insert(payload.slice(i, i + 200));
+          if (error) { toast.error(error.message); return; }
+        }
+      }
+      toast.success(`${payload.length} email ditambahkan` + (skipped ? `, ${skipped} sudah ada` : "") + (invalid ? `, ${invalid} baris tidak valid` : ""));
+      void queryClient.invalidateQueries({ queryKey: ["allowed-login-emails"] });
+      void queryClient.invalidateQueries({ queryKey: ["login-access-audit"] });
+    } finally {
+      setImporting(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  };
+
   const toggleStatus = async (r: Row) => {
     const next = r.status === "active" ? "inactive" : "active";
     const { error } = await supabase.from("allowed_login_emails").update({ status: next }).eq("id", r.id);
@@ -174,7 +263,16 @@ const LoginAccessManager = () => {
             Hanya email di daftar ini yang dapat masuk melalui Google. Role diambil dari database.
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          <input ref={fileRef} type="file" accept=".csv,text/csv" className="hidden"
+            onChange={(e) => { const f = e.target.files?.[0]; if (f) void importCsv(f); }} />
+          <Button variant="outline" size="sm" onClick={downloadTemplate}>
+            <Download className="h-4 w-4 mr-1.5" /> Template CSV
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => fileRef.current?.click()} disabled={importing}>
+            {importing ? <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> : <Upload className="h-4 w-4 mr-1.5" />}
+            Import CSV
+          </Button>
           <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isFetching}>
             {isFetching ? <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-1.5" />}
             Muat Ulang
