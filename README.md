@@ -144,11 +144,7 @@ Additional Features:
 
 - modern UI components
 
-This project was built with [Lovable](https://lovable.dev).
 
-**Live app**: https://career-compass-peduli.lovable.app
-
-## Build with Lovable
 
 Continue developing this project in the [Lovable editor](https://lovable.dev/projects/8c4929f0-efd0-4002-88dc-2de4d33db0fc).
 
